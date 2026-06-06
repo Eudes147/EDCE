@@ -1,14 +1,12 @@
-import {ref,computed} from 'vue'
-import type{TypeTest} from '~/types/test'
-import {mockNotes,mockTests} from '~/data/mockData'
-import type { Child, YearGroupedAverages,YearGroupedNotes } from '~/types/child'
-import {useChildren} from "~/composables/useChild"
-
+import { ref, computed } from 'vue'
+import type { TypeTest } from '~/types/test'
+import { mockNotes, mockTests } from '~/data/mockData'
+import type { Child, YearGroupedAverages, YearGroupedNotes } from '~/types/child'
+import { useChildren } from "~/composables/useChild"
 import { getMoyFinal } from '~/utils/getMoyFinal'
 
-const testTypes=['EVALUATION','SUNDAY_SCHOOL','CONCOURS']
+// On garde ta fonction pure à l'extérieur, elle s'exécute parfaitement
 export function processNotesAndAverages(typeFilter: 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS') {
-  // On ne parcourt le tableau mockNotes qu'UNE SEULE fois pour extraire les notes ET calculer les moyennes
   const listNotes: YearGroupedNotes = {}
   const moyenne: YearGroupedAverages = {}
 
@@ -32,101 +30,108 @@ export function processNotesAndAverages(typeFilter: 'EVALUATION' | 'SUNDAY_SCHOO
     }
   })
 
-  // Calcul des moyennes à partir des notes groupées
   Object.keys(listNotes).forEach((year) => {
-    if(listNotes[year]){
+    if (listNotes[year]) {
       moyenne[year] = listNotes[year].map((childData) => {
-            const total = childData.notes.reduce((sum, n) => sum + n, 0)
-            return {
-              childId: childData.childId,
-              moyenne: Number((total / childData.notes.length).toFixed(2))
-            }
-          })
+        const total = childData.notes.reduce((sum, n) => sum + n, 0)
+        return {
+          childId: childData.childId,
+          moyenne: Number((total / childData.notes.length).toFixed(2))
+        }
+      })
     }
   })
 
   return { listNotes, moyenne }
 }
 
+export const useNote = () => {
+  const { listChildren } = useChildren()
+  
+  // Utilisation d'un computed pour l'année en cours
+  const actualYear = computed(() => new Date().getFullYear().toString())
 
-export const useNote= ()=>{
-  const {listChildren} = useChildren()
-  const actualYear= new Date().getFullYear().toString()
+  // CORRECTION (3) : Mise en cache réactive globale pour éviter de recalculer à chaque appel de fonction
+  const notesAndAveragesComputed = computed(() => {
+    return {
+      evaluations: processNotesAndAverages('EVALUATION'),
+      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL'),
+      concours: processNotesAndAverages('CONCOURS')
+    }
+  })
 
-  const notesbyYear = {
-    evaluations: processNotesAndAverages('EVALUATION'),
-    sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL'),
-    concours: processNotesAndAverages('CONCOURS')
+  // Permet de conserver l'accès à l'ancien format si utilisé dans tes composants
+  const notesbyYear = computed(() => notesAndAveragesComputed.value)
+
+  // Reste disponible si besoin d'un appel dynamique à la demande
+  const getNotesAndAverages = (typeFilter: 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS') => {
+    if (typeFilter === 'EVALUATION') return notesAndAveragesComputed.value.evaluations
+    if (typeFilter === 'SUNDAY_SCHOOL') return notesAndAveragesComputed.value.sundaySchool
+    return notesAndAveragesComputed.value.concours
   }
-  const getnotebychildperTestType= (child: Child, testType: TypeTest)=>{
 
-    const listNotesActualYear=processNotesAndAverages(testType).listNotes[actualYear]
-    const listNotesActualYearbyChildId=listNotesActualYear?.find(listNoteActualYear=>listNoteActualYear.childId===child.id)
+  const getnotebychildperTestType = (child: Child, testType: TypeTest) => {
+    // CORRECTION (1) : On lit le cache du computed au lieu de réexécuter processNotesAndAverages
+    const source = testType === 'EVALUATION' ? notesAndAveragesComputed.value.evaluations 
+                 : testType === 'SUNDAY_SCHOOL' ? notesAndAveragesComputed.value.sundaySchool 
+                 : notesAndAveragesComputed.value.concours
 
-    return listNotesActualYearbyChildId?.notes
+    const listNotesActualYear = source.listNotes[actualYear.value]
+    const childNotes = listNotesActualYear?.find(item => item.childId === child.id)
 
+    return childNotes?.notes || []
   }
 
+  const getPassageDeliberation = (child: Child, moyenneCoupure: number = 10) => {
+    // CORRECTION (1) : Lecture depuis le cache pré-calculé de SUNDAY_SCHOOL
+    const moyennesActualYear = notesAndAveragesComputed.value.sundaySchool.moyenne[actualYear.value]
+    const childMoyenne = moyennesActualYear?.find(m => m.childId === child.id)
 
-  const getPassageDeliberation = (child: Child, moyenne:number=10)=>{
-
-    const moyennesActualYear=processNotesAndAverages("SUNDAY_SCHOOL").moyenne[actualYear]
-    const moyenneActualYearbyChildId=moyennesActualYear?.find(moyenneAcualYear=>moyenneAcualYear.childId===child.id)
-
-    
-    if(moyenneActualYearbyChildId?.moyenne){
-      return moyenneActualYearbyChildId.moyenne >=moyenne ? true : false
+    if (childMoyenne?.moyenne !== undefined) {
+      return childMoyenne.moyenne >= moyenneCoupure
     }
     return false
   }
-  const getMoyGenperChildId=(child: Child)=>{
 
-    const moyennesEvaluationActualYear=processNotesAndAverages("EVALUATION").moyenne[actualYear]
+  const getMoyGenperChildId = (child: Child) => {
+    // CORRECTION (1) : Lecture depuis le cache pré-calculé
+    const moyennesEvaluationActualYear = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value]
+    const moyennesConcoursActualYear = notesAndAveragesComputed.value.concours.moyenne[actualYear.value]
 
-    const moyennesConcoursActualYear=processNotesAndAverages("CONCOURS").moyenne[actualYear]
+    const moyEval = moyennesEvaluationActualYear?.find(m => m.childId === child.id)?.moyenne
+    const moyConcours = moyennesConcoursActualYear?.find(m => m.childId === child.id)?.moyenne
 
-    const moyenneEvaluationActualYearbyChildId=moyennesEvaluationActualYear?.find(moyenneEvaluationAcualYear=>moyenneEvaluationAcualYear.childId===child.id)
-
-    const moyenneConcoursActualYearbyChildId=moyennesConcoursActualYear?.find(moyenneConcoursAcualYear=>moyenneConcoursAcualYear.childId===child.id)
-
-    if(moyenneConcoursActualYearbyChildId?.moyenne && moyenneEvaluationActualYearbyChildId?.moyenne){
-
-      return getMoyFinal(moyenneEvaluationActualYearbyChildId?.moyenne||0, moyenneConcoursActualYearbyChildId?.moyenne||0)
+    // CORRECTION (4) : Si l'un des deux est manquant (ex: absent), on considère la note manquante comme un 0 au lieu de tout annuler
+    if (moyEval !== undefined || moyConcours !== undefined) {
+      return getMoyFinal(moyEval || 0, moyConcours || 0)
     }
 
     return 0
   }
 
-  const getClassementFinal= ()=>{
-    const finalClassement= processNotesAndAverages('EVALUATION').moyenne[actualYear]?.map(moyennebyYear=>{
-      const list= listChildren.value
-      const child=list.find(child=>child.id===moyennebyYear.childId)
-      if(child){
-        const moyenneFinal=getMoyGenperChildId(child)
-        return {
-          childId: moyennebyYear.childId,
-          moyGen: moyenneFinal || 0
-
-        }
-      }
+  const getClassementFinal = () => {
+    // CORRECTION (1) : Lecture du cache d'évaluation
+    const currentYearMoyennes = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value] || []
+    
+    const finalClassement = currentYearMoyennes.map(moyennebyYear => {
+      const child = listChildren.value.find(c => c.id === moyennebyYear.childId)
+      
+      const moyenneFinal = child ? getMoyGenperChildId(child) : 0
       return {
         childId: moyennebyYear.childId,
-        moyGen: 0
+        moyGen: moyenneFinal
       }
-      
     })
-    return finalClassement?.sort((a,b)=>Number(b.moyGen) - Number(a.moyGen))
+    
+    return finalClassement.sort((a, b) => Number(b.moyGen) - Number(a.moyGen))
   }
-
-
-  
 
   return {
     notesbyYear,
     getPassageDeliberation,
     getnotebychildperTestType,
     getMoyGenperChildId,
-    getClassementFinal
+    getClassementFinal,
+    getNotesAndAverages
   }
-
 }

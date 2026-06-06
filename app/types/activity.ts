@@ -6,6 +6,7 @@ export interface Activity {
 }
 
 export interface EventActivity {
+  id: string
   activityId: string
   eventType: EventType
   year: string

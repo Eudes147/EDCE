@@ -1,0 +1,12 @@
+export type EventType = "Arbre de noël" | "Soirée récréative des enfants"
+
+export interface Activity {
+  id: string
+  title: string
+}
+
+export interface EventActivity {
+  activityId: string
+  eventType: EventType
+  year: string
+}

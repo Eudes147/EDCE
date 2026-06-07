@@ -1,6 +1,9 @@
 <template>
-  
-  <main ref="desktopMain" class="hidden md:flex flex-1 flex-col min-w-0 h-full bg-background overflow-hidden">
+  <div v-if="pending">
+    Chargement des données du dashboard....
+  </div>
+  <div v-else-if="error">{{error.message}}</div>
+  <main v-else-if="stats" ref="desktopMain" class="hidden md:flex flex-1 flex-col min-w-0 h-full bg-background overflow-hidden">
     <!-- <template #header-title>
       <span class="font-body text-body font-bold text-primary">Dashboard</span>
     </template> -->
@@ -40,15 +43,19 @@
           <Icon size="1.5rem" name="quiz" />
           Voir les tests
         </button>
-      
+        <div class="relative w-full md:w-64">
+        <select v-model="filtreClasse" class="w-full pl-4 pr-10 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body text-on-surface ultra-minimal-shadow cursor-pointer" style="transform: translateY(0px); transition: transform 0.2s ease-out;">
+        <option v-for="classe in classeEDCE" :value="classe">{{classe}}</option>
+        </select>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
           <p class="font-label-sm text-on-surface-variant mb-1">Enfants totals</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">1,284</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">+12%</span>
+            <h3 class="font-h1 text-h1 text-primary">{{childStatistics?.count || 0}}</h3>
+            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{(childStatistics?.rate || 0) * 100}}%</span>
           </div>
           <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
             <div class="h-full bg-primary w-[75%]"></div>
@@ -75,7 +82,7 @@
           </div>
         </div>
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Enseignants disponibles</p>
+          <p class="font-label-sm text-on-surface-variant mb-1">Nombre d'activités</p>
           <div class="flex items-baseline justify-between">
             <h3 class="font-h1 text-h1 text-primary">06</h3>
             <span class="text-xs font-bold text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Proch: Samedi</span>
@@ -87,9 +94,9 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
-        <div class="glass-card p-lg">
+        <div class="glass-card p-lg flex justify-center items-center">
           <h4 class="font-h3 text-h3 mb-lg">Répartition par classe</h4>
-          <div class="flex items-end gap-4 h-48 px-2">
+          <div class="flex items-end gap-4 h-48 px-2" style="height: stretch;">
             <div v-for='classe in classeEDCE' :key='classe' class="flex-1 flex flex-col items-center gap-2">
               <div class="w-full bg-primary/20 rounded-t-md hover:bg-primary transition-colors" style="height: 6rem"></div>
               <span class="font-label-sm text-on-surface-variant">{{classe}}</span>
@@ -175,7 +182,7 @@
                   <p class="text-[10px] text-on-surface-variant">+225 07 00 00 00</p>
                 </div>
               </div>
-              <button class="p-2 rounded-full hover:bg-primary-container hover:text-white transition-colors">
+              <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
                 <Icon color="h-4 w-4 text-sm" name="chat" />
               </button>
             </div>
@@ -189,7 +196,7 @@
                   <p class="text-[10px] text-on-surface-variant">+225 05 00 00 00</p>
                 </div>
               </div>
-              <button class="p-2 rounded-full hover:bg-primary-container hover:text-white transition-colors">
+              <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
                 <Icon color="h-4 w-4 text-sm" name="chat" />
               </button>
             </div>
@@ -203,7 +210,7 @@
                   <p class="text-[10px] text-on-surface-variant">+225 01 00 00 00</p>
                 </div>
               </div>
-              <button class="p-2 rounded-full hover:bg-primary-container hover:text-white transition-colors">
+              <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
                 <Icon color="h-4 w-4 text-sm" name="chat" />
               </button>
             </div>
@@ -411,17 +418,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { classes } from '~/stores/child'
+import { ref,computed } from 'vue'
+import { classes } from '../stores/child'
+import type { ClasseType } from '../types/classe'
+import { useDashboard } from '../composables/useDashboard'
 
-const classeEDCE = ref(classes)
-const classDistribution = ref([
-  { label: 'CP', height: '40%', bgClass: 'bg-primary/20' },
-  { label: 'CE1', height: '65%', bgClass: 'bg-primary-container' },
-  { label: 'CE2', height: '85%', bgClass: 'bg-secondary-container' },
-  { label: 'CM1', height: '30%', bgClass: 'bg-outline-variant' },
-  { label: 'CM2', height: '55%', bgClass: 'bg-primary/70' }
-])
+
+const {stats, pending, error, refresh} =useDashboard()
+
+
+
+const classeEDCE = ref<ClasseType[]>(classes)
+
+const filtreClasse=ref<ClasseType>("Petit")
+
+const childStatistics = computed(() => {
+  return stats.value?.childrenStats.childrenPerClass.find(
+    (childStats: { classe: string; count: number; rate: number }) => childStats.classe === filtreClasse.value
+  )
+})
+
+
 
 definePageMeta({
   layout: 'dashboard',

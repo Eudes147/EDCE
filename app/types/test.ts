@@ -40,3 +40,10 @@ export interface TestStats {
   successRate: number
   failedRate: number
 }
+export interface Note {
+  id: string;
+  childId: string;
+  testId: string;
+  note: number;
+  created_at: string;
+}

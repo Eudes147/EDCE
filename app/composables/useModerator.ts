@@ -1,6 +1,7 @@
 import type { Moderator } from "~/types/moderator"
 import { ref, computed } from 'vue'
 import { mockModerators } from "~/data/mockData"
+import {getFullName} from '~/utils/getFullName'
 
 export const useModerator = () => {
   const listModerators = ref<Moderator[]>(mockModerators)
@@ -66,6 +67,7 @@ export const useModerator = () => {
     createModerator,
     deleteModerator,
     updateModerator,
-    getModeratorById
+    getModeratorById,
+    getFullName
   }
 }

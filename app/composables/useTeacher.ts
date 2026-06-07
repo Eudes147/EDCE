@@ -1,6 +1,8 @@
 import type { Teacher } from "~/types/teacher"
 import { ref, computed } from 'vue'
 import { mockTeachers } from "~/data/mockData"
+import {getFullName} from '~/utils/getFullName'
+
 
 export const useTeacher = () => {
   const listTeachers = ref<Teacher[]>(mockTeachers)
@@ -67,6 +69,7 @@ export const useTeacher = () => {
     createTeacher,
     deleteTeacher,
     updateTeacher,
-    getTeacherById
+    getTeacherById,
+    getFullName
   }
 }

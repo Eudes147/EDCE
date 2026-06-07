@@ -1,6 +1,7 @@
 import type { Child } from '~/types/child'
 import { mockChildren, mockClasses } from '~/data/mockData'
 import { ref, computed } from 'vue'
+import {getFullName} from '~/utils/getFullName'
 
 export const useChildren = () => {
   const examClasses = ["CM2", "3e", "Tle"]
@@ -91,6 +92,7 @@ export const useChildren = () => {
     createChild,
     deleteChild,
     updateChild,
-    getChildById
+    getChildById,
+    getFullName
   }
 }

@@ -1,8 +1,13 @@
 export const getInitials=(name:string)=>{
 
   if(name){
-    const initials = name?.toUpperCase().trim().split(' ')[0] + name?.toUpperCase().trim().split(' ')[1] 
+    const initialsList = name?.toUpperCase().trim().split(' ')
 
+    const initials=initialsList.reduce((acc,initial)=>{
+
+      acc = (acc||"")+initial
+      return acc
+    },"" as String)
     return initials
   }
   return ''

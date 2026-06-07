@@ -11,14 +11,8 @@ import type {Seance, SeanceType} from '~/types/seance'
 
 import type {ParticipantSeance, ParticipantEventActivity} from '~/types/participant'
 
+import type{Note} from "~/types/test"
 
-export interface Note {
-  id: string;
-  childId: string;
-  testId: string;
-  note: number;
-  created_at: string;
-}
 
 export const mockChildren: Child[] = [
   {

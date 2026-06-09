@@ -1,8 +1,6 @@
 <template>
+  
   <div class="min-h-screen p-6 bg-background">
-    <!-- <template #header-title>
-      <span class="font-body text-body font-bold text-primary">Seances</span>
-    </template> -->
     <div class="max-w-4xl mx-auto">
 
       <div class="mb-8 px-2">
@@ -54,7 +52,7 @@
       <!-- Form Container -->
       <div class="bg-surface border border-outline-variant/20 rounded-xl shadow-sm overflow-hidden transition-all duration-500">
         <!-- Step 1: Basic Info -->
-        <div v-show="currentStep === 1" class="p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div v-show="currentStep == 1" class="p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <header class="mb-6">
             <h2 class="font-h2 text-h2 text-on-surface mb-2">Informations de la séance</h2>
             <p class="text-body-md text-on-surface-variant opacity-70">Définissez les détails logistiques de votre rencontre aujourd'hui.</p>
@@ -75,14 +73,6 @@
             <!-- Date & Type -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
-                <label class="text-label-md text-on-surface font-medium">Date</label>
-                <input
-                  v-model="form.date"
-                  type="date"
-                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none"
-                />
-              </div>
-              <div class="flex flex-col gap-2">
                 <label class="text-label-md text-on-surface font-medium">Type de séance</label>
                 <select
                   v-model="form.type"
@@ -100,28 +90,19 @@
                   v-model="form.classe"
                   class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none"
                 >
-                  <option value="Petit">Petit</option>
-                  <option value="Débutant">Débutant</option>
-                  <option value="Moyen">Moyen</option>
-                  <option value="JuniorA">JuniorA</option>
-                  <option value="JuniorB">JuniorB</option>
+                  <option value="Petit" key="Petit">Petit</option>
+                  <option value="Débutant" key="Débutant">Débutant</option>
+                  <option value="Moyen" key="Moyen">Moyen</option>
+                  <option value="JuniorA" key="JuniorA">JuniorA</option>
+                  <option value="JuniorB" key="JuniorB">JuniorB</option>
                 </select>
             </div>
-            <!-- Notes -->
-            <div class="flex flex-col gap-2">
-              <label class="text-label-md text-on-surface font-medium">Notes & Observations (Optionnel)</label>
-              <textarea
-                v-model="form.notes"
-                placeholder="Points clés abordés, incidents particuliers ou besoins de suivi..."
-                rows="4"
-                class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none resize-none"
-              ></textarea>
-            </div>
+            
           </div>
         </div>
 
         <!-- Step 2: Children Attendance -->
-        <div v-show="currentStep === 2" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-show="currentStep == 2" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <header class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h2 class="font-h2 text-h2 text-on-surface mb-2">Registre des présences</h2>
@@ -129,7 +110,7 @@
             </div>
             <div class="bg-surface-container-high px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/20">
               <Icon name="group" color="text-primary text-[18px]" />
-              <span class="text-label-md text-primary font-bold">{{ selectedCount }} / {{ children.length }} sélectionnés</span>
+              <span class="text-label-md text-primary font-bold">{{ selectedCount }} / {{ children?.length }} sélectionnés</span>
             </div>
           </header>
 
@@ -190,7 +171,7 @@
         </div>
 
         <!-- Step 3: Review -->
-        <div v-show="currentStep === 3" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-show="currentStep == 3" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <header class="mb-6">
             <h2 class="font-h2 text-h2 text-on-surface mb-2">Récapitulatif</h2>
             <p class="text-body-md text-on-surface-variant opacity-70">Vérifiez les détails avant de confirmer la création de la séance.</p>
@@ -206,7 +187,7 @@
               <div class="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
                 <p class="text-label-sm text-outline mb-1 uppercase tracking-wider font-medium">Date & Type & Classe</p>
                 <p class="text-body-md text-on-surface">
-                  <span>{{ formatDate(form.date) || '--' }}</span> •
+                  <span>{{ formatDate(form.date.toLocaleDateString()) || '--' }}</span> •
                   <span class="font-bold text-primary">{{ form.type }}</span>•
                   <span class="font-bold text-primary">{{ form.classe?.toUpperCase() }}</span>
                 </p>
@@ -217,19 +198,47 @@
               </div>
             </div>
 
-            <!-- Notes Card -->
-            <div class="bg-surface-container p-6 rounded-xl border border-outline-variant/20">
-              <p class="text-label-sm text-outline mb-2 uppercase tracking-wider font-medium">Notes administratives</p>
-              <p class="text-body-md text-on-surface italic opacity-80">
-                {{ form.notes || 'Aucune note saisie.' }}
-              </p>
+            <!-- Choice the supervisor -->
+             <h2 class="font-h2 text-h2 text-on-surface mb-2">Choisissez le superviseur</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[400px] overflow-y-auto pr-2">
+            <div
+              v-for="teacher in filteredTeachers"
+              :key="teacher.id"
+              @click="selectedSupervisor(teacher.id)"
+              :class="[
+                'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
+                teacher.selected ? 'bg-primary-container/10 border-primary shadow-sm' : 'bg-surface border-outline-variant/20 hover:bg-surface-container-high'
+              ]"
+            >
+              <!-- Avatar -->
+              <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-dim border border-outline-variant flex-shrink-0">
+                <img :src="teacher.avatar" :alt="teacher.first_name" class="w-full h-full object-cover" />
+              </div>
+
+              <!-- Supervisor Info -->
+              <div class="flex-1 min-w-0">
+                <p class="text-label-md text-on-surface truncate font-medium">{{ teacher.first_name.toUpperCase()+' '+teacher.last_name }}</p>
+              </div>
+
+              <!-- Checkbox -->
+              <div
+                :class="[
+                  'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
+                  teacher.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
+                ]"
+              >
+              
+                <Icon v-if="teacher.selected"  name="check" color="text-on-primary text-[16px]" />
+            
+              </div>
             </div>
+          </div>
 
             <!-- Info Banner -->
             <div class="bg-primary-container/5 p-6 rounded-xl border border-primary/10 flex items-start gap-4">
               <Icon name="info" color="text-primary mt-0.5" />
               <p class="text-body-sm text-on-surface-variant">
-                Une fois créée, cette séance sera ajoutée à l'historique et les statistiques d'assiduité seront mises à jour pour tous les enfants sélectionnés.
+                Une fois créée, cette séance sera ajoutée à l'historique et vue par l'administrateur de l'EDCE.
               </p>
             </div>
           </div>
@@ -284,10 +293,10 @@
           </div>
           <h3 class="font-h3 text-h3 text-on-surface mb-2">Séance Créée !</h3>
           <p class="text-body-md text-on-surface-variant mb-6">
-            Le registre a été mis à jour avec succès. Vous allez être redirigé vers le dashboard.
+            Le registre a été mis à jour avec succès.
           </p>
           <button
-            @click="() => navigateTo('/')"
+            @click="() => navigateTo('/children')"
             class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-md hover:opacity-90 transition-all"
           >
             Terminer
@@ -299,8 +308,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+import { definePageMeta } from '#imports'
 import { useRouter } from 'vue-router'
+import { useChildren } from '~/composables/useChild'
+import { useTeacher } from '~/composables/useTeacher'
+import { useSeance } from "~/composables/useSeance"
+import type { ClasseType } from '~/types/classe'
+import type { SeanceType } from '~/types/seance'
+import { useToast } from '~/composables/useToast'
+
+
+
+const toast=useToast()
+
+// COmposables
+const {childrenPerClass}=useChildren()
+const {listTeachers}=useTeacher()
+const {createSeance, listSeances}=useSeance()
+
 
 // Router
 const router = useRouter()
@@ -315,15 +341,23 @@ const currentStep = ref(1)
 const isSubmitting = ref(false)
 const showSuccessModal = ref(false)
 const searchTerm = ref('')
+const searchSupervisor= ref('')
+
+
+const type=ref<SeanceType>('NORMAL')
+const classe=ref<ClasseType>('Petit')
+
 
 // Form Data
 const form = ref({
   title: '',
-  date: new Date().toLocaleDateString(),
-  type: 'NORMAL',
-  notes: '',
-  classe: 'Petit'
+  date: new Date(),
+  type: type.value,
+  classe: classe.value,
+  authorId: 'teacher-001',
+  supervisorId: ''
 })
+
 
 // Steps
 const steps = [
@@ -333,14 +367,27 @@ const steps = [
 ]
 
 // Children Data
-const children = ref(
-  Array.from({ length: 45 }, (_, i) => ({
-    id: i + 1,
-    name: ['Jean Dupont', 'Marie Curie', 'Thomas Edison', 'Léa Martin', 'Arthur Rimbaud', 'Sophie Germain', 'Gabriel Faure', 'Chloé Leroy'][i % 8] + ' ' + (Math.floor(i / 8) + 1),
-    avatar: `https://avatar.iran.liara.run/public/${((i % 50) + 1)}`,
-    selected: false
-  }))
+const children =ref(
+   childrenPerClass.value[form.value.classe]?.map(childPerClass=>{
+      return {
+        ...childPerClass,
+        avatar: "",
+        selected: false
+      }
+    })
 )
+
+// Supervisor
+const teachers=ref(
+  listTeachers.value.
+  filter(teacher=>teacher.id!==form.value.authorId)?.map(teacher=>{
+    return {
+      ...teacher,
+      avatar: '',
+      selected: false
+    }
+  }))
+
 
 const formatDate = (dateStr: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
@@ -349,24 +396,38 @@ const formatDate = (dateStr: string) => {
 // Computed
 const filteredChildren = computed(() => {
   if (!searchTerm.value) return children.value
-  return children.value.filter(child => child.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+  return children.value?.filter(child => child.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+})
+const filteredTeachers = computed(() => {
+  if (!searchSupervisor.value) return teachers.value
+  return teachers.value?.filter(teacher => `${teacher.first_name +' '+teacher.last_name}`.toLowerCase().includes(searchSupervisor.value.toLowerCase()))
+})
+const selectedSupervisor=computed(()=>{
+  return (id: string)=>{
+    teachers.value.forEach(teacher=>teacher.selected=false)
+    const supervisor=teachers.value.find(teacher=>teacher.id==id)
+    if(supervisor) supervisor.selected = !supervisor.selected
+  }
 })
 
+
 const selectedCount = computed(() => {
-  return children.value.filter(c => c.selected).length
+  return children.value?.filter(c => c.selected).length
 })
 
 // Methods
-const toggleChild = (id: number) => {
-  const child = children.value.find(c => c.id === id)
+const toggleChild = (id: string) => {
+  const child = children.value?.find(c => c.id === id)
   if (child) {
     child.selected = !child.selected
+    
   }
 }
 
 const toggleSelectAll = () => {
-  const allSelected = children.value.every(c => c.selected)
-  children.value.forEach(c => (c.selected = !allSelected))
+  const allSelected = children.value?.every(c => c.selected)
+  children.value?.forEach(c => (c.selected = !allSelected))
+  console.log(children.value)
 }
 
 const goToStep = (step: number) => {
@@ -390,7 +451,7 @@ const prevStep = () => {
 const validateStep = (step: number): boolean => {
   if (step === 1) {
     if (!form.value.title.trim()) {
-      alert('Veuillez donner un titre à la séance')
+      toast.info('Veuillez donner un titre à la séance')
       return false
     }
     if (!form.value.date) {
@@ -400,7 +461,7 @@ const validateStep = (step: number): boolean => {
   }
   if (step === 2) {
     if (selectedCount.value === 0) {
-      alert('Veuillez sélectionner au moins un enfant')
+      toast.info('Veuillez sélectionner au moins un enfant')
       return false
     }
   }
@@ -409,9 +470,20 @@ const validateStep = (step: number): boolean => {
 
 const handleSubmit = async () => {
   isSubmitting.value = true
-
+  const supervisor=teachers.value.find(teacher=>teacher.selected)
+  if(supervisor){
+    form.value.supervisorId =supervisor.id
+  }
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500))
+
+  // Create seance
+  // get last id:
+  const last_idSeance= listSeances.value?.splice(-1).map(seance=>{return seance?.id} )
+  const last_id=last_idSeance.toString().split('-')[1]
+  console.log(form)
+  createSeance({id: 'seance-'+(Number(last_id)+1).toString().padStart(3,'0'), ...form.value, created_at: '2026-08-06'})
+
 
   isSubmitting.value = false
   showSuccessModal.value = true
@@ -419,7 +491,7 @@ const handleSubmit = async () => {
 
 const handleCancel = () => {
   if (confirm('Voulez-vous vraiment annuler ? Toutes les données saisies seront perdues.')) {
-    router.push('/')
+    router.push('/seances/teacher')
   }
 }
 

@@ -1,6 +1,6 @@
-export const getAgeByBirthDate = (birthDate: string): number => {
+export const getAgeByBirthDate = (birthDate: Date): number => {
   const today = new Date();
-  const birth = new Date(birthDate);
+  const birth = birthDate;
   let age = today.getFullYear() - birth.getFullYear();
   const monthDifference = today.getMonth() - birth.getMonth();
 

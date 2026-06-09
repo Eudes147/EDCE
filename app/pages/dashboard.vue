@@ -1,24 +1,16 @@
 <template>
   <div v-if="pending">
-    Chargement des données du dashboard....
+    <Loader name="du Tableau de Bord" />
   </div>
   <div v-else-if="error">{{error.message}}</div>
   <main v-else-if="stats" ref="desktopMain" class="hidden md:flex flex-1 flex-col min-w-0 h-full bg-background overflow-hidden">
-    <!-- <template #header-title>
-      <span class="font-body text-body font-bold text-primary">Dashboard</span>
-    </template> -->
+    
     <header class="flex justify-between items-center w-full px-margin-desktop py-sm h-16 bg-background border-b border-outline-variant">
       <div class="flex items-center gap-4">
         <h2 class="font-h2 text-h2 font-bold text-primary">Dashboard</h2>
       </div>
       <div class="flex items-center gap-lg">
-        <div class="relative w-64">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-            <Icon name="search" size="1.25rem" />
-          </span>
-          
-          <input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Rechercher..." type="text" />
-        </div>
+        
         <div class="flex items-center gap-4">
           <button class="text-on-surface-variant hover:text-primary transition-colors">
             <Icon size="1.5rem" name="notifications" />
@@ -27,25 +19,25 @@
             <Icon size="1.5rem" name="help" />
           </button>
           <div class="h-8 w-8 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
-            <img class="w-full h-full object-cover" data-alt="A clean, professional headshot of a young adult male administrator with a friendly expression. He is wearing a minimalist navy blue sweater against a soft, neutral grey background. The lighting is bright and even, reflecting a high-end corporate directory style with a warm white aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa-sp3VAUi9Z7l2sCVsRw0qNVq2clOdfAz-7V9pys0PfGvQWgaWI02XoT5g-Ekky4cJwzKb6Dpffixhy8yGh9O9V7BVEbdqnSYBK9ejPSEfl1tsYvrLHfdojpwSpBM3W2Vy49FKiwGYzjIs1yUYLQOpeApuctMR2JR0Pb6VYNR1nY63Gax5nmYIWDFe2ffH57a2k6YhupAKmHH9vc-xSzEu9coAM7IeU2Nb8yB7EAF6vwvoH9hCsqxGe5oGY3ss_x6e-B6btCrCSQ" />
+            <img class="w-full h-full object-cover" data-alt="Admin" src="" />
           </div>
         </div>
       </div>
     </header>
 
     <div class="flex-1 overflow-y-auto p-margin-desktop space-y-lg">
-      <div class="flex flex-wrap gap-md">
-        <button class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
+      <div class="relative flex flex-wrap gap-md">
+        <button @click="navigateTo('/teachers')" class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
           <Icon size="1.5rem" name="add_circle" />
           Voir la liste des moniteurs
         </button>
-        <button class="flex items-center gap-2 px-6 py-3 bg-primary-container text-white rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
-          <Icon size="1.5rem" name="quiz" />
+        <button @click="navigateTo('/tests')" class="flex items-center gap-2 px-6 py-3 bg-primary-container text-white rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
+          <Icon size="1.5rem" name="assignment" />
           Voir les tests
         </button>
-        <div class="relative w-full md:w-64">
-        <select v-model="filtreClasse" class="w-full pl-4 pr-10 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body text-on-surface ultra-minimal-shadow cursor-pointer" style="transform: translateY(0px); transition: transform 0.2s ease-out;">
-        <option v-for="classe in classeEDCE" :value="classe">{{classe}}</option>
+        <div class="absolute right-0 w-full md:w-64">
+        <select v-model="filtreClasse" class="w-full pl-4 pr-10 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-md appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body text-on-surface ultra-minimal-shadow cursor-pointer" style="transform: translateY(0px); transition: transform 0.2s ease-out;">
+        <option v-for="classe in classeEDCE" :key="classe" :value="classe">{{classe}}</option>
         </select>
         </div>
       </div>
@@ -54,51 +46,49 @@
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
           <p class="font-label-sm text-on-surface-variant mb-1">Enfants totals</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">{{childStatistics?.count || 0}}</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{(childStatistics?.rate || 0) * 100}}%</span>
+            <h3 class="font-h1 text-h1 text-primary">{{(childStatistics?.count || 0).toString().padStart(2,'0')}}</h3>
+            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{((childStatistics?.rate || 0) * 100).toFixed(2).toString().padStart(2,'0')}}%</span>
           </div>
           <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary w-[75%]"></div>
+            <div class="h-full bg-primary" :style="`width: ${(childStatistics?.rate || 0)*100}%`"></div>
           </div>
         </div>
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Séances crées ce mois</p>
+          <p class="font-label-sm text-on-surface-variant mb-1">Séances crées dans cette classe</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">48</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">Constant</span>
+            <h3 class="font-h1 text-h1 text-primary">{{ getStatsSeance.count }}</h3>
+            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{  (getStatsSeance.rate * 100).toFixed(2).toString().padStart(2,'0') }}%</span>
           </div>
           <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary w-[48%]"></div>
+            <div class="h-full bg-primary" :style="`width: ${(getStatsSeance?.rate || 0) * 100}%`"></div>
           </div>
         </div>
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
           <p class="font-label-sm text-on-surface-variant mb-1">Enseignants actifs</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">32</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">+4</span>
+            <h3 class="font-h1 text-h1 text-primary">{{ (teacherStatistics?.teachersAvailable || 0).toString().padStart(2, '0') }}</h3>
+            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{  (percentTeachers * 100).toFixed(2).toString().padStart(2, '0') }}%</span>
           </div>
           <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary w-[90%]"></div>
+            <div class="h-full bg-primary" :style="`width: ${(percentTeachers || 0) * 100}%`"></div>
           </div>
         </div>
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Nombre d'activités</p>
+          <p class="font-label-sm text-on-surface-variant mb-1">Nombre totals d'activités</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">06</h3>
-            <span class="text-xs font-bold text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Proch: Samedi</span>
+            <h3 class="font-h1 text-h1 text-primary">{{ totalStatistics?.totalLengthActivities || 0 }}</h3>
+            
           </div>
-          <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary w-[25%]"></div>
-          </div>
+          
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
-        <div class="glass-card p-lg flex justify-center items-center">
+        <div class="glass-card p-lg pb-0 flex flex-col justify-center items-start">
           <h4 class="font-h3 text-h3 mb-lg">Répartition par classe</h4>
-          <div class="flex items-end gap-4 h-48 px-2" style="height: stretch;">
+          <div class="flex items-end gap-4 h-48 px-2" style="height: stretch; width: 100%">
             <div v-for='classe in classeEDCE' :key='classe' class="flex-1 flex flex-col items-center gap-2">
-              <div class="w-full bg-primary/20 rounded-t-md hover:bg-primary transition-colors" style="height: 6rem"></div>
+              <div class="w-full bg-primary/20 rounded-t-md hover:bg-primary transition-colors" :style="`height: calc(24rem * ${childrenPerClassCount(classe)?.rate || 0})`"></div>
               <span class="font-label-sm text-on-surface-variant">{{classe}}</span>
             </div>      
           </div>
@@ -109,10 +99,10 @@
             <div v-for="classe in classeEDCE" :key="classe">
               <div class="flex justify-between mb-2">
                 <span class="font-label-md">{{classe}}</span>
-                <span class="font-label-md text-primary">92%</span>
+                <span class="font-label-md text-primary">{{ percentSuccessbyClasse(classe).toFixed(2).toString().padStart(2,'0') }}%</span>
               </div>
               <div class="h-2 bg-surface-container-high rounded-full">
-                <div class="h-full bg-secondary rounded-full" style="width: 92%"></div>
+                <div class="h-full bg-secondary rounded-full" :style="`width: ${percentSuccessbyClasse(classe)}%`"></div>
               </div>
             </div>
           </div>
@@ -136,21 +126,22 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-outline-variant">
-              <tr class="hover:bg-surface-container-lowest transition-colors group">
+              <tr v-for="childPerClass in  childrenPerClass(filtreClasse).slice(0,10)" :key="childPerClass?.id || 'no-found'" class="hover:bg-surface-container-lowest transition-colors group">
                 <td class="px-lg py-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">MK</div>
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{{ getFullName(childPerClass?.name).initials }}</div>
                     <div>
-                      <p class="font-label-md text-on-surface">Marc Kouassi</p>
-                      <p class="text-[11px] text-on-surface-variant">marc.k@email.com</p>
+                      <p class="font-label-md text-on-surface">{{getFullName(childPerClass?.name)?.name || '--'}}</p>
+                      <p class="text-[11px] text-on-surface-variant">Mail non défini</p>
                     </div>
                   </div>
                 </td>
-                <td class="px-lg py-4 font-body-sm">CM1 - Section A</td>
-                <td class="px-lg py-4 font-body-sm">12 Sept 2023</td>
+                <td class="px-lg py-4 font-body-sm">{{ childPerClass?.classe }}</td>
+                <td class="px-lg py-4 font-body-sm">{{ getAgeByBirthDate(childPerClass?.birth_date||new Date()) || 'Non défini'}}ans</td>
                 <td class="px-lg py-4">
-                  <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">Actif</span>
+                  <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">{{ childPerClass?.tel || 'Non défini' }}</span>
                 </td>
+                <!-- A revoir -->
                 <td class="px-lg py-4 text-right">
                   <div class="flex justify-end gap-2 transition-opacity">
                     <button class="text-on-surface-variant hover:text-primary"><Icon size="1.5rem" name="visibility" /></button>
@@ -169,45 +160,16 @@
         <div class="xl:col-span-1 glass-card flex flex-col">
           <div class="p-md border-b border-outline-variant flex justify-between items-center">
             <h4 class="font-label-md text-on-surface font-bold uppercase tracking-wider">Contacts Parents</h4>
-            <Icon size='1rem' color="h-4 w-4 text-on-surface-variant text-sm" name="more_vert" />
           </div>
           <div class="p-4 space-y-4">
-            <div class="flex items-center justify-between group">
+            <div v-for="parentInfo in listParentInfos" class="flex items-center justify-between group">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
                   <Icon color="h-5 w-5 text-primary text-lg" name="call" />
                 </div>
                 <div>
-                  <p class="font-label-sm">M. Kouassi</p>
-                  <p class="text-[10px] text-on-surface-variant">+225 07 00 00 00</p>
-                </div>
-              </div>
-              <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
-                <Icon color="h-4 w-4 text-sm" name="chat" />
-              </button>
-            </div>
-            <div class="flex items-center justify-between group border-t border-outline-variant/30 pt-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
-                  <Icon color="h-5 w-5 text-primary text-lg" name="call" />
-                </div>
-                <div>
-                  <p class="font-label-sm">Mme Diallo</p>
-                  <p class="text-[10px] text-on-surface-variant">+225 05 00 00 00</p>
-                </div>
-              </div>
-              <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
-                <Icon color="h-4 w-4 text-sm" name="chat" />
-              </button>
-            </div>
-            <div class="flex items-center justify-between group border-t border-outline-variant/30 pt-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
-                  <Icon color="h-5 w-5 text-primary text-lg" name="call" />
-                </div>
-                <div>
-                  <p class="font-label-sm">M. Traoré</p>
-                  <p class="text-[10px] text-on-surface-variant">+225 01 00 00 00</p>
+                  <p class="font-label-sm">{{ parentInfo.name }}</p>
+                  <p class="text-[10px] text-on-surface-variant">{{ parentInfo.tel }}</p>
                 </div>
               </div>
               <button class="p-4 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
@@ -222,26 +184,12 @@
             <h4 class="font-label-md text-on-surface font-bold uppercase tracking-wider">Délibération de fin d'année</h4>
           </div>
           <div class="p-lg">
-            <div class="space-y-md">
-              <div class="flex items-center gap-4">
-                <span class="w-6 font-h3 text-secondary">01</span>
+            <div v-for="(classementFinal, index) in classementsFinal.slice(0,3)" class="space-y-md">
+              <div class="flex items-center gap-4 my-3">
+                <span :class="['w-6 font-h3 ', (index==0 ? 'text-secondary' : 'text-on-surface-variant') ]" >{{ index+1 }}</span>
                 <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-lg border border-outline-variant">
-                  <span class="font-label-md">Sarah Diallo</span>
-                  <span class="font-bold text-primary">2,450 pts</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <span class="w-6 font-h3 text-on-surface-variant">02</span>
-                <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-lg border border-outline-variant">
-                  <span class="font-label-md">Marc Kouassi</span>
-                  <span class="font-bold text-primary">2,380 pts</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <span class="w-6 font-h3 text-on-surface-variant">03</span>
-                <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-lg border border-outline-variant">
-                  <span class="font-label-md">Esther Yao</span>
-                  <span class="font-bold text-primary">2,100 pts</span>
+                  <span class="font-label-md">{{ getNamebyId(classementFinal.childId) || 'Non défini' }}</span>
+                  <span class="font-bold text-primary">{{ classementFinal.moyGen }}</span>
                 </div>
               </div>
             </div>
@@ -418,19 +366,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref,computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useChildren } from '~/composables/useChild'
+import { useNote } from '~/composables/useNote'
+import { useSeance } from '~/composables/useSeance'
+import type { Child } from '~/types/child'
+import { getFullName } from '~/utils/getFullName'
+import { useDashboard } from '../composables/useDashboard'
 import { classes } from '../stores/child'
 import type { ClasseType } from '../types/classe'
-import { useDashboard } from '../composables/useDashboard'
-
+import {useRouter} from 'vue-router'
 
 const {stats, pending, error, refresh} =useDashboard()
 
+const router=useRouter()
+const navigateTo= (to:string)=>{
+  router.push(to)
+} 
+
+const childrenInfos= useChildren()
+
+const {getClassementFinal, getNamebyId, percentSuccessbyClasse} = useNote()
+
+const { groupSeanceperClasse, listSeances } = useSeance()
 
 
+// Glass Card Infos
 const classeEDCE = ref<ClasseType[]>(classes)
 
 const filtreClasse=ref<ClasseType>("Petit")
+
+
+const childrenPerClassCount=computed(()=>{ 
+  return (classe: ClasseType)=>{
+    return stats.value?.childrenStats.childrenPerClass.find(classeEDCE=>classeEDCE.classe === classe)
+  }
+})
+  
+
+
 
 const childStatistics = computed(() => {
   return stats.value?.childrenStats.childrenPerClass.find(
@@ -438,7 +412,46 @@ const childStatistics = computed(() => {
   )
 })
 
+const teacherStatistics = computed(() => {
+  return stats.value?.teachersStats
+})
 
+const totalStatistics = computed(() => {
+  return stats.value?.totalStats
+})
+
+const percentTeachers=computed(()=>{
+  return ((teacherStatistics.value?.teachersAvailable || 0) /  (totalStatistics.value?.totalLengthTeachers || 1))
+})
+
+
+// List Children
+
+const childrenPerClass= computed(()=>{
+  return (classe:ClasseType)=>{
+    return<Child[]> childrenInfos.childrenPerClass.value[classe]
+  }
+})
+
+const listParentInfos = computed(()=>{
+  return childrenInfos.listParentInfos.value(filtreClasse.value)
+})
+
+
+const classementsFinal=computed(()=>{
+  return getClassementFinal(filtreClasse.value)
+
+})
+
+// Seance
+const getSeance=computed(()=>{
+  return groupSeanceperClasse.value[filtreClasse.value]
+})
+
+const getStatsSeance=computed(()=>{
+  const count=getSeance.value?.length
+  return {count: count, rate: (count||0) / (listSeances.value?.length||1)}
+})
 
 definePageMeta({
   layout: 'dashboard',

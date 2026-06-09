@@ -11,7 +11,6 @@ export interface User {
   quarter?: string
   birth_date: Date
   created_at: string
-  photo?: ImageData
 }
 // Sexe
 export type Sexe = "MASCULIN" | "FEMININ"

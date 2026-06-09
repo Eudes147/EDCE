@@ -7,47 +7,7 @@
 <p class="font-body text-body text-on-surface-variant mt-1">Supervisez les inscriptions, les notes et les participations aux événements de vos enfants.</p>
 </div>
 </div>
-<!-- Dashboard Overview Stats -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-<div class="section-card p-4 flex items-center gap-4">
-<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-<Icon name="child_care" />
-</div>
-<div>
-<p class="font-caption text-caption text-outline">Total Enfants</p>
-<p class="font-h3 text-h3 font-bold">342</p>
-</div>
-</div>
-<div class="section-card p-4 flex items-center gap-4" style="transform: translateY(0px);">
-<div class="w-12 h-12 rounded-xl bg-secondary-container/10 text-secondary-container flex items-center justify-center">
-<Icon name="groups" />
-</div>
-<div>
-<p class="font-caption text-caption text-outline">Classes Actives</p>
-<p class="font-h3 text-h3 font-bold">12</p>
-</div>
-</div>
-<div class="section-card p-4 flex items-center gap-4" style="transform: translateY(0px);">
-<div class="w-12 h-12 rounded-xl bg-tertiary-container/10 text-tertiary-container flex items-center justify-center">
-<Icon name="star" />
 
-</div>
-<div>
-<p class="font-caption text-caption text-outline">Moyenne Générale</p>
-<p class="font-h3 text-h3 font-bold">15.4</p>
-</div>
-</div>
-<div class="section-card p-4 flex items-center gap-4">
-<div class="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center">
-<Icon name="event" />
-
-</div>
-<div>
-<p class="font-caption text-caption text-outline">Événements</p>
-<p class="font-h3 text-h3 font-bold">02</p>
-</div>
-</div>
-</div>
 <!-- 1. Children List Table -->
 <section class="section-card overflow-hidden" style="transform: translateY(0px);">
 <div class="p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -57,7 +17,6 @@
                     </h3>
 <div class="flex items-center gap-3">
 <select v-model="classeSelected" class="bg-surface-container-low border-none rounded-lg text-small px-4 py-2 focus:ring-primary">
-<option value="all">Toutes les classes</option>
 <option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">{{ child_classe }}</option>
 </select>
 </div>
@@ -73,13 +32,14 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-outline-variant/20">
-<tr class="hover:bg-surface-container-low transition-colors">
+<tr v-for="child in childrenPerClass[classeSelected]" 
+@click="attribute(child)" class="hover:bg-surface-container-low transition-colors">
 <td class="px-6 py-4 flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-small">JD</div>
-<span class="font-body text-body font-medium">Jean Dupont</span>
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-small">{{getFullName(child.name).initials}}</div>
+<span class="font-body text-body font-medium">{{ child.name }}</span>
 </td>
-<td class="px-6 py-4 text-body">Poussins</td>
-<td class="px-6 py-4 text-body">CE1</td>
+<td class="px-6 py-4 text-body">{{ child.classe }}</td>
+<td class="px-6 py-4 text-body">{{ child?.nivScolaire||'Non défini' }}</td>
 
 <td class="px-6 py-4 text-right space-x-2">
 <button class="text-outline hover:text-primary transition-colors"><Icon name="edit" color="text-[20px]"/>
@@ -87,23 +47,11 @@
 <button class="text-outline hover:text-error transition-colors"><Icon name="delete" color="text-[20px]"/></button>
 </td>
 </tr>
-<tr class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-secondary-container/10 text-secondary-container flex items-center justify-center font-bold text-small">ML</div>
-<span class="font-body text-body font-medium">Marie-Laure Koffi</span>
-</td>
-<td class="px-6 py-4 text-body">Cadets</td>
-<td class="px-6 py-4 text-body">CM2</td>
-<td class="px-6 py-4 text-right space-x-2">
-<button class="text-outline hover:text-primary transition-colors"><Icon name="edit" color="text-[20px]"/></button>
-<button class="text-outline hover:text-error transition-colors"><Icon name="delete" color="text-[20px]"/></button>
-</td>
-</tr>
 </tbody>
 </table>
 </div>
 <div class="p-4 border-t border-outline-variant/30 flex items-center justify-center">
-<button class="text-primary font-medium text-body hover:underline">Voir tous les enfants (342)</button>
+<button v-if="(childrenPerClass[classeSelected]?.length||0) > 3" class="text-primary font-medium text-body hover:underline">Voir tous les enfants ({{ childrenPerClass[classeSelected]?.length.toString().padStart(2,'0') }})</button>
 </div>
 </section>
 <!-- 2. Attribution de Notes & 5. Add New Child (Asymmetric Grid) -->
@@ -117,9 +65,8 @@
                         </h3>
 <div class="flex items-center gap-2">
 <span class="text-small text-outline">Test:</span>
-<select class="text-small bg-transparent border-none font-medium text-primary p-0 cursor-pointer focus:ring-0">
-<option>Verset du mois - Mars</option>
-<option>Histoire de Noé</option>
+<select v-model="testSelected" class="text-small bg-transparent border-none font-medium text-primary p-0 cursor-pointer focus:ring-0">
+<option v-for="test in getTestbyClasse(classeSelected)" :value="test.titleTest" :key="test.id">{{ test.titleTest }}</option>
 </select>
 </div>
 </div>
@@ -174,7 +121,7 @@
 <div>
 <label class="block font-caption text-caption text-outline mb-1.5">Classe EDCE</label>
 <select v-model="formChild.classe" class="w-full bg-surface-container-low border-none rounded-lg text-small px-4 py-2.5 focus:ring-primary">
-<option v-for="child_classe in child_classes" :key="child_classe.toLowerCase()" :value="child_classe.toLowerCase()">{{child_classe}}</option>
+<option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">{{child_classe}}</option>
 </select>
 </div>
 <div>
@@ -188,7 +135,8 @@
 </div>
 <div class="py-2">
 <button class="w-full border-2 border-dashed border-outline-variant hover:border-primary hover:text-primary text-outline rounded-lg py-3 flex flex-col items-center gap-1 transition-all" @click="activeParentModal=true" type="button">
-<Icon name="family_history" />
+  <p class="text-center"><Icon name="family_history" /></p>
+
 <span class="text-small font-medium">Associer des Parents</span>
 </button>
 </div>
@@ -309,22 +257,30 @@
 </div>
 </div>
 <div class="px-6 py-4 bg-surface-container-low flex justify-end gap-3">
-<button class="px-4 py-2 text-on-surface-variant font-medium text-small hover:bg-surface-variant rounded-lg transition-colors" @click="activeParentmodal=false">Annuler</button>
-<button class="px-6 py-2 bg-primary text-white font-semibold text-small rounded-lg shadow-md shadow-primary/10 transition-transform active:scale-95">Valider le parent</button>
+<button class="px-4 py-2 text-on-surface-variant font-medium text-small hover:bg-surface-variant rounded-lg transition-colors" @click="activeParentModal=false">Annuler</button>
+<button class="px-6 py-2 bg-primary text-white font-semibold text-small rounded-lg shadow-md shadow-primary/10 transition-transform active:scale-95" @click="activeParentModal=false">Valider le parent</button>
 </div>
 </div>
 </div>
 </template>
-<script setup>
+<script setup lang="ts">
+import { definePageMeta } from '#imports';
 definePageMeta({
   layout: 'dashboard',
 })
 import {ref} from 'vue'
 import { classes } from "~/stores/child";
+import {useChildren} from '~/composables/useChild'
+import { useTest } from '~/composables/useTest';
+import type { Classe, ClasseType } from '~/types/classe';
+import type { Child } from '~/types/child';
+import type { Test } from '~/types/test';
 
+const {childrenPerClass, getFullName}=useChildren()
+const { getTestbyClasse }=useTest()
 const activeParentModal=ref(false)
 const child_classes=ref(classes)
-const classeSelected=ref('all')
+const classeSelected=ref<ClasseType>('Petit')
 const formChild = ref({
   classe: 'Petit',
   name: '',
@@ -335,5 +291,12 @@ const formChild = ref({
   tel: '',
   telParent: '01xxxxxxxx',
 })
+
+const testSelected=ref(getTestbyClasse.value(classeSelected.value)[0])
+
+
+const attribute = (child: Child)=>{
+  return 
+}
 
 </script>

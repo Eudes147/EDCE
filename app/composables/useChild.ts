@@ -2,6 +2,7 @@ import type { Child } from '~/types/child'
 import { mockChildren, mockClasses } from '~/data/mockData'
 import { ref, computed } from 'vue'
 import {getFullName} from '~/utils/getFullName'
+import type { ClasseType } from '~/types/classe'
 
 export const useChildren = () => {
   const examClasses = ["CM2", "3e", "Tle"]
@@ -46,7 +47,7 @@ export const useChildren = () => {
   const childrenExamClass = computed<Record<string, Child[]>>(() => {
     // CORRECTION (2) : Ajout du return global pour le computed
     return examClasses.reduce((acc, classe) => {
-      const childbyClass = listChildren.value.filter(child => child.classe === classe)
+      const childbyClass = listChildren.value.filter(child => child.nivScolaire === classe)
       acc[classe] = childbyClass || []
       return acc
     }, {} as Record<string, Child[]>)
@@ -67,17 +68,19 @@ export const useChildren = () => {
   // Liste des fiches de contact des parents
   const listParentInfos = computed(() => {
     // CORRECTION (2) : Ajout du return global pour le computed
-    return listChildren.value.map(child => {
-      const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
-      
-      // EXIGENCE (4) : On garde le premier mot (ex: "HOUHONOU" pour "HOUHONOU Germain")
-      const parentName = child.name.trim().split(' ')[0]
-      
-      return { 
-        name: `${denomination} ${parentName}`, 
-        tel: child.telParent 
-      }
-    })
+    return (classe: ClasseType)=>{
+      return listChildren.value.filter(child=>child?.classe===classe).map(child => {
+        const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
+        
+        
+        const parentName = child.name.trim().split(' ')[0]
+        
+        return { 
+          name: `${denomination} ${parentName}`, 
+          tel: child.telParent 
+        }
+      })
+    }
   })
   
   return {

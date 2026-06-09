@@ -19,6 +19,7 @@
     "@vueuse/core": "^14.3.0",
     "@vueuse/motion": "^3.0.3",
     "chart.js": "^4.5.1",
+    "nodemailer": "^9.0.0",
     "nuxt": "^4.4.6",
     "nuxt-icon": "^1.0.0-beta.7",
     "pinia": "^3.0.4",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@iconify-json/material-symbols": "^1.2.76",
-    "@iconify-json/material-symbols-light": "^1.2.76"
+    "@iconify-json/material-symbols-light": "^1.2.76",
+    "@types/nodemailer": "^8.0.1"
   }
 }

@@ -30,6 +30,7 @@ export const useSeance = () => {
   const getSeancenbyAuthor = (authorId: string) => {
     return listSeances.value.filter(seance => seance.authorId === authorId)
   }
+  
 
   // --- COMPUTED PROPERTIES (CORRIGÉS) ---
 
@@ -79,6 +80,7 @@ export const useSeance = () => {
     groupSeanceperYear,
     groupSeanceperType,
     typeSeances,
+    listSeances,
     createSeance,
     deleteSeance,
     updateSeance,

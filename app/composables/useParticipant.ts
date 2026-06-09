@@ -1,19 +1,31 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // Tes imports initiaux (inchangés)
-import { mockSeance, mockParticipantSeance, mockActivityatEvent, mockParticipantEvent, mockActivities, mockChildren } from '~/data/mockData'
+import { mockSeance, mockParticipantSeance, mockActivityatEvent, mockParticipantEvent, mockActivities, mockChildren, mockTeachers } from '~/data/mockData'
 import type { ParticipantSeance, ParticipantEventActivity } from '~/types/participant'
 import type { Month } from '~/types/index'
 import type { Seance } from '~/types/seance'
 import type { Child } from '~/types/child'
 import type { EventType } from '~/types/activity'
 import {getFullName} from '~/utils/getFullName'
+import type { Teacher } from '~/types/teacher'
 
 
 export function useParticipantSeance() {
   const listSeances = ref(mockSeance)
   const listParticipantSeance = ref(mockParticipantSeance)
+  const listChildren=ref(mockChildren)
+  const listTeachers=ref(mockTeachers)
 
+  const getChildbySeanceId = (seanceId: string):Child[]=>{
+    const seances=listParticipantSeance.value.filter(participantSeance=>participantSeance.seanceId==seanceId)
+    let children: Child[]=[]
+    seances.forEach(seance=>{
+      let child=listChildren.value.find(child=>child.id==seance.childId)
+      if(child) children.push(child)
+    })
+    return children
+  }
   // --- CRUD PARTICIPANT SEANCE ---
   const createParticipantSeance = (participantSeance: ParticipantSeance) => {
     if (participantSeance.id && participantSeance.childId && participantSeance.seanceId) {
@@ -80,6 +92,16 @@ export function useParticipantSeance() {
     })
   }
 
+  const getAuthorSupervisorbySeance=(seance: Seance)=>{
+    const author:Teacher|undefined=listTeachers.value.find(teacher=>teacher.id===seance.authorId)
+    const supervisor=listTeachers.value.find(teacher=>teacher.id===seance.supervisorId)
+    return {
+     
+        authorName: (author?.first_name|| '-')+" "+(author?.last_name||'-'),
+        supervisorName: (supervisor?.first_name|| '-')+" "+(supervisor?.last_name||'-')
+    }
+  }
+
   return {
     listParticipantSeance,
     getParticipantSeanceByChildId,
@@ -96,7 +118,9 @@ export function useParticipantSeance() {
     updateSeance,
     readSeance,
     readParticipantSeance,
-    getFullName
+    getFullName,
+    getChildbySeanceId,
+    getAuthorSupervisorbySeance
   }
 }
 
@@ -151,6 +175,6 @@ export function useParticipantEventActivity() {
     listActivities,
     listEventActivity,
     getChildrenByActivityTitle, // Expose la fonction connectée aux REFS réactives
-    getFullName
+    getFullName,
   }
 }

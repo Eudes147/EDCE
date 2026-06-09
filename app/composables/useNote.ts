@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import type { TypeTest } from '~/types/test'
+import type{Classe, ClasseType} from '~/types/classe'
 
 import type { Child, YearGroupedAverages, YearGroupedNotes } from '~/types/child'
 import { useChildren } from "~/composables/useChild"
@@ -53,8 +54,17 @@ export const useNote = () => {
     if (childMoyenne?.moyenne !== undefined) {
       return childMoyenne.moyenne >= moyenneCoupure
     }
-    return false
+    return false  
   }
+  const percentSuccessbyClasse=computed(()=>{
+    return (classe: ClasseType)=>{
+    // CORRECTION (1) : Lecture depuis le cache pré-calculé de SUNDAY_SCHOOL
+    const filtredChildren= listChildren.value.filter(child=>child.classe===classe)
+    return (filtredChildren.filter  (child=>getPassageDeliberation(child)).length / filtredChildren.length) * 100
+  }
+  })
+    
+    
 
   const getMoyGenperChildId = (child: Child) => {
     // CORRECTION (1) : Lecture depuis le cache pré-calculé
@@ -72,12 +82,12 @@ export const useNote = () => {
     return 0
   }
 
-  const getClassementFinal = () => {
+  const getClassementFinal = (classe: ClasseType) => {
     // CORRECTION (1) : Lecture du cache d'évaluation
     const currentYearMoyennes = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value] || []
     
     const finalClassement = currentYearMoyennes.map(moyennebyYear => {
-      const child = listChildren.value.find(c => c.id === moyennebyYear.childId)
+      const child = listChildren.value.find(c => c.id === moyennebyYear.childId && c.classe==classe)
       
       const moyenneFinal = child ? getMoyGenperChildId(child) : 0
       return {
@@ -89,12 +99,19 @@ export const useNote = () => {
     return finalClassement.sort((a, b) => Number(b.moyGen) - Number(a.moyGen))
   }
 
+  const getNamebyId= (id: string): string=>{
+    const child =listChildren.value.find(child=>child.id===id)
+    return child?.name || ''
+  }
+
   return {
     notesbyYear,
+    getNamebyId,
     getPassageDeliberation,
     getnotebychildperTestType,
     getMoyGenperChildId,
     getClassementFinal,
-    getNotesAndAverages
+    getNotesAndAverages,
+    percentSuccessbyClasse
   }
 }

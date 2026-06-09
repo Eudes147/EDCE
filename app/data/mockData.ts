@@ -13,6 +13,406 @@ import type {ParticipantSeance, ParticipantEventActivity} from '~/types/particip
 
 import type{Note} from "~/types/test"
 
+import type { User } from '~/types/auth'
+
+export const mockUsers: User[] = [
+  // ==========================================
+  // ADMINISTRATEUR UNIQUE (1)
+  // ==========================================
+  {
+    id: 'admin-001',
+    first_name: 'Jean-Pierre',
+    last_name: 'Kouassi',
+    email: 'jp.kouassi@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpasswordadmin',
+    tel: '+225 01 02 03 04',
+    sexe: 'MASCULIN',
+    status: 'admin',
+    quarter: 'Q1',
+    birth_date: new Date('1985-04-12'),
+    created_at: '2025-01-10T08:00:00Z'
+  },
+
+  // ==========================================
+  // TEACHERS (15)
+  // ==========================================
+  {
+    id: 'teacher-001',
+    first_name: 'Élisabeth',
+    last_name: "N'dri",
+    email: 'elisabeth.ndri@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 22 33 44',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    birth_date: new Date('1990-05-24'),
+    created_at: '2025-09-15T09:30:00Z'
+  },
+  {
+    id: 'teacher-002',
+    first_name: 'Abdoulaye',
+    last_name: 'Traoré',
+    email: 'abdoulaye.traore@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 55 66 77',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    quarter: 'Q2',
+    birth_date: new Date('1988-11-02'),
+    created_at: '2025-09-15T10:15:00Z'
+  },
+  {
+    id: 'teacher-003',
+    first_name: 'Marie',
+    last_name: 'Kouassi',
+    email: 'marie.kouassi@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 11 22', // Fallback car absent du mock initial
+    sexe: 'FEMININ',
+    status: 'teacher',
+    birth_date: new Date('1993-02-14'),
+    created_at: '2025-09-16T14:22:00Z'
+  },
+  {
+    id: 'teacher-004',
+    first_name: 'Olivier',
+    last_name: 'Gnan',
+    email: 'olivier.gnan@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 42 18 66',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    quarter: 'Q1',
+    birth_date: new Date('1985-08-30'),
+    created_at: '2025-09-16T15:00:00Z'
+  },
+  {
+    id: 'teacher-005',
+    first_name: 'Nadia',
+    last_name: 'Téa',
+    email: 'nadia.tea@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 34 67 88',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    birth_date: new Date('1995-07-19'),
+    created_at: '2025-09-17T08:45:00Z'
+  },
+  {
+    id: 'teacher-006',
+    first_name: 'Sébastien',
+    last_name: 'Kouakou',
+    email: 'sebastien.kouakou@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 29 15 47',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    quarter: 'Q3',
+    birth_date: new Date('1991-03-11'),
+    created_at: '2025-09-17T11:30:00Z'
+  },
+  {
+    id: 'teacher-007',
+    first_name: 'Claire',
+    last_name: 'Odjo',
+    email: 'claire.odjo@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 11 33',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    birth_date: new Date('1994-12-05'),
+    created_at: '2025-09-18T09:00:00Z'
+  },
+  {
+    id: 'teacher-008',
+    first_name: 'Franck',
+    last_name: 'Konan',
+    email: 'franck.konan@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 28 39 40',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    birth_date: new Date('1989-06-15'),
+    created_at: '2025-09-18T10:00:00Z'
+  },
+  {
+    id: 'teacher-009',
+    first_name: 'Aïssatou',
+    last_name: 'Bakayoko',
+    email: 'aissatou.bakayoko@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 62 18 90',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    quarter: 'Q4',
+    birth_date: new Date('1992-10-22'),
+    created_at: '2025-09-19T16:10:00Z'
+  },
+  {
+    id: 'teacher-010',
+    first_name: 'Marius',
+    last_name: 'Koffi',
+    email: 'marius.koffi@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 11 44',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    birth_date: new Date('1987-01-25'),
+    created_at: '2025-09-20T11:15:00Z'
+  },
+  {
+    id: 'teacher-011',
+    first_name: 'Rita',
+    last_name: 'Assié',
+    email: 'rita.assie@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 71 33 22',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    quarter: 'Q2',
+    birth_date: new Date('1996-09-08'),
+    created_at: '2025-09-21T14:35:00Z'
+  },
+  {
+    id: 'teacher-012',
+    first_name: 'Derek',
+    last_name: 'Zeu',
+    email: 'derek.zeu@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 55 11 88',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    birth_date: new Date('1990-04-17'),
+    created_at: '2025-09-22T08:20:00Z'
+  },
+  {
+    id: 'teacher-013',
+    first_name: 'Sophie',
+    last_name: 'Kouadio',
+    email: 'sophie.kouadio@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 18 44 77',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    quarter: 'Q1',
+    birth_date: new Date('1993-03-31'),
+    created_at: '2025-09-22T10:50:00Z'
+  },
+  {
+    id: 'teacher-014',
+    first_name: 'Gaël',
+    last_name: 'Tano',
+    email: 'gael.tano@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 41 55 33',
+    sexe: 'MASCULIN',
+    status: 'teacher',
+    birth_date: new Date('1986-07-14'),
+    created_at: '2025-09-23T09:05:00Z'
+  },
+  {
+    id: 'teacher-015',
+    first_name: 'Hélène',
+    last_name: 'Anoma',
+    email: 'helene.anoma@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 90 12 34',
+    sexe: 'FEMININ',
+    status: 'teacher',
+    quarter: 'Q3',
+    birth_date: new Date('1991-12-25'),
+    created_at: '2025-09-23T13:40:00Z'
+  },
+
+  // ==========================================
+  // MODERATORS (15)
+  // ==========================================
+  {
+    id: 'moderator-001',
+    first_name: 'Victor',
+    last_name: 'N’Guessan',
+    email: 'victor.nguessan@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 88 99 00',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    birth_date: new Date('1984-10-10'),
+    created_at: '2025-08-20T07:45:00Z'
+  },
+  {
+    id: 'moderator-002',
+    first_name: 'Carine',
+    last_name: 'Ahoua',
+    email: 'carine.ahoua@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 66 55 44',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1989-05-18'),
+    created_at: '2025-08-20T09:15:00Z'
+  },
+  {
+    id: 'moderator-003',
+    first_name: 'Yves',
+    last_name: 'Zoro',
+    email: 'yves.zoro@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 22 11',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    quarter: 'Q4',
+    birth_date: new Date('1987-03-22'),
+    created_at: '2025-08-21T11:00:00Z'
+  },
+  {
+    id: 'moderator-004',
+    first_name: 'Awa',
+    last_name: 'Tra',
+    email: 'awa.tra@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 35 68 92',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1992-08-14'),
+    created_at: '2025-08-22T14:30:00Z'
+  },
+  {
+    id: 'moderator-005',
+    first_name: 'Loïc',
+    last_name: 'Amani',
+    email: 'loic.amani@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 58 22 90',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    quarter: 'Q1',
+    birth_date: new Date('1990-11-30'),
+    created_at: '2025-08-23T10:10:00Z'
+  },
+  {
+    id: 'moderator-006',
+    first_name: 'Natacha',
+    last_name: 'Edoh',
+    email: 'natacha.edoh@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 22 33',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1994-01-17'),
+    created_at: '2025-08-24T08:50:00Z'
+  },
+  {
+    id: 'moderator-007',
+    first_name: 'Mickaël',
+    last_name: 'Koffi',
+    email: 'mickael.koffi@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 12 98 76',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    birth_date: new Date('1986-06-05'),
+    created_at: '2025-08-24T16:25:00Z'
+  },
+  {
+    id: 'moderator-008',
+    first_name: 'Sandrine',
+    last_name: 'Affi',
+    email: 'sandrine.affi@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 44 18 22',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1991-09-27'),
+    created_at: '2025-08-25T13:12:00Z'
+  },
+  {
+    id: 'moderator-009',
+    first_name: 'Koffi',
+    last_name: 'Abo',
+    email: 'koffi.abo@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 22 44',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    quarter: 'Q2',
+    birth_date: new Date('1983-12-12'),
+    created_at: '2025-08-26T09:40:00Z'
+  },
+  {
+    id: 'moderator-010',
+    first_name: 'Sanaa',
+    last_name: 'Béatrice',
+    email: 'sanaa.beatrice@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 79 32 14',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1995-04-03'),
+    created_at: '2025-08-27T10:55:00Z'
+  },
+  {
+    id: 'moderator-011',
+    first_name: 'Bruno',
+    last_name: 'Kon',
+    email: 'bruno.kon@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 24 16 83',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    birth_date: new Date('1988-07-21'),
+    created_at: '2025-08-28T14:20:00Z'
+  },
+  {
+    id: 'moderator-012',
+    first_name: 'Adja',
+    last_name: 'Kouamé',
+    email: 'adja.kouame@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 22 55',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    quarter: 'Q3',
+    birth_date: new Date('1993-10-10'),
+    created_at: '2025-08-29T11:15:00Z'
+  },
+  {
+    id: 'moderator-013',
+    first_name: 'Hugues',
+    last_name: 'Zan',
+    email: 'hugues.zan@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 81 54 29',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    birth_date: new Date('1985-02-28'),
+    created_at: '2025-08-30T08:45:00Z'
+  },
+  {
+    id: 'moderator-014',
+    first_name: 'Marie',
+    last_name: 'Ébrié',
+    email: 'marie.ebrie@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 65 43 21',
+    sexe: 'FEMININ',
+    status: 'moderator',
+    birth_date: new Date('1990-03-14'),
+    created_at: '2025-08-31T15:50:00Z'
+  },
+  {
+    id: 'moderator-015',
+    first_name: 'Mansour',
+    last_name: 'Amani',
+    email: 'mansour.amani@edce.ci',
+    password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
+    tel: '+225 07 00 22 66',
+    sexe: 'MASCULIN',
+    status: 'moderator',
+    quarter: 'Q4',
+    birth_date: new Date('1989-09-02'),
+    created_at: '2025-09-01T10:30:00Z'
+  }
+]
 
 export const mockChildren: Child[] = [
   {

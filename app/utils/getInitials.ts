@@ -5,7 +5,7 @@ export const getInitials=(name:string)=>{
 
     const initials=initialsList.reduce((acc,initial)=>{
 
-      acc = (acc||"")+initial
+      acc = (acc||"")+(initial[0] ||"")
       return acc
     },"" as String)
     return initials

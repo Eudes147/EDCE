@@ -13,7 +13,7 @@
           </div>
           <nav class="flex-1 overflow-y-auto custom-scrollbar">
           <div class="space-y-1">
-            <NuxtLink v-for="icon_link in linksDashboard" :key="icon_link.label" active-class="border-l-3 border-primary bg-surface-container text-primary font-bold px-4 py-3 flex items-center gap-3 transition-colors" class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high" :to="icon_link.to">
+            <NuxtLink v-for="icon_link in linksDashboard" :key="icon_link.label" active-class="border-l border-primary bg-surface-container text-primary font-bold px-4 py-3 flex items-center gap-3 transition-colors" class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high" :to="icon_link.to">
               <Icon :name="icon_link.icon" size="1.5rem" />
               <span class="font-body text-body">{{ icon_link.label }}</span>
             </NuxtLink>
@@ -73,7 +73,7 @@ const route=useRoute()
 
 const linksDashboard= [
   {to: '/dashboard', icon:'dashboard', label: 'Tableau de bord'},
-  {to: '/seances', icon:'calendar_today', label: 'Séances'},
+  {to: '/seances/teacher', icon:'calendar_today', label: 'Séances'},
   {to: '/classes', icon:'groups', label: 'Classes'},
   {to: '/children', icon:'child_care', label: 'Enfants'},
   {to: '/tests', icon:'assignment', label: 'Tests'},

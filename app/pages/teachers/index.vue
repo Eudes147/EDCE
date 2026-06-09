@@ -6,10 +6,6 @@
 <h2 class="font-h1 text-h1 text-on-surface">Gestion des Enseignants</h2>
 <p class="font-body text-body text-on-surface-variant mt-2">Gérez vos équipes pédagogiques et leur planning mensuel.</p>
 </div>
-<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-lg font-body text-body font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all" @click="activeTeacherModal=true">
-<Icon color="text-[20px]" name="add" />
-<span>Créer teacher</span>
-</button>
 </div>
 <!-- Teachers List Table -->
 <section class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
@@ -35,60 +31,19 @@
 <tr class="bg-surface-container-low/50">
 <th class="px-6 py-4 font-body text-body font-bold text-on-surface">Nom</th>
 <th class="px-6 py-4 font-body text-body font-bold text-on-surface">Prénom</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Profession</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Situation Mat.</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Status</th>
+<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Tel.</th>
+<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Disponibilité</th>
 <th class="px-6 py-4 font-body text-body font-bold text-on-surface text-right">Actions</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-outline-variant">
-<!-- Teacher Row 1 -->
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 font-body text-body text-on-surface font-semibold">Tshibamba</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Caleb</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Ingénieur Logiciel</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Marié</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-caption bg-primary-container/20 text-primary border border-primary/20">
-                                        Actif
-                                    </span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1.5 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
-<Icon name="more_vert" color="text-[20px]" />
 
-</button>
-</td>
-</tr>
-<!-- Teacher Row 2 -->
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 font-body text-body text-on-surface font-semibold">Mutombo</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Déborah</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Médecin</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Célibataire</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-caption bg-primary-container/20 text-primary border border-primary/20">
-                                        Actif
-                                    </span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1.5 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
-<Icon name="more_vert" color="text-[20px]" />
-
-</button>
-</td>
-</tr>
 <!-- Teacher Row 3 -->
-<tr class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 font-body text-body text-on-surface font-semibold">Kabamba</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Jonathan</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Avocat</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">Marié</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption font-caption bg-tertiary-container/10 text-tertiary border border-tertiary/20">
-                                        En Congé
-                                    </span>
-</td>
+<tr v-for="teacher in listTeachers.slice(0,3)" :key="teacher.id" class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-body text-body text-on-surface font-semibold">{{teacher.first_name.toUpperCase()}}</td>
+<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{teacher.last_name}}</td>
+<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{ teacher.tel }}</td>
+<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{teacher.isAvailable? 'Oui': 'Non'}}</td>
 <td class="px-6 py-4 text-right">
 <button class="p-1.5 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
 <Icon name="more_vert" color="text-[20px]" />
@@ -100,7 +55,7 @@
 </table>
 </div>
 <div class="px-6 py-3 border-t border-outline-variant flex justify-between items-center bg-surface-container-low/10">
-<span class="font-small text-small text-on-surface-variant">Affichage 1-3 de 15 teachers</span>
+<span class="font-small text-small text-on-surface-variant">Affichage 1-3 de {{ listTeachers.length }} teachers</span>
 <div class="flex gap-2">
 <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors">
 <Icon name="chevron_left" color="text-[18px]" />
@@ -264,6 +219,9 @@
 </template>
 <script setup lang="ts">
     import {ref,computed} from 'vue'
+    import {useTeacher} from '~/composables/useTeacher'
+
+    const {listTeachers}=useTeacher()
     definePageMeta({
         layout:'dashboard'
     })

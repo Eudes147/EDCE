@@ -1,7 +1,7 @@
-import { mockChildren, mockClasses, mockModerators, mockTests, mockTeachers } from '../../data/mockData'
-import type { ClasseType } from '../../types/classe'
+import { mockChildren, mockClasses, mockModerators, mockTests, mockTeachers, mockActivities } from '~/data/mockData'
+import type { ClasseType } from '~/types/classe'
 
-import { processNotesAndAverages } from '../../utils/processNotes' // Ta fonction pure exportée
+import { processNotesAndAverages } from '~/utils/processNotes' // Ta fonction pure exportée
 
 export default defineEventHandler(() => {
   // 1. STATS GLOBALES (Calculées au plus simple)
@@ -10,13 +10,17 @@ export default defineEventHandler(() => {
   const totalLengthModerators = mockModerators.length
   const totalLengthTeachers = mockTeachers.length
   const totalLengthTests = mockTests.length
+  const totalLengthActivities = mockActivities.length
+
+
 
   const totalStats = {
     totalLengthChildren,
     totalLengthClasses,
     totalLengthModerators,
     totalLengthTeachers,
-    totalLengthTests
+    totalLengthTests,
+    totalLengthActivities
   }
 
   const listStats = {

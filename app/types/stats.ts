@@ -16,6 +16,8 @@ export interface DashboardStats {
     totalLengthModerators: number
     totalLengthTeachers: number
     totalLengthTests: number
+    totalLengthSeances: number
+    totalLengthActivities: number
   }
   listStats: {
     listChildren: Child[]
@@ -23,6 +25,7 @@ export interface DashboardStats {
     listModerators: Moderator[]
     listTeachers: Teacher[]
     listTests: any[]
+    listSeances: Seance[]
   }
   childrenStats: {
     childrenPerClass: ClassStat[]

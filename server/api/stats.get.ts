@@ -4,6 +4,7 @@ import { childrenState } from './children/index.get'
 import { teachersState } from './teachers/index.get'
 import { moderatorsState } from './moderators/index.get'
 import { testsState } from './tests/index.get'
+import {state} from './activities/index.get'
 
 import { processNotesAndAverages } from '~/utils/processNotes' 
 
@@ -18,6 +19,8 @@ export default defineEventHandler(() => {
     const listTests = testsState?.tests || []
     const listNotes = notesState?.notes || []
     const listSeances = seancesState?.seances || []
+    const listActivities = state?.activities || []
+
 
     // 2. STATS GLOBALES TOTALEMENT DYNAMIQUES
     const totalStats = {
@@ -26,7 +29,8 @@ export default defineEventHandler(() => {
       totalLengthModerators: listModerators.length,
       totalLengthTeachers: listTeachers.length,
       totalLengthTests: listTests.length,
-      totalLengthSeances: listSeances.length
+      totalLengthSeances: listSeances.length,
+      totalLengthActivities: listActivities.length
     }
 
     // Renvoi des listes à jour au besoin (optionnel pour débogage frontend)

@@ -2,9 +2,15 @@
   <div class="min-h-screen bg-background text-on-surface font-body">
     <nav class="flex justify-between items-center px-margin-desktop py-md border-b border-outline-variant bg-background sticky top-0 z-50">
       <h1 class="font-h2 text-primary font-bold">EDCE</h1>
-      <button @click="navigateTo('/dashboard')" class="bg-primary text-white px-6 py-2 rounded-lg font-label-md hover:scale-95 transition-transform">
-        Accéder au Dashboard
+      <div class="flex gap-3">
+        <button @click="navigateTo('/register')" class="bg-primary text-white px-6 py-2 rounded-lg font-label-md hover:scale-95 transition-transform">
+        Créer un compte
       </button>
+      <button @click="navigateTo('/login')" class="bg-primary text-white px-6 py-2 rounded-lg font-label-md hover:scale-95 transition-transform">
+        Se Connecter
+      </button>
+      </div>
+      
     </nav>
 
     <header class="py-xl px-margin-desktop text-center">

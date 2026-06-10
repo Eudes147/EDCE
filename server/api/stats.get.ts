@@ -1,138 +1,131 @@
-import { mockChildren, mockClasses, mockModerators, mockTests, mockTeachers, mockActivities } from '~/data/mockData'
-import type { ClasseType } from '~/types/classe'
+import { seancesState } from './seances/index.get'
+import { notesState } from './notes/index.get'
+import { childrenState } from './children/index.get'
+import { teachersState } from './teachers/index.get'
+import { moderatorsState } from './moderators/index.get'
+import { testsState } from './tests/index.get'
 
-import { processNotesAndAverages } from '~/utils/processNotes' // Ta fonction pure exportée
+import { processNotesAndAverages } from '~/utils/processNotes' 
 
 export default defineEventHandler(() => {
-  // 1. STATS GLOBALES (Calculées au plus simple)
-  const totalLengthChildren = mockChildren.length
-  const totalLengthClasses = mockClasses.length
-  const totalLengthModerators = mockModerators.length
-  const totalLengthTeachers = mockTeachers.length
-  const totalLengthTests = mockTests.length
-  const totalLengthActivities = mockActivities.length
+  try {
+    // 1. RÉCUPÉRATION DES ÉTATS EN MÉMOIRE VIVE DU SERVEUR
+    // Sécurisation avec un repli sur tableau vide pour éviter tout crash au démarrage
+    const listChildren = childrenState?.children || []
+    const listClasses = childrenState?.classes || []
+    const listTeachers = teachersState?.teachers || []
+    const listModerators = moderatorsState?.moderators || []
+    const listTests = testsState?.tests || []
+    const listNotes = notesState?.notes || []
+    const listSeances = seancesState?.seances || []
 
+    // 2. STATS GLOBALES TOTALEMENT DYNAMIQUES
+    const totalStats = {
+      totalLengthChildren: listChildren.length,
+      totalLengthClasses: listClasses.length,
+      totalLengthModerators: listModerators.length,
+      totalLengthTeachers: listTeachers.length,
+      totalLengthTests: listTests.length,
+      totalLengthSeances: listSeances.length
+    }
 
+    // Renvoi des listes à jour au besoin (optionnel pour débogage frontend)
+    const listStats = {
+      listChildren,
+      listClasses,
+      listModerators,
+      listTeachers,
+      listTests,
+      listNotes,
+      listSeances
+    }
 
-  const totalStats = {
-    totalLengthChildren,
-    totalLengthClasses,
-    totalLengthModerators,
-    totalLengthTeachers,
-    totalLengthTests,
-    totalLengthActivities
-  }
+    // 3. STATS ENFANTS
+    let totalBoy = 0
+    let totalGirl = 0
 
-  const listStats = {
-    listChildren: mockChildren,
-    listClasses: mockClasses,
-    listModerators: mockModerators,
-    listTeachers: mockTeachers,
-    listTests: mockTests
-  }
+    const listParentInfos = listChildren.map(child => {
+      if (child.sexe === 'Masculin') totalBoy++
+      else if (child.sexe === 'Feminin') totalGirl++
 
-  // 2. STATS ENFANTS (Optimisation des boucles)
-  let totalBoy = 0
-  let totalGirl = 0
+      const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
+      const parentName = child.name.trim().split(' ')[0]
+      return { name: `${denomination} ${parentName}`, tel: child.telParent }
+    })
 
-  const listParentInfos = mockChildren.map(child => {
-    // Comptage des genres au passage pour éviter des .filter additionnels
-    if (child.sexe === 'Masculin') totalBoy++
-    else if (child.sexe === 'Feminin') totalGirl++
+    const childrenPerClass = listClasses.map(classe => {
+      const count = listChildren.filter(child => child.classe === classe.classe).length
+      const rate = listChildren.length > 0 ? Number((count / listChildren.length).toFixed(2)) : 0
+      return { classe: classe.classe, count, rate }
+    })
 
-    const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
-    // Règle conservée : Premier mot extrait pour le Nom de Famille
-    const parentName = child.name.trim().split(' ')[0]
-    return { name: `${denomination} ${parentName}`, tel: child.telParent }
-  })
+    const childrenStats = { childrenPerClass, totalBoy, totalGirl, listParentInfos }
 
-  const childrenPerClass = mockClasses.map(classe => {
-    const count = mockChildren.filter(child => child.classe === classe.classe).length
-    const rate = totalLengthChildren > 0 
-      ? Number((count / totalLengthChildren).toFixed(2)) 
-      : 0
-    return { classe: classe.classe, count, rate }
-  })
+    // 4. STATS ENSEIGNANTS
+    const teachersStats = listTeachers.reduce((acc, t) => {
+      if (t.isAvailable) acc.teachersAvailable++
+      else acc.teachersUnavailable++
+      if (t.sexe === 'Masculin') acc.teacherMasculin++
+      else if (t.sexe === 'Feminin') acc.teacherFeminin++
+      return acc
+    }, { teachersAvailable: 0, teachersUnavailable: 0, teacherMasculin: 0, teacherFeminin: 0 })
 
-  const childrenStats = { childrenPerClass, totalBoy, totalGirl, listParentInfos }
+    // 5. STATS MODÉRATEURS
+    const moderatorsStats = listModerators.reduce((acc, m) => {
+      if (m.isAvailable) acc.moderatorsAvailable++
+      else acc.moderatorsUnavailable++
+      if (m.sexe === 'Masculin') acc.moderatorMasculin++
+      else if (m.sexe === 'Feminin') acc.moderatorFeminin++
+      return acc
+    }, { moderatorsAvailable: 0, moderatorsUnavailable: 0, moderatorMasculin: 0, moderatorFeminin: 0 })
 
-  // 3. STATS ENSEIGNANTS (Optimisé : 1 seule boucle au lieu de 4)
-  const teachersStats = mockTeachers.reduce((acc, t) => {
-    if (t.isAvailable) acc.teachersAvailable++
-    else acc.teachersUnavailable++
+    // 6. STATS TESTS
+    const testsPerClass = listClasses.map(classe => {
+      const count = listTests.filter(test => test.classe === classe.classe).length
+      return { classe: classe.classe, count }
+    })
 
-    if (t.sexe === 'Masculin') acc.teacherMasculin++
-    else if (t.sexe === 'Feminin') acc.teacherFeminin++
+    const testsPerMonth: Record<string, number> = {}
+    const testEvaluation: any[] = []
+    const testConcours: any[] = []
+    const testSundaySchool: any[] = []
 
-    return acc
-  }, {
-    teachersAvailable: 0,
-    teachersUnavailable: 0,
-    teacherMasculin: 0,
-    teacherFeminin: 0
-  })
+    listTests.forEach(test => {
+      const month = new Date(test.created_at).toLocaleString('fr-FR', { month: 'long' }).toLowerCase()
+      testsPerMonth[month] = (testsPerMonth[month] || 0) + 1
+      if (test.typeTest === 'EVALUATION') testEvaluation.push(test)
+      else if (test.typeTest === 'CONCOURS') testConcours.push(test)
+      else if (test.typeTest === 'SUNDAY_SCHOOL') testSundaySchool.push(test)
+    })
 
-  // 4. STATS MODÉRATEURS (Optimisé : 1 seule boucle au lieu de 4)
-  const moderatorsStats = mockModerators.reduce((acc, m) => {
-    if (m.isAvailable) acc.moderatorsAvailable++
-    else acc.moderatorsUnavailable++
+    const testsStats = {
+      testsPerClass,
+      testsPerMonth,
+      testEvaluation: { liste: testEvaluation, count: testEvaluation.length },
+      testConcours: { liste: testConcours, count: testConcours.length },
+      testSundaySchool: { liste: testSundaySchool, count: testSundaySchool.length }
+    }
 
-    if (m.sexe === 'Masculin') acc.moderatorMasculin++
-    else if (m.sexe === 'Feminin') acc.moderatorFeminin++
+    // 7. STATS NOTES PROPULSÉES PAR LES GRILLES DE NOTES EN MÉMOIRE
+    const notesStats = {
+      evaluations: processNotesAndAverages('EVALUATION', listNotes, listTests),
+      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL', listNotes, listTests),
+      concours: processNotesAndAverages('CONCOURS', listNotes, listTests)
+    }
 
-    return acc
-  }, {
-    moderatorsAvailable: 0,
-    moderatorsUnavailable: 0,
-    moderatorMasculin: 0,
-    moderatorFeminin: 0
-  })
+    // Envoi de la grosse charge utile calculée à la volée
+    return {
+      totalStats,
+      listStats,
+      childrenStats,
+      teachersStats,
+      moderatorsStats,
+      testsStats,
+      notesStats
+    }
 
-  // 5. STATS TESTS (Optimisé : Groupements simultanés par type et par mois)
-  const testsPerClass = mockClasses.map(classe => {
-    const count = mockTests.filter(test => test.classe === classe.classe).length
-    return { classe: classe.classe, count }
-  })
-
-  const testsPerMonth: Record<string, number> = {}
-  const testEvaluation: typeof mockTests = []
-  const testConcours: typeof mockTests = []
-  const testSundaySchool: typeof mockTests = []
-
-  mockTests.forEach(test => {
-    // Calcul mois (minuscule pour rester raccord avec ton type Month)
-    const month = new Date(test.created_at).toLocaleString('fr-FR', { month: 'long' }).toLowerCase()
-    testsPerMonth[month] = (testsPerMonth[month] || 0) + 1
-
-    // Dispatching par type
-    if (test.typeTest === 'EVALUATION') testEvaluation.push(test)
-    else if (test.typeTest === 'CONCOURS') testConcours.push(test)
-    else if (test.typeTest === 'SUNDAY_SCHOOL') testSundaySchool.push(test)
-  })
-
-  const testsStats = {
-    testsPerClass,
-    testsPerMonth,
-    testEvaluation: { liste: testEvaluation, count: testEvaluation.length },
-    testConcours: { liste: testConcours, count: testConcours.length },
-    testSundaySchool: { liste: testSundaySchool, count: testSundaySchool.length }
-  }
-
-  // 6. STATS NOTES (Conserve l'appel à ta fonction pure)
-  const notesStats = {
-    evaluations: processNotesAndAverages('EVALUATION'),
-    sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL'),
-    concours: processNotesAndAverages('CONCOURS')
-  }
-
-  // Envoi de la réponse structurée au Dashboard frontend
-  return {
-    totalStats,
-    listStats,
-    childrenStats,
-    teachersStats,
-    moderatorsStats,
-    testsStats,
-    notesStats
+  } catch (error) {
+    console.error("Erreur critique dans le générateur de statistiques :", error)
+    throw createError({ statusCode: 500, statusMessage: 'Erreur serveur lors du calcul des tableaux de statistiques.' })
   }
 })

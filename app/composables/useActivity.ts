@@ -1,107 +1,137 @@
-import { ref, computed } from 'vue'
-import { mockActivities, mockActivityatEvent } from '~/data/mockData'
+import { ref } from 'vue'
+import { useToast } from '~/composables/useToast'
 import type { Activity, EventActivity } from '~/types/activity'
 
 export const useActivities = () => {
-  const listActivities = ref<Activity[]>(mockActivities) 
-  const listActivityAtEvent = ref<EventActivity[]>(mockActivityatEvent)
+  const toast = useToast()
+  const listActivities = ref<Activity[]>([])
+  const listActivityAtEvent = ref<EventActivity[]>([])
+  const listEvent = ref<any[]>([])
+  const groupActivityperYear = ref<Record<string, Activity[]>>({})
+  const groupActivityperEvent = ref<Record<string, Activity[]>>({})
+  const isLoading = ref(false)
 
-  // --- CRUD ACTIVITIES ---
-  const createActivity = (activity: Activity) => {
-    if (activity.id && activity.title) {
-      listActivities.value.push(activity)
+  // 🔄 1. Charger toutes les données depuis le serveur
+  const fetchAllData = async () => {
+    isLoading.value = true
+    try {
+      const [activitiesData, eventsData] = await Promise.all([
+        $fetch<Activity[]>('/api/activities'),
+        $fetch<any>('/api/events')
+      ])
+
+      listActivities.value = activitiesData || []
+      listActivityAtEvent.value = eventsData.listActivityAtEvent || []
+      listEvent.value = eventsData.listEvent || []
+      groupActivityperYear.value = eventsData.groupActivityperYear || {}
+      groupActivityperEvent.value = eventsData.groupActivityperEvent || {}
+    } catch (error) {
+      console.error("Erreur lors de la récupération des activités :", error)
+      toast.error('Erreur de chargement', 'Impossible de synchroniser le calendrier des événements.')
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const deleteActivity = (activityId: string) => {
-    listActivities.value = listActivities.value.filter(a => a.id !== activityId)
-    // Cascade : On supprime aussi les liaisons aux événements
-    listActivityAtEvent.value = listActivityAtEvent.value.filter(ea => ea.activityId !== activityId)
-  }
-
-  const updateActivity = (activityId: string, updatedActivity: Activity) => {
-    const index = listActivities.value.findIndex(a => a.id === activityId)
-    if (index !== -1) listActivities.value[index] = updatedActivity
-  }
-
-  const getActivityById = (activityId: string): Activity | undefined => {
-    return listActivities.value.find(a => a.id === activityId)
-  }
-
-  // --- CRUD ACTIVITY AT EVENT ---
-  const createActivityAtEvent = (activityAtEvent: EventActivity) => {
-    if (activityAtEvent.id && activityAtEvent.activityId && activityAtEvent.eventType) {
-      listActivityAtEvent.value.push(activityAtEvent)
+  // ➕ 2. Créer une activité globale (le modèle d'activité)
+  const createActivity = async (title: string) => {
+    try {
+      await $fetch('/api/activities', {
+        method: 'POST',
+        body: { title }
+      })
+      await fetchAllData()
+      toast.success('Activité créée', `L'activité "${title}" est disponible.`)
+    } catch (error) {
+      console.error(error)
+      toast.error('Erreur', 'Impossible de générer cette activité.')
     }
   }
 
-  const deleteActivityAtEvent = (activityAtEventId: string) => {
-    listActivityAtEvent.value = listActivityAtEvent.value.filter(ea => ea.id !== activityAtEventId)
+  // ❌ 3. Supprimer une activité globale
+  const deleteActivity = async (activityId: string) => {
+    try {
+      await $fetch(`/api/activities/${activityId}`, { method: 'DELETE' })
+      await fetchAllData()
+      toast.success('Activité supprimée', 'L\'activité a été retirée du catalogue global.')
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const updateActivityAtEvent = (activityAtEventId: string, updatedActivityAtEvent: EventActivity) => {
-    const index = listActivityAtEvent.value.findIndex(ea => ea.id === activityAtEventId)
-    if (index !== -1) listActivityAtEvent.value[index] = updatedActivityAtEvent
+  // 📝 4. Modifier une activité globale
+  const updateActivity = async (activityId: string, updatedTitle: string) => {
+    try {
+      await $fetch(`/api/activities/${activityId}`, {
+        method: 'PUT',
+        body: { title: updatedTitle }
+      })
+      await fetchAllData()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  // --- COMPUTED PROPERTIES (COMPLÈTEMENT CORRIGÉS) ---
+  // ➕ 5. Lier une activité à un événement annuel
+  const createActivityAtEvent = async (activityId: string, eventType: string, year: string) => {
+    try {
+      await $fetch('/api/events', {
+        method: 'POST',
+        body: { activityId, eventType, year }
+      })
+      await fetchAllData()
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
 
-  // 1. Liste unique et réactive des types d'événements
-  const listEvent = computed<string[]>(() => {
-    const categories = listActivityAtEvent.value.map(event => event.eventType)
-    return [...new Set(categories)] // Supprime les doublons instantanément
-  })
+  // ❌ 6. Supprimer une liaison spécifique entre une activité et un événement
+  const deleteActivityAtEvent = async (eventRelationId: string) => {
+    try {
+      await $fetch(`/api/events/${eventRelationId}`, { method: 'DELETE' })
+      await fetchAllData()
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
 
-  // 2. Regroupement des activités par Année
-  const groupActivityperYear = computed<Record<string, Activity[]>>(() => {
-    return listActivityAtEvent.value.reduce((acc, event) => {
-      // Trouver l'activité complète correspondante
-      const activityFound = listActivities.value.find(a => a.id === event.activityId)
-      
-      if (activityFound) {
-        // Si l'année n'existe pas encore dans l'objet, on l'initialise avec un tableau vide
-        if (!acc[event.year]) {
-          acc[event.year] = []
-        }
-        
-        // CORRECTION : Évite d'ajouter des doublons d'activité la même année
-        const alreadyExists = acc[event.year]?.some(a => a.id === activityFound.id)
-        if (!alreadyExists) {
-          acc[event.year]?.push(activityFound)
+  // ⚡ 7. Traitement par lot (Utile pour les interfaces de type Checkbox en Modale)
+  const syncEventActivity = async (activityId: string, eventType: string, year: string, isChecked: boolean) => {
+    isLoading.value = true
+    try {
+      if (isChecked) {
+        await createActivityAtEvent(activityId, eventType, year)
+      } else {
+        // Trouver la liaison existante correspondant à ce couple
+        const relation = listActivityAtEvent.value.find(
+          item => item.activityId === activityId && item.eventType === eventType && item.year === year
+        )
+        if (relation?.id) {
+          await deleteActivityAtEvent(relation.id)
         }
       }
-      return acc
-    }, {} as Record<string, Activity[]>)
-  })
-
-  // 3. Regroupement des activités par Type d'Événement (ex: "Arbre de noël")
-  const groupActivityperEvent = computed<Record<string, Activity[]>>(() => {
-    return listEvent.value.reduce((acc, eventType) => {
-      // Filtrer toutes les liaisons qui matchent ce type d'événement
-      const eventsFound = listActivityAtEvent.value.filter(ea => ea.eventType === eventType)
-      
-      // Récupérer l'objet Activity pour chaque liaison (en éliminant les undefined cachés)
-      const activities = eventsFound
-        .map(ea => listActivities.value.find(a => a.id === ea.activityId))
-        .filter((a): a is Activity => !!a) // Sécurité : Retire les activités introuvables
-
-      acc[eventType] = activities
-      return acc
-    }, {} as Record<string, Activity[]>)
-  })
+    } catch (err) {
+      toast.error('Erreur de synchronisation', 'La modification n\'a pas pu être sauvegardée.')
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   return {
     listActivities,
     listEvent,
     groupActivityperYear,
     groupActivityperEvent,
+    listActivityAtEvent,
+    isLoading,
+    fetchAllData,
     createActivity,
     deleteActivity,
     updateActivity,
-    getActivityById,
-    listActivityAtEvent,
     createActivityAtEvent,
     deleteActivityAtEvent,
-    updateActivityAtEvent,
+    syncEventActivity
   }
 }

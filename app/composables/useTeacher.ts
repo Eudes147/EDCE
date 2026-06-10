@@ -1,63 +1,66 @@
-import type { Teacher } from "~/types/teacher"
 import { ref, computed } from 'vue'
-import { mockTeachers } from "~/data/mockData"
-import {getFullName} from '~/utils/getFullName'
-
+import type { Teacher } from '~/types/teacher'
+import type { UserStatus } from '~/types/auth'
+import { getFullName } from '~/utils/getFullName'
 
 export const useTeacher = () => {
-  const listTeachers = ref<Teacher[]>(mockTeachers)
+  // Refs miroirs synchronisées par le serveur
+  const listTeachers = ref<Teacher[]>([])
+  const serverTeachersAvailable = ref<Teacher[]>([])
+  const serverTeachersUnavailable = ref<Teacher[]>([])
+  const serverTeacherMasculin = ref<Teacher[]>([])
+  const serverTeacherFeminin = ref<Teacher[]>([])
+  const isLoading = ref(false)
 
-  // --- CRUD TEACHERS (AJOUTÉ POUR LA COHÉRENCE) ---
-  const createTeacher = (teacher: Teacher) => {
-    if (teacher.id && teacher.first_name && teacher.last_name) {
-      listTeachers.value.push(teacher)
+  // --- ACTIONS RÉSEAU ---
+
+  // 🔄 Charger les enseignants (filtrés automatiquement par le serveur)
+  const fetchAllTeachers = async () => {
+    isLoading.value = true
+    try {
+      const data = await $fetch<any>('/api/teachers')
+      
+      listTeachers.value = data.listTeachers
+      serverTeachersAvailable.value = data.teachersAvailable
+      serverTeachersUnavailable.value = data.teachersUnavailable
+      serverTeacherMasculin.value = data.teacherMasculin
+      serverTeacherFeminin.value = data.teacherFeminin
+    } catch (error) {
+      console.error('Erreur lors du chargement des enseignants:', error)
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const deleteTeacher = (teacherId: string) => {
-    listTeachers.value = listTeachers.value.filter(t => t.id !== teacherId)
+  // 📝 Mettre à jour un enseignant (Données ou Changement de rôle Option B)
+  const updateTeacher = async (teacherId: string, payload: { status?: UserStatus; isAvailable?: boolean; quarter?: string; tel?: string }) => {
+    try {
+      await $fetch(`/api/teachers/${teacherId}`, {
+        method: 'PUT',
+        body: payload
+      })
+      await fetchAllTeachers() // Re-synchronise l'interface
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const updateTeacher = (teacherId: string, updatedTeacher: Teacher) => {
-    const index = listTeachers.value.findIndex(t => t.id === teacherId)
-    if (index !== -1) listTeachers.value[index] = updatedTeacher
-  }
-
+  // 🔍 Trouver un enseignant par son ID (Localement)
   const getTeacherById = (teacherId: string): Teacher | undefined => {
     return listTeachers.value.find(t => t.id === teacherId)
   }
 
-  // --- GETTERS ---
+  // --- GETTERS (CONSERVÉ) ---
   const getTelTeacher = (teacherId: string) => {
     const teacher = listTeachers.value.find(t => t.id === teacherId)
     return teacher?.tel
   }
 
-  // --- COMPUTED PROPERTIES (CORRIGÉS ET RÉACTIFS) ---
-
-  // 1. Enseignants disponibles
-  const teachersAvailable = computed<Teacher[]>(() => {
-    // CORRECTION : Utilisation de listTeachers.value et ajout du return
-    return listTeachers.value.filter(t => t.isAvailable)
-  })
-
-  // 2. Enseignants indisponibles
-  const teachersUnavailable = computed<Teacher[]>(() => {
-    // CORRECTION : Utilisation de listTeachers.value et ajout du return
-    return listTeachers.value.filter(t => !t.isAvailable)
-  })
-
-  // 3. Enseignants masculins
-  const teacherMasculin = computed<Teacher[]>(() => {
-    // CORRECTION : Utilisation de listTeachers.value et ajout du return
-    return listTeachers.value.filter(t => t.sexe === 'Masculin')
-  })
-
-  // 4. Enseignants féminins
-  const teacherFeminin = computed<Teacher[]>(() => {
-    // CORRECTION : Utilisation de listTeachers.value et ajout du return
-    return listTeachers.value.filter(t => t.sexe === 'Feminin')
-  })
+  // --- COMPUTED PROPERTIES CONSERVÉES ---
+  const teachersAvailable = computed(() => serverTeachersAvailable.value)
+  const teachersUnavailable = computed(() => serverTeachersUnavailable.value)
+  const teacherMasculin = computed(() => serverTeacherMasculin.value)
+  const teacherFeminin = computed(() => serverTeacherFeminin.value)
 
   return {
     listTeachers,
@@ -66,8 +69,8 @@ export const useTeacher = () => {
     getTelTeacher,
     teachersAvailable,
     teachersUnavailable,
-    createTeacher,
-    deleteTeacher,
+    isLoading,
+    fetchAllTeachers, // À appeler au montage de tes composants professeurs
     updateTeacher,
     getTeacherById,
     getFullName

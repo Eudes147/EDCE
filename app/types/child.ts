@@ -30,7 +30,7 @@ export interface childSubmit {
   name: string
   classe: ClasseType
   nivScolaire: string
-  birth_date: string
+  birth_date: Date
   tel?: string
   telParent?: string
   sexe: Sexe

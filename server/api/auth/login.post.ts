@@ -16,6 +16,8 @@ export default defineEventHandler(async (event) => {
     // 2. Recherche de l'utilisateur (insensible à la casse)
     const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
 
+    console.log(user)
+
     if (!user) {
       throw createError({
         statusCode: 401,
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
     // 5. Envoi de la réponse structurée attendue par ton store
     return {
       token: `mock-jwt-token-${user.id}-${user.status}-${Date.now()}`,
-      user: userWithoutPassword
+      user: user
     }
 
   } catch (error: any) {

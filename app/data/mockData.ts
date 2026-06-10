@@ -26,7 +26,7 @@ export const mockUsers: User[] = [
     email: 'jp.kouassi@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpasswordadmin',
     tel: '+225 01 02 03 04',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'admin',
     quarter: 'Q1',
     birth_date: new Date('1985-04-12'),
@@ -43,7 +43,7 @@ export const mockUsers: User[] = [
     email: 'elisabeth.ndri@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 22 33 44',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     birth_date: new Date('1990-05-24'),
     created_at: '2025-09-15T09:30:00Z'
@@ -55,7 +55,7 @@ export const mockUsers: User[] = [
     email: 'abdoulaye.traore@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 55 66 77',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     quarter: 'Q2',
     birth_date: new Date('1988-11-02'),
@@ -68,7 +68,7 @@ export const mockUsers: User[] = [
     email: 'marie.kouassi@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 11 22', // Fallback car absent du mock initial
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     birth_date: new Date('1993-02-14'),
     created_at: '2025-09-16T14:22:00Z'
@@ -80,7 +80,7 @@ export const mockUsers: User[] = [
     email: 'olivier.gnan@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 42 18 66',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     quarter: 'Q1',
     birth_date: new Date('1985-08-30'),
@@ -93,7 +93,7 @@ export const mockUsers: User[] = [
     email: 'nadia.tea@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 34 67 88',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     birth_date: new Date('1995-07-19'),
     created_at: '2025-09-17T08:45:00Z'
@@ -105,7 +105,7 @@ export const mockUsers: User[] = [
     email: 'sebastien.kouakou@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 29 15 47',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     quarter: 'Q3',
     birth_date: new Date('1991-03-11'),
@@ -118,7 +118,7 @@ export const mockUsers: User[] = [
     email: 'claire.odjo@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 11 33',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     birth_date: new Date('1994-12-05'),
     created_at: '2025-09-18T09:00:00Z'
@@ -130,7 +130,7 @@ export const mockUsers: User[] = [
     email: 'franck.konan@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 28 39 40',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     birth_date: new Date('1989-06-15'),
     created_at: '2025-09-18T10:00:00Z'
@@ -142,7 +142,7 @@ export const mockUsers: User[] = [
     email: 'aissatou.bakayoko@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 62 18 90',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     quarter: 'Q4',
     birth_date: new Date('1992-10-22'),
@@ -155,7 +155,7 @@ export const mockUsers: User[] = [
     email: 'marius.koffi@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 11 44',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     birth_date: new Date('1987-01-25'),
     created_at: '2025-09-20T11:15:00Z'
@@ -167,7 +167,7 @@ export const mockUsers: User[] = [
     email: 'rita.assie@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 71 33 22',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     quarter: 'Q2',
     birth_date: new Date('1996-09-08'),
@@ -180,7 +180,7 @@ export const mockUsers: User[] = [
     email: 'derek.zeu@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 55 11 88',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     birth_date: new Date('1990-04-17'),
     created_at: '2025-09-22T08:20:00Z'
@@ -192,7 +192,7 @@ export const mockUsers: User[] = [
     email: 'sophie.kouadio@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 18 44 77',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     quarter: 'Q1',
     birth_date: new Date('1993-03-31'),
@@ -205,7 +205,7 @@ export const mockUsers: User[] = [
     email: 'gael.tano@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 41 55 33',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'teacher',
     birth_date: new Date('1986-07-14'),
     created_at: '2025-09-23T09:05:00Z'
@@ -217,7 +217,7 @@ export const mockUsers: User[] = [
     email: 'helene.anoma@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 90 12 34',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'teacher',
     quarter: 'Q3',
     birth_date: new Date('1991-12-25'),
@@ -234,7 +234,7 @@ export const mockUsers: User[] = [
     email: 'victor.nguessan@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 88 99 00',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     birth_date: new Date('1984-10-10'),
     created_at: '2025-08-20T07:45:00Z'
@@ -246,7 +246,7 @@ export const mockUsers: User[] = [
     email: 'carine.ahoua@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 66 55 44',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1989-05-18'),
     created_at: '2025-08-20T09:15:00Z'
@@ -258,7 +258,7 @@ export const mockUsers: User[] = [
     email: 'yves.zoro@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 22 11',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     quarter: 'Q4',
     birth_date: new Date('1987-03-22'),
@@ -271,7 +271,7 @@ export const mockUsers: User[] = [
     email: 'awa.tra@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 35 68 92',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1992-08-14'),
     created_at: '2025-08-22T14:30:00Z'
@@ -283,7 +283,7 @@ export const mockUsers: User[] = [
     email: 'loic.amani@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 58 22 90',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     quarter: 'Q1',
     birth_date: new Date('1990-11-30'),
@@ -296,7 +296,7 @@ export const mockUsers: User[] = [
     email: 'natacha.edoh@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 22 33',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1994-01-17'),
     created_at: '2025-08-24T08:50:00Z'
@@ -308,7 +308,7 @@ export const mockUsers: User[] = [
     email: 'mickael.koffi@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 12 98 76',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     birth_date: new Date('1986-06-05'),
     created_at: '2025-08-24T16:25:00Z'
@@ -320,7 +320,7 @@ export const mockUsers: User[] = [
     email: 'sandrine.affi@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 44 18 22',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1991-09-27'),
     created_at: '2025-08-25T13:12:00Z'
@@ -332,7 +332,7 @@ export const mockUsers: User[] = [
     email: 'koffi.abo@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 22 44',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     quarter: 'Q2',
     birth_date: new Date('1983-12-12'),
@@ -345,7 +345,7 @@ export const mockUsers: User[] = [
     email: 'sanaa.beatrice@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 79 32 14',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1995-04-03'),
     created_at: '2025-08-27T10:55:00Z'
@@ -357,7 +357,7 @@ export const mockUsers: User[] = [
     email: 'bruno.kon@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 24 16 83',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     birth_date: new Date('1988-07-21'),
     created_at: '2025-08-28T14:20:00Z'
@@ -369,7 +369,7 @@ export const mockUsers: User[] = [
     email: 'adja.kouame@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 22 55',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     quarter: 'Q3',
     birth_date: new Date('1993-10-10'),
@@ -382,7 +382,7 @@ export const mockUsers: User[] = [
     email: 'hugues.zan@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 81 54 29',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     birth_date: new Date('1985-02-28'),
     created_at: '2025-08-30T08:45:00Z'
@@ -394,7 +394,7 @@ export const mockUsers: User[] = [
     email: 'marie.ebrie@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 65 43 21',
-    sexe: 'FEMININ',
+    sexe: 'Feminin',
     status: 'moderator',
     birth_date: new Date('1990-03-14'),
     created_at: '2025-08-31T15:50:00Z'
@@ -406,7 +406,7 @@ export const mockUsers: User[] = [
     email: 'mansour.amani@edce.ci',
     password: '$argon2id$v=19$m=65536,t=3,p=4$mockpassword',
     tel: '+225 07 00 22 66',
-    sexe: 'MASCULIN',
+    sexe: 'Masculin',
     status: 'moderator',
     quarter: 'Q4',
     birth_date: new Date('1989-09-02'),
@@ -1066,31 +1066,11 @@ export const mockNotes: Note[] = [
 ];
 
 // Activities
-
 export const mockActivities: Activity[] = [
   { "id": "activity-001", "title": "Interprétation Biblique" },
   { "id": "activity-002", "title": "Chorale des Anges" },
   { "id": "activity-003", "title": "Ballet des Petits" },
-  { "id": "activity-004", "title": "Génie Biblique" },
-  { "id": "activity-005", "title": "Génie Biblique" },
-  { "id": "activity-006", "title": "Génie Biblique" },
-  { "id": "activity-007", "title": "Génie Biblique" },
-  { "id": "activity-008", "title": "Génie Biblique" },
-  { "id": "activity-009", "title": "Génie Biblique" },
-  { "id": "activity-010", "title": "Génie Biblique" },
-  { "id": "activity-011", "title": "Génie Biblique" },
-  { "id": "activity-012", "title": "Génie Biblique" },
-  { "id": "activity-013", "title": "Génie Biblique" },
-  { "id": "activity-014", "title": "Génie Biblique" },
-  { "id": "activity-015", "title": "Génie Biblique" },
-  { "id": "activity-016", "title": "Génie Biblique" },
-  { "id": "activity-017", "title": "Génie Biblique" },
-  { "id": "activity-018", "title": "Génie Biblique" },
-  { "id": "activity-019", "title": "Génie Biblique" },
-  { "id": "activity-020", "title": "Génie Biblique" },
-  { "id": "activity-021", "title": "Génie Biblique" },
-  { "id": "activity-022", "title": "Génie Biblique" },
-  { "id": "activity-023", "title": "Génie Biblique" },
+  { "id": "activity-004", "title": "Génie Biblique" }, // L'unique référence conservée
   { "id": "activity-024", "title": "Théâtre des Juniors" },
   { "id": "activity-025", "title": "Récitation de Versets" },
   { "id": "activity-026", "title": "Chorale des Flambeaux" },
@@ -1120,32 +1100,32 @@ export const mockActivities: Activity[] = [
   { "id": "activity-050", "title": "Slam Spirituel" }
 ]
 
-export const mockActivityatEvent: EventActivity[]=[
+export const mockActivityatEvent: EventActivity[] = [
   { "id": "event-001", "activityId": "activity-003", "eventType": "Arbre de noël", "year": "2026" },
   { "id": "event-002", "activityId": "activity-001", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-003", "activityId": "activity-003", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-004", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-005", "activityId": "activity-005", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-006", "activityId": "activity-006", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-007", "activityId": "activity-007", "eventType": "Soirée récréative des enfants", "year": "2026" },
+  { "id": "event-005", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-006", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-007", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
   { "id": "event-008", "activityId": "activity-002", "eventType": "Arbre de noël", "year": "2026" },
   { "id": "event-009", "activityId": "activity-002", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-010", "activityId": "activity-008", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-011", "activityId": "activity-009", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-012", "activityId": "activity-010", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-013", "activityId": "activity-011", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-014", "activityId": "activity-012", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-015", "activityId": "activity-013", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-016", "activityId": "activity-014", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-017", "activityId": "activity-015", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-018", "activityId": "activity-016", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-019", "activityId": "activity-017", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-020", "activityId": "activity-018", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-021", "activityId": "activity-019", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-022", "activityId": "activity-020", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-023", "activityId": "activity-021", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-024", "activityId": "activity-022", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-025", "activityId": "activity-023", "eventType": "Soirée récréative des enfants", "year": "2026" },
+  { "id": "event-010", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-011", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-012", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-013", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-014", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-015", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-016", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-017", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-018", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-019", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-020", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-021", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-022", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-023", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
+  { "id": "event-024", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
+  { "id": "event-025", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
   { "id": "event-026", "activityId": "activity-024", "eventType": "Arbre de noël", "year": "2026" },
   { "id": "event-027", "activityId": "activity-025", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-028", "activityId": "activity-026", "eventType": "Arbre de noël", "year": "2026" },

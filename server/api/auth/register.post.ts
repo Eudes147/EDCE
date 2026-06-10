@@ -1,21 +1,27 @@
-import { mockUsers } from '~/data/mockData' 
+import { usersState } from '../teachers/index.get' // Importation du state persistant en mémoire
 import type { User } from '~/types/auth'
 
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-    const { first_name, last_name, email, password } = body
+    
+    // Harmonisation : Accepte le camelCase du front ou le snake_case
+    const first_name = body.firstName || body.first_name
+    const last_name = body.lastName || body.last_name
+    const email = body.email
+    const sexe = body.sexe
+    const password = body.password
 
-    // 1. Validation des champs obligatoires pour l'inscription
-    if (!first_name || !last_name || !email || !password) {
+    // 1. Validation des champs obligatoires (incluant désormais le sexe)
+    if (!first_name || !last_name || !email || !sexe || !password) {
       throw createError({
         statusCode: 400,
-        message: 'Tous les champs requis doivent être remplis (Nom, Prénom, E-mail, Mot de passe).',
+        message: 'Tous les champs requis doivent être remplis (Nom, Prénom, Genre, E-mail, Mot de passe).',
       })
     }
 
-    // 2. Vérification si l'adresse e-mail est déjà prise
-    const emailExists = mockUsers.some((u) => u.email.toLowerCase() === email.toLowerCase())
+    // 2. Vérification si l'adresse e-mail est déjà prise dans notre state global
+    const emailExists = usersState.users.some((u) => u.email.toLowerCase() === email.toLowerCase())
     if (emailExists) {
       throw createError({
         statusCode: 409,
@@ -23,24 +29,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 3. Construction du nouvel utilisateur en respectant l'interface stricte User
-    // Note: Vu qu'on s'enregistre, on lui attribue par défaut le rôle minimal "teacher"
+    // 3. Construction du nouvel utilisateur
     const newUser: User = {
-      id: `user-${Math.random().toString(36).substr(2, 9)}`, // Génération d'un ID unique aléatoire
+      id: `user-${Math.random().toString(36).substring(2, 11)}`,
       first_name,
       last_name,
       email: email.toLowerCase(),
-      password: password, // En vrai projet, il serait haché
-      tel: body.tel || '+225 00 00 00 00', // Valeur par défaut si non fournie dans l'écran
-      sexe: body.sexe || 'MASCULIN',       // Valeur par défaut si non fournie
-      status: 'teacher',                   // Statut initial obligatoire de type UserStatus
+      password: password, 
+      tel: body.tel || '+225 00 00 00 00',
+      sexe: sexe, // Reçoit directement 'Masculin' ou 'Feminin' envoyé par le select
+      status: 'teacher', // Rôle de départ par défaut
       quarter: body.quarter || undefined, 
-      birth_date: body.birth_date ? new Date(body.birth_date) : new Date('2000-01-01'), // Sécurisation obligatoire de l'objet Date !
+      birth_date: body.birth_date ? new Date(body.birth_date) : new Date('2000-01-01'), 
       created_at: new Date().toISOString()
     }
 
-    // 4. On pousse temporairement l'utilisateur dans notre tableau en mémoire
-    mockUsers.push(newUser)
+    // 4. On pousse dans le tableau centralisé (pour que useTeacher() le détecte au prochain fetch)
+    usersState.users.push(newUser)
 
     // 5. On extrait le mot de passe avant de renvoyer le résultat
     const { password: _, ...userWithoutPassword } = newUser

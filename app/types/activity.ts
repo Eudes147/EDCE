@@ -5,6 +5,10 @@ export interface Activity {
   title: string
 }
 
+export interface activitySubmit {
+  title: string
+}
+
 export interface EventActivity {
   id: string
   activityId: string

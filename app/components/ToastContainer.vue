@@ -33,8 +33,8 @@ const { toasts, remove: removeToast } = useToast()
 const typeClasses: Record<string, string> = {
   success: 'bg-green-600 text-white',
   error: 'bg-red-600 text-white',
-  warning: 'bg-accent text-white',
-  info: 'bg-gray-dark text-white',
+  warning: 'bg-secondary text-white',
+  info: 'bg-primary text-white',
 }
 
 const typeIcons: Record<string, string> = {

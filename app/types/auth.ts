@@ -1,4 +1,5 @@
 // Interface User
+import type{Sexe} from '~/types/index'
 export interface User {
   id: string
   first_name: string
@@ -13,7 +14,6 @@ export interface User {
   created_at: string
 }
 // Sexe
-export type Sexe = "MASCULIN" | "FEMININ"
 
 export type UserStatus="teacher" | "moderator" | "admin"
 
@@ -56,6 +56,7 @@ export interface RegisterData {
   first_name: string
   last_name: string
   email: string
+  sexe: Sexe
   password: string
 }
 

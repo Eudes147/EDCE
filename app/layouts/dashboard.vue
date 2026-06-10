@@ -13,7 +13,7 @@
           </div>
           <nav class="flex-1 overflow-y-auto custom-scrollbar">
           <div class="space-y-1">
-            <NuxtLink v-for="icon_link in linksDashboard" :key="icon_link.label" active-class="border-l border-primary bg-surface-container text-primary font-bold px-4 py-3 flex items-center gap-3 transition-colors" class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high" :to="icon_link.to">
+            <NuxtLink v-for="icon_link in filteredLinks" :key="icon_link.label" active-class="border-l border-primary bg-surface-container text-primary font-bold px-4 py-3 flex items-center gap-3 transition-colors" class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high" :to="icon_link.to">
               <Icon :name="icon_link.icon" size="1.5rem" />
               <span class="font-body text-body">{{ icon_link.label }}</span>
             </NuxtLink>
@@ -25,10 +25,10 @@
           <span class="font-body text-body">Notifications</span>
           </a>
           <div class="p-4 bg-surface-container-high rounded-xl mt-4 flex items-center gap-3">
-          <img alt="User Profile" class="w-8 h-8 rounded-full bg-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAx9cmH0QVrDAlGaAE8ky1tvHpelF9_63bajVuHkiQh7Bfn2lXq99Sb3BVLGwgjqv6RTGVnXwA76ZQByUU4Al_g8nUHVXjO5YKQd5dcGFRo4pOVEpy0VCdChxP1GaLBr4uXiq7sJOAYxcb89DUMLpYedqhSu7daQalD14_Ozeus1IWjOCcNF1AZ_-r9ja7fivFnfe7gB886W2cGfX6T_jMmilEDKfqNihuOwJ_s0AanrjBbDC0rCAJ0OzPzCNi5NKtmxgM5DyVQGaQ">
+          <img alt="User Profile" class="w-8 h-8 rounded-full bg-primary-container" src="">
           <div class="overflow-hidden">
-          <p class="font-body text-body font-bold truncate">Admin User</p>
-          <p class="font-caption text-caption opacity-60">Super Admin</p>
+          <p class="font-body text-body font-bold truncate">{{  authStore.fullName }}</p>
+          <p class="font-caption text-caption opacity-60">{{ (authStore?.userStatus||'teacher').toUpperCase()}}</p>
           </div>
           </div>
           </div>
@@ -53,41 +53,40 @@
       <main class="ml-[240px] pt-[56px] min-h-screen overflow-y-auto" style="width: stretch">
         <slot />
       </main>
-
-      <!-- <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant h-16 flex items-center justify-around px-margin-mobile z-50">
-        <NuxtLink active-class="text-primary border-l border-on-primary-fixed-variant" v-for="icon_link in linksDashboard" :key="icon_link.label" class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high" :to="icon_link.to">
-          <Icon :name="icon_link.icon" class="w-6 h-6" />
-          <span class="font-body-lg sm:text-body-sm md:text-body-md lg:text-body-lg">{{ icon_link.label }}</span>
-        </NuxtLink>
-      </nav> -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import {useAuthStore} from '~/stores/auth'
 const isMobileMenuOpen = ref(false)
 const isMobileMenuVisible = ref(false)
 const actualSection=ref("")
 const route=useRoute()
+const authStore=useAuthStore()
 
 
 const linksDashboard= [
-  {to: '/dashboard', icon:'dashboard', label: 'Tableau de bord'},
-  {to: '/seances/teacher', icon:'calendar_today', label: 'Séances'},
-  {to: '/classes', icon:'groups', label: 'Classes'},
-  {to: '/children', icon:'child_care', label: 'Enfants'},
-  {to: '/tests', icon:'assignment', label: 'Tests'},
-  {to: '/teachers', icon:'school', label: 'Moniteurs'},
-  {to: '/events', icon:'event', label: 'Evènement'},
-  {to: '/activities', icon:'history', label: 'Activités'},
-  {to: '/settings', icon:'settings', label: 'Paramètres'},
+  {to: '/dashboard', icon:'dashboard', label: 'Tableau de bord', isAdmin: authStore.isAdmin},
+  {to: '/seances/admin', icon:'calendar_today', label: 'Séances', isAdmin: authStore.isAdmin},
+  {to: '/seances/teacher', icon:'calendar_today', label: 'Séances', isAdmin:!authStore.isAdmin},
+
+  {to: '/classes', icon:'groups', label: 'Classes', isAdmin: authStore.isAdmin},
+  {to: '/children', icon:'child_care', label: 'Enfants', isAdmin: true},
+  {to: '/tests', icon:'assignment', label: 'Tests', isAdmin: true},
+  {to: '/teachers', icon:'school', label: 'Moniteurs', isAdmin: authStore.isAdmin},
+  {to: '/events', icon:'event', label: 'Evènement', isAdmin: true},
+  {to: '/activities', icon:'history', label: 'Activités', isAdmin: true},
+  {to: '/settings', icon:'settings', label: 'Paramètres', isAdmin: authStore.isAdmin},
 
 ]
 
+const filteredLinks=linksDashboard.filter(link=>link.isAdmin)
 
+console.log(authStore.user)
 // Nuxt va surveiller l'URL. Dès qu'elle change, il cherche le label correspondant.
 watchEffect(() => {
-  const currentLink = linksDashboard.find(link => link.to === route.path)
+  const currentLink = filteredLinks.find(link => link.to === route.path)
   if (currentLink) {
     actualSection.value = currentLink.label
   }

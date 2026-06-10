@@ -1,88 +1,106 @@
-import type { Child } from '~/types/child'
-import { mockChildren, mockClasses } from '~/data/mockData'
 import { ref, computed } from 'vue'
-import {getFullName} from '~/utils/getFullName'
+import type { Child } from '~/types/child'
 import type { ClasseType } from '~/types/classe'
+import { getFullName } from '~/utils/getFullName'
 
 export const useChildren = () => {
   const examClasses = ["CM2", "3e", "Tle"]
-  const listChildren = ref<Child[]>(mockChildren)
 
-  // CORRECTION (1) : Utilisation d'un computed pour garder la longueur synchronisée
-  const totalLengthChildren = computed(() => listChildren.value.length)
+  // Refs réactives miroirs de l'API
+  const listChildren = ref<Child[]>([])
+  const serverTotalLength = ref(0)
+  const serverChildrenPerClass = ref<Record<string, Child[]>>({})
+  const serverChildrenExamClass = ref<Record<string, Child[]>>({})
+  const serverTotalBoy = ref<Child[]>([])
+  const serverTotalGirl = ref<Child[]>([])
+  const isLoading = ref(false)
 
-  // --- CRUD CHILDREN ---
-  const createChild = (child: Child) => {
-    if (child.id && child.name) {
-      listChildren.value.push(child)
+  // --- ACTIONS RÉSEAU ---
+
+  // 🔄 Charger les données du serveur
+  const fetchAllChildren = async () => {
+    isLoading.value = true
+    try {
+      const data = await $fetch<any>('/api/children')
+      
+      listChildren.value = data.listChildren
+      serverTotalLength.value = data.totalLengthChildren
+      serverChildrenPerClass.value = data.childrenPerClass
+      serverChildrenExamClass.value = data.childrenExamClass
+      serverTotalBoy.value = data.totalBoy
+      serverTotalGirl.value = data.totalGirl
+    } catch (error) {
+      console.error('Erreur lors du chargement des enfants:', error)
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const deleteChild = (childId: string) => {
-    listChildren.value = listChildren.value.filter(child => child.id !== childId)
+  // ➕ Créer un enfant
+  const createChild = async (childPayload: Omit<Child, 'id' | 'created_at'>) => {
+    try {
+      await $fetch('/api/children', {
+        method: 'POST',
+        body: childPayload
+      })
+      await fetchAllChildren() // Re-synchronise l'état global
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const updateChild = (childId: string, updatedChild: Child) => {
-    const index = listChildren.value.findIndex(child => child.id === childId)
-    if (index !== -1) listChildren.value[index] = updatedChild
+  // ❌ Supprimer un enfant
+  const deleteChild = async (childId: string) => {
+    try {
+      await $fetch(`/api/children/${childId}`, { method: 'DELETE' })
+      await fetchAllChildren()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
+  // 📝 Modifier un enfant
+  const updateChild = async (childId: string, updatedChild: Partial<Child>) => {
+    try {
+      await $fetch(`/api/children/${childId}`, {
+        method: 'PUT',
+        body: updatedChild
+      })
+      await fetchAllChildren()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // 🔍 Trouver un enfant par son ID (localement depuis la liste chargée)
   const getChildById = (childId: string): Child | undefined => {
     return listChildren.value.find(child => child.id === childId)
   }
 
-  // --- COMPUTED PROPERTIES ---
-
-  // Regroupement des enfants par classe (mockClasses)
-  const childrenPerClass = computed<Record<string, Child[]>>(() => {
-    // CORRECTION (2) : Ajout du return global pour le computed
-    return mockClasses.reduce((acc, classe) => {
-      const childbyClass = listChildren.value.filter(child => child.classe === classe.classe)
-      acc[classe.classe] = childbyClass || []
-      return acc
-    }, {} as Record<string, Child[]>)
-  })
-
-  // Regroupement uniquement pour les classes d'examen
-  const childrenExamClass = computed<Record<string, Child[]>>(() => {
-    // CORRECTION (2) : Ajout du return global pour le computed
-    return examClasses.reduce((acc, classe) => {
-      const childbyClass = listChildren.value.filter(child => child.nivScolaire === classe)
-      acc[classe] = childbyClass || []
-      return acc
-    }, {} as Record<string, Child[]>)
-  })
+  // --- COMPUTED PROPERTIES CONSERVÉES ---
   
-  // EXIGENCE (3) : Renvoie le TABLEAU filtré des garçons
-  const totalBoy = computed<Child[]>(() => {
-    // CORRECTION (2) : Ajout du return manquant
-    return listChildren.value.filter(child => child.sexe === 'Masculin')
-  })
-  
-  // EXIGENCE (3) : Renvoie le TABLEAU filtré des filles
-  const totalGirl = computed<Child[]>(() => {
-    // CORRECTION (2) : Ajout du return manquant
-    return listChildren.value.filter(child => child.sexe === 'Feminin')
-  })
+  const totalLengthChildren = computed(() => serverTotalLength.value)
+  const childrenPerClass = computed(() => serverChildrenPerClass.value)
+  const childrenExamClass = computed(() => serverChildrenExamClass.value)
+  const totalBoy = computed(() => serverTotalBoy.value)
+  const totalGirl = computed(() => serverTotalGirl.value)
 
-  // Liste des fiches de contact des parents
+  // La fonction de fermeture (closure) pour les parents reste calculée dynamiquement à la demande
   const listParentInfos = computed(() => {
-    // CORRECTION (2) : Ajout du return global pour le computed
-    return (classe: ClasseType)=>{
-      return listChildren.value.filter(child=>child?.classe===classe).map(child => {
-        const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
-        
-        
-        const parentName = child.name.trim().split(' ')[0]
-        
-        return { 
-          name: `${denomination} ${parentName}`, 
-          tel: child.telParent 
-        }
-      })
+    return (classe: ClasseType) => {
+      return listChildren.value
+        .filter(child => child?.classe === classe)
+        .map(child => {
+          const denomination = child.sexeParent === 'Masculin' ? 'Mr' : 'Mme'
+          const parentName = child.name.trim().split(' ')[0]
+          return { 
+            name: `${denomination} ${parentName}`, 
+            tel: child.telParent 
+          }
+        })
     }
   })
-  
+
   return {
     listChildren,
     totalLengthChildren,
@@ -92,6 +110,8 @@ export const useChildren = () => {
     totalGirl, 
     listParentInfos,
     examClasses,
+    isLoading,
+    fetchAllChildren, // Nouvelle fonction requise pour initialiser la vue
     createChild,
     deleteChild,
     updateChild,

@@ -1,71 +1,84 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-// Tes imports initiaux (inchangés)
-import { mockSeance, mockParticipantSeance, mockActivityatEvent, mockParticipantEvent, mockActivities, mockChildren, mockTeachers } from '~/data/mockData'
 import type { ParticipantSeance, ParticipantEventActivity } from '~/types/participant'
 import type { Month } from '~/types/index'
 import type { Seance } from '~/types/seance'
 import type { Child } from '~/types/child'
 import type { EventType } from '~/types/activity'
-import {getFullName} from '~/utils/getFullName'
 import type { Teacher } from '~/types/teacher'
+import { getFullName } from '~/utils/getFullName'
 
-
+// ==========================================
+// 1. COMPOSABLE: PARTICIPANTS AUX SÉANCES
+// ==========================================
 export function useParticipantSeance() {
-  const listSeances = ref(mockSeance)
-  const listParticipantSeance = ref(mockParticipantSeance)
-  const listChildren=ref(mockChildren)
-  const listTeachers=ref(mockTeachers)
+  const listSeances = ref<Seance[]>([])
+  const listParticipantSeance = ref<ParticipantSeance[]>([])
+  const listChildren = ref<Child[]>([])
+  const listTeachers = ref<Teacher[]>([])
+  const isLoading = ref(false)
 
-  const getChildbySeanceId = (seanceId: string):Child[]=>{
-    const seances=listParticipantSeance.value.filter(participantSeance=>participantSeance.seanceId==seanceId)
-    let children: Child[]=[]
-    seances.forEach(seance=>{
-      let child=listChildren.value.find(child=>child.id==seance.childId)
-      if(child) children.push(child)
-    })
-    return children
-  }
-  // --- CRUD PARTICIPANT SEANCE ---
-  const createParticipantSeance = (participantSeance: ParticipantSeance) => {
-    if (participantSeance.id && participantSeance.childId && participantSeance.seanceId) {
-      listParticipantSeance.value.push(participantSeance)
+  // 🔄 Charger les données synchronisées depuis le serveur
+  const fetchAllSeanceData = async () => {
+    isLoading.value = true
+    try {
+      const data = await $fetch<any>('/api/participants/seances')
+      listSeances.value = data.listSeances
+      listParticipantSeance.value = data.listParticipantSeance
+      listChildren.value = data.listChildren
+      listTeachers.value = data.listTeachers
+    } catch (error) {
+      console.error('Erreur de chargement des participants de séance:', error)
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const deleteParticipantSeance = (participantSeanceId: string) => {
-    listParticipantSeance.value = listParticipantSeance.value.filter(p => p.id !== participantSeanceId)
+  // ➕ Ajouter un participant à une séance
+  const createParticipantSeance = async (participantSeance: ParticipantSeance) => {
+    try {
+      await $fetch('/api/participants/seances', { method: 'POST', body: participantSeance })
+      await fetchAllSeanceData()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const updateParticipantSeance = (participantSeance: ParticipantSeance) => {
-    const index = listParticipantSeance.value.findIndex(p => p.id === participantSeance.id)
-    if (index !== -1) listParticipantSeance.value[index] = participantSeance
+  // ❌ Supprimer un émargement
+  const deleteParticipantSeance = async (participantSeanceId: string) => {
+    try {
+      await $fetch(`/api/participants/seances?id=${participantSeanceId}`, { method: 'DELETE' })
+      await fetchAllSeanceData()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // 📝 Mettre à jour (ex: passer de présent à absent)
+  const updateParticipantSeance = async (participantSeance: ParticipantSeance) => {
+    try {
+      await $fetch('/api/participants/seances', { method: 'PUT', body: participantSeance })
+      await fetchAllSeanceData()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // --- FILTRES ET GETTERS LOCAUX ACTIFS POUR LES VUES ---
+  const getChildbySeanceId = (seanceId: string): Child[] => {
+    const seances = listParticipantSeance.value.filter(p => p.seanceId == seanceId)
+    let children: Child[] = []
+    seances.forEach(seance => {
+      let child = listChildren.value.find(c => c.id == seance.childId)
+      if (child) children.push(child)
+    })
+    return children
   }
 
   const readParticipantSeance = (participantSeanceId: string) => {
     return listParticipantSeance.value.find(p => p.id === participantSeanceId)
   }
 
-  // --- CRUD SEANCE ---
-  const createSeance = (seance: Seance) => {
-    if (seance.id && seance.type && seance.authorId) listSeances.value.push(seance)
-  }
-
-  const deleteSeance = (seanceId: string) => {
-    listSeances.value = listSeances.value.filter(s => s.id !== seanceId)
-  }
-
-  const updateSeance = (seance: Seance) => {
-    // CORRECTION : Utilisation de s.id pour trouver la bonne séance
-    const index = listSeances.value.findIndex(s => s.id === seance.id)
-    if (index !== -1) listSeances.value[index] = seance
-  }
-
-  const readSeance = (seanceId: string) => {
-    return listSeances.value.find(s => s.id === seanceId)
-  }
-
-  // --- GETTERS ---
   const getParticipantSeanceByChildId = (childId: string) => {
     return listParticipantSeance.value.filter(p => p.childId === childId)
   }
@@ -87,18 +100,16 @@ export function useParticipantSeance() {
   const getSeancebyMonth = (month: Month) => {
     return listSeances.value.filter(seance => {
       const seanceMonth = new Date(seance.created_at).toLocaleString('fr-FR', { month: 'long' })
-      // Sécurité : conversion en minuscule pour correspondre parfaitement à ton type Month
-      return seanceMonth.toLowerCase() === month
+      return seanceMonth.toLowerCase() === month.toLowerCase()
     })
   }
 
-  const getAuthorSupervisorbySeance=(seance: Seance)=>{
-    const author:Teacher|undefined=listTeachers.value.find(teacher=>teacher.id===seance.authorId)
-    const supervisor=listTeachers.value.find(teacher=>teacher.id===seance.supervisorId)
+  const getAuthorSupervisorbySeance = (seance: Seance) => {
+    const author = listTeachers.value.find(t => t.id === seance.authorId)
+    const supervisor = listTeachers.value.find(t => t.id === seance.supervisorId)
     return {
-     
-        authorName: (author?.first_name|| '-')+" "+(author?.last_name||'-'),
-        supervisorName: (supervisor?.first_name|| '-')+" "+(supervisor?.last_name||'-')
+      authorName: (author?.first_name || '-') + " " + (author?.last_name || '-'),
+      supervisorName: (supervisor?.first_name || '-') + " " + (supervisor?.last_name || '-')
     }
   }
 
@@ -113,47 +124,95 @@ export function useParticipantSeance() {
     deleteParticipantSeance,
     updateParticipantSeance,
     listSeances,
-    createSeance,
-    deleteSeance,
-    updateSeance,
-    readSeance,
     readParticipantSeance,
     getFullName,
     getChildbySeanceId,
-    getAuthorSupervisorbySeance
+    getAuthorSupervisorbySeance,
+    isLoading,
+    fetchAllSeanceData // Action réseau globale à appeler sur ton composant
   }
 }
+
 
 export function useParticipantEventActivity() {
   const router = useRouter()
   
-  const listActivities = ref(mockActivities)
-  const listParticipantEventActivity = ref(mockParticipantEvent)
-  const listEventActivity = ref(mockActivityatEvent) // Ta variable réactive principale
+  const listActivities = ref<any[]>([])
+  const listParticipantEventActivity = ref<ParticipantEventActivity[]>([])
+  const listEventActivity = ref<any[]>([])
+  const listChildren = ref<Child[]>([])
+  const isLoading = ref(false)
 
-  // CORRECTION : La fonction consomme maintenant les variables .value réactives de ce composable
+  // 🔄 Charger l'état global
+  const fetchAllEventData = async () => {
+    isLoading.value = true
+    try {
+      const data = await $fetch<any>('/api/participants/events')
+      listActivities.value = data.listActivities
+      listParticipantEventActivity.value = data.listParticipantEventActivity
+      listEventActivity.value = data.listEventActivity
+      listChildren.value = data.listChildren
+    } catch (error) {
+      console.error("Erreur de chargement des participants d'événements:", error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // ➕ Ajouter un enfant à une activité d'événement (Liaison)
+  const createParticipantEventActivity = async (participantEvent: ParticipantEventActivity) => {
+    try {
+      await $fetch('/api/participants/events', { method: 'POST', body: participantEvent })
+      await fetchAllEventData() // Rafraîchit l'interface instantanément
+    } catch (error) {
+      console.error("Erreur lors de l'inscription à l'événement:", error)
+    }
+  }
+
+  // 📝 Modifier une liaison existante
+  const updateParticipantEventActivity = async (participantEvent: ParticipantEventActivity) => {
+    try {
+      await $fetch('/api/participants/events', { method: 'PUT', body: participantEvent })
+      await fetchAllEventData()
+    } catch (error) {
+      console.error("Erreur lors de la modification de l'inscription:", error)
+    }
+  }
+
+  // ❌ Supprimer (Désinscrire l'enfant de l'activité)
+  const deleteParticipantEventActivity = async (participantEventId: string) => {
+    try {
+      await $fetch(`/api/participants/events?id=${participantEventId}`, { method: 'DELETE' })
+      await fetchAllEventData()
+    } catch (error) {
+      console.error("Erreur lors de la désinscription:", error)
+    }
+  }
+
+  // 🔍 Obtenir une liaison par son ID en local
+  const readParticipantEventActivity = (participantEventId: string) => {
+    return listParticipantEventActivity.value.find(p => p.id === participantEventId)
+  }
+
+  // --- TON FILTRE DE CROISEMENT DE DONNÉES (INCHANGÉ ET ACTIF) ---
   const getChildrenByActivityTitle = (year: string, eventType: EventType): Record<string, Child[]> => {
     const result: Record<string, Child[]> = {}
 
-    // 1. Utilisation de la ref réactive listEventActivity.value
     const filteredEventActivities = listEventActivity.value.filter(
       (event) => event.year === year && event.eventType === eventType
     )
 
     const validEventIds = new Set(filteredEventActivities.map((e) => e.id))
 
-    // 2. Utilisation de la ref réactive listParticipantEventActivity.value
     listParticipantEventActivity.value.forEach((part) => {
       if (validEventIds.has(part.eventActivityId)) {
-        
         const eventAct = filteredEventActivities.find((e) => e.id === part.eventActivityId)
         if (!eventAct) return
 
-        // Utilisation de la ref réactive listActivities.value
         const activity = listActivities.value.find((a) => a.id === eventAct.activityId)
         if (!activity) return
 
-        const child = mockChildren.find((c) => c.id === part.childId)
+        const child = listChildren.value.find((c) => c.id === part.childId)
         if (!child) return
 
         if (!result[activity.title]) {
@@ -174,7 +233,13 @@ export function useParticipantEventActivity() {
     listParticipantEventActivity,
     listActivities,
     listEventActivity,
-    getChildrenByActivityTitle, // Expose la fonction connectée aux REFS réactives
+    getChildrenByActivityTitle,
+    createParticipantEventActivity,
+    updateParticipantEventActivity,
+    deleteParticipantEventActivity,
+    readParticipantEventActivity,
     getFullName,
+    isLoading,
+    fetchAllEventData
   }
 }

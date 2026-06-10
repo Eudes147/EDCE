@@ -1,28 +1,28 @@
 <template>
-  
   <div class="min-h-screen p-6 bg-background">
     <div class="max-w-4xl mx-auto">
 
       <div class="mb-8 px-2">
-        <!-- Steps Row (Circles + Labels) -->
         <div class="flex items-center justify-between mb-6">
           <div
-            v-for="(step, idx) in steps"
+            v-for="step in steps"
             :key="step.id"
             class="flex flex-col items-center gap-2 group cursor-pointer flex-1"
             @click="goToStep(step.id)"
           >
-            <!-- Step Icon Circle -->
             <div
               :class="[
                 'w-10 h-10 rounded-full flex items-center justify-center text-label-md font-bold transition-all duration-300 flex-shrink-0',
-                currentStep > step.id ? 'bg-primary-container text-on-primary' : currentStep === step.id ? 'bg-primary-container text-on-primary ring-2 ring-primary/20' : 'bg-surface-variant text-on-surface-variant'
+                currentStep > step.id 
+                  ? 'bg-primary-container text-on-primary' 
+                  : currentStep === step.id 
+                    ? 'bg-primary-container text-on-primary ring-2 ring-primary/20' 
+                    : 'bg-surface-variant text-on-surface-variant'
               ]"
             >
-              <Icon name="check" v-if="currentStep > step.id" color="text-[20px]" />
+              <Icon name="check" v-if="currentStep > step.id" class="text-[20px]" />
               <span v-else>{{ step.id }}</span>
             </div>
-            <!-- Step Label -->
             <span
               :class="[
                 'text-label-sm font-medium text-center whitespace-nowrap',
@@ -34,10 +34,9 @@
           </div>
         </div>
 
-        <!-- Progress Lines Row (Entre les steps) -->
         <div class="flex items-center justify-between px-6">
           <div
-            v-for="(step, idx) in steps.slice(0, -1)"
+            v-for="step in steps.slice(0, -1)"
             :key="`progress-${step.id}`"
             class="flex-1 h-1 mx-2 bg-outline-variant relative overflow-hidden rounded-full"
           >
@@ -49,202 +48,183 @@
         </div>
       </div>
 
-      <!-- Form Container -->
-      <div class="bg-surface border border-outline-variant/20 rounded-xl shadow-sm overflow-hidden transition-all duration-500">
-        <!-- Step 1: Basic Info -->
-        <div v-show="currentStep == 1" class="p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="bg-white border border-outline-variant/20 rounded-xl shadow-sm overflow-hidden transition-all duration-500">
+        
+        <div v-show="currentStep === 1" class="p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <header class="mb-6">
-            <h2 class="font-h2 text-h2 text-on-surface mb-2">Informations de la séance</h2>
+            <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Informations de la séance</h2>
             <p class="text-body-md text-on-surface-variant opacity-70">Définissez les détails logistiques de votre rencontre aujourd'hui.</p>
           </header>
 
           <div class="space-y-4">
-            <!-- Title Input -->
             <div class="flex flex-col gap-2">
               <label class="text-label-md text-on-surface font-medium">Titre de la séance</label>
               <input
                 v-model="form.title"
                 type="text"
                 placeholder="ex: Leçon sur la Parabole du Semeur"
-                class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none"
+                class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
               />
             </div>
 
-            <!-- Date & Type -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
                 <label class="text-label-md text-on-surface font-medium">Type de séance</label>
                 <select
                   v-model="form.type"
-                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none"
+                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
                 >
                   <option value="NORMAL">NORMAL</option>
                   <option value="SUNDAY_SCHOOL">SUNDAY SCHOOL</option>
                   <option value="DLT">DLT (Devant le trône)</option>
                 </select>
               </div>
-            </div>
-            <div class="flex flex-col gap-2">
-              <label class="text-label-md text-on-surface font-medium">Classe</label>
-              <select
+
+              <div class="flex flex-col gap-2">
+                <label class="text-label-md text-on-surface font-medium">Classe</label>
+                <select
                   v-model="form.classe"
-                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none"
+                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
                 >
-                  <option value="Petit" key="Petit">Petit</option>
-                  <option value="Débutant" key="Débutant">Débutant</option>
-                  <option value="Moyen" key="Moyen">Moyen</option>
-                  <option value="JuniorA" key="JuniorA">JuniorA</option>
-                  <option value="JuniorB" key="JuniorB">JuniorB</option>
+                  <option v-for="c in classes" :key="c" :value="c">{{ c }}</option>
                 </select>
+              </div>
             </div>
-            
           </div>
         </div>
 
-        <!-- Step 2: Children Attendance -->
-        <div v-show="currentStep == 2" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-show="currentStep === 2" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <header class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h2 class="font-h2 text-h2 text-on-surface mb-2">Registre des présences</h2>
+              <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Registre des présences</h2>
               <p class="text-body-md text-on-surface-variant opacity-70">Cochez les enfants présents lors de cette séance.</p>
             </div>
             <div class="bg-surface-container-high px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/20">
               <Icon name="group" color="text-primary text-[18px]" />
-              <span class="text-label-md text-primary font-bold">{{ selectedCount }} / {{ children?.length }} sélectionnés</span>
+              <span class="text-label-md text-primary font-bold">{{ selectedCount }} / {{ children.length }} sélectionnés</span>
             </div>
           </header>
 
-          <!-- Search & Select All -->
           <div class="mb-4 flex gap-4 items-center">
-            <div class="flex-1 bg-surface-container rounded-lg px-4 py-2 flex items-center gap-3 border border-outline-variant/20">
-              <Icon name="search" color="text-on-surface-variant" />
+            <div class="flex-1 bg-surface-container-low rounded-lg px-4 py-2 flex items-center gap-3 border border-outline-variant/20">
+              <Icon name="search" color="text-outline" />
               <input
                 v-model="searchTerm"
                 type="text"
-                placeholder="Chercher un nom..."
-                class="bg-transparent border-none focus:ring-0 text-body-sm w-full outline-none"
+                placeholder="Chercher un enfant..."
+                class="bg-transparent border-none focus:ring-0 text-body-sm w-full outline-none text-doomu-text"
               />
             </div>
             <button
               @click="toggleSelectAll"
               class="whitespace-nowrap px-4 py-2 text-label-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20"
             >
-              Tout sélectionner
+              Tout basculer
             </button>
           </div>
 
-          <!-- Children Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[400px] overflow-y-auto pr-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[350px] overflow-y-auto pr-2">
             <div
               v-for="child in filteredChildren"
               :key="child.id"
               @click="toggleChild(child.id)"
               :class="[
                 'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
-                child.selected ? 'bg-primary-container/10 border-primary shadow-sm' : 'bg-surface border-outline-variant/20 hover:bg-surface-container-high'
+                child.selected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-outline-variant/20 hover:bg-surface-container-low'
               ]"
             >
-              <!-- Avatar -->
-              <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-dim border border-outline-variant flex-shrink-0">
-                <img :src="child.avatar" :alt="child.name" class="w-full h-full object-cover" />
+              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
+                {{ child.name.charAt(0) }}
               </div>
 
-              <!-- Child Info -->
               <div class="flex-1 min-w-0">
-                <p class="text-label-md text-on-surface truncate font-medium">{{ child.name }}</p>
-                <p class="text-[10px] text-outline uppercase tracking-wider">Élève</p>
+                <p class="text-label-md text-on-surface truncate font-medium text-doomu-text">{{ child.name }}</p>
+                <p class="text-[10px] text-outline uppercase tracking-wider">{{ child.nivScolaire || 'Élève' }}</p>
               </div>
 
-              <!-- Checkbox -->
               <div
                 :class="[
                   'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
                   child.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
                 ]"
               >
-              
-              <Icon v-if="child.selected"  name="check" color="text-on-primary text-[16px]" />
-            
+                <Icon v-if="child.selected" name="check" color="text-white text-[16px]" />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Step 3: Review -->
-        <div v-show="currentStep == 3" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div v-show="currentStep === 3" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <header class="mb-6">
-            <h2 class="font-h2 text-h2 text-on-surface mb-2">Récapitulatif</h2>
-            <p class="text-body-md text-on-surface-variant opacity-70">Vérifiez les détails avant de confirmer la création de la séance.</p>
+            <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Récapitulatif & Validation</h2>
+            <p class="text-body-md text-on-surface-variant opacity-70">Choisissez un superviseur de séance puis validez le résumé.</p>
           </header>
 
           <div class="space-y-6">
-            <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-label-sm text-outline mb-1 uppercase tracking-wider font-medium">Séance</p>
-                <p class="font-h3 text-h3 text-on-surface">{{ form.title || '--' }}</p>
+              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Thème choisi</p>
+                <p class="font-semibold text-doomu-text">{{ form.title || '--' }}</p>
               </div>
-              <div class="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-label-sm text-outline mb-1 uppercase tracking-wider font-medium">Date & Type & Classe</p>
-                <p class="text-body-md text-on-surface">
-                  <span>{{ formatDate(form.date.toLocaleDateString()) || '--' }}</span> •
-                  <span class="font-bold text-primary">{{ form.type }}</span>•
-                  <span class="font-bold text-primary">{{ form.classe?.toUpperCase() }}</span>
+              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Métriques Cibles</p>
+                <p class="text-sm text-doomu-text">
+                  Type: <span class="font-bold text-primary">{{ form.type }}</span> <br>
+                  Classe: <span class="font-bold text-primary">{{ form.classe.toUpperCase() }}</span>
                 </p>
               </div>
-              <div class="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-label-sm text-outline mb-1 uppercase tracking-wider font-medium">Total Présents</p>
-                <p class="font-h3 text-h3 text-secondary">{{ selectedCount }} Enfants</p>
+              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Appel Émarge</p>
+                <p class="text-xl font-bold text-secondary">{{ selectedCount }} Présents</p>
               </div>
             </div>
 
-            <!-- Choice the supervisor -->
-             <h2 class="font-h2 text-h2 text-on-surface mb-2">Choisissez le superviseur</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[400px] overflow-y-auto pr-2">
-            <div
-              v-for="teacher in filteredTeachers"
-              :key="teacher.id"
-              @click="selectedSupervisor(teacher.id)"
-              :class="[
-                'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
-                teacher.selected ? 'bg-primary-container/10 border-primary shadow-sm' : 'bg-surface border-outline-variant/20 hover:bg-surface-container-high'
-              ]"
-            >
-              <!-- Avatar -->
-              <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-dim border border-outline-variant flex-shrink-0">
-                <img :src="teacher.avatar" :alt="teacher.first_name" class="w-full h-full object-cover" />
-              </div>
+            <div>
+              <h3 class="text-label-md text-on-surface font-semibold mb-3 flex items-center gap-2">
+                <Icon name="person_pin" color="text-primary"/>
+                Désigner le Superviseur Obligatoire
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[220px] overflow-y-auto pr-2">
+                <div
+                  v-for="teacher in filteredTeachers"
+                  :key="teacher.id"
+                  @click="toggleSupervisorSelection(teacher.id)"
+                  :class="[
+                    'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
+                    teacher.selected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-outline-variant/20 hover:bg-surface-container-low'
+                  ]"
+                >
+                  <div class="w-9 h-9 rounded-full bg-secondary-container text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    {{ teacher.first_name.charAt(0) }}
+                  </div>
 
-              <!-- Supervisor Info -->
-              <div class="flex-1 min-w-0">
-                <p class="text-label-md text-on-surface truncate font-medium">{{ teacher.first_name.toUpperCase()+' '+teacher.last_name }}</p>
-              </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-label-sm text-on-surface truncate font-medium text-doomu-text">
+                      {{ teacher.first_name.toUpperCase() }} {{ teacher.last_name }}
+                    </p>
+                  </div>
 
-              <!-- Checkbox -->
-              <div
-                :class="[
-                  'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
-                  teacher.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
-                ]"
-              >
-              
-                <Icon v-if="teacher.selected"  name="check" color="text-on-primary text-[16px]" />
-            
+                  <div
+                    :class="[
+                      'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
+                      teacher.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
+                    ]"
+                  >
+                    <Icon v-if="teacher.selected" name="check" color="text-white text-[14px]" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-            <!-- Info Banner -->
-            <div class="bg-primary-container/5 p-6 rounded-xl border border-primary/10 flex items-start gap-4">
+            <div class="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-start gap-3">
               <Icon name="info" color="text-primary mt-0.5" />
-              <p class="text-body-sm text-on-surface-variant">
-                Une fois créée, cette séance sera ajoutée à l'historique et vue par l'administrateur de l'EDCE.
+              <p class="text-xs text-on-surface-variant">
+                Une fois créée, cette séance sera indexée instantanément dans l'historique et analysable par la direction administrative de l'EDCE.
               </p>
             </div>
           </div>
         </div>
 
-        <!-- Footer Actions -->
         <div class="px-6 md:px-8 py-4 bg-surface-container-low flex items-center justify-between border-t border-outline-variant/20">
           <button
             @click="handleCancel"
@@ -252,6 +232,7 @@
           >
             Annuler
           </button>
+          
           <div class="flex items-center gap-3">
             <button
               v-show="currentStep > 1"
@@ -260,23 +241,23 @@
             >
               Retour
             </button>
+            
             <button
               v-show="currentStep < 3"
               @click="nextStep"
-              class="bg-primary-container text-on-primary px-8 py-3 rounded-lg font-label-md shadow-sm hover:opacity-90 active:scale-95 transition-all"
+              class="bg-primary text-white px-8 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm"
             >
               Continuer
             </button>
+            
             <button
               v-show="currentStep === 3"
               @click="handleSubmit"
               :disabled="isSubmitting"
-              class="bg-primary-container text-on-primary px-8 py-3 rounded-lg font-label-md shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              class="bg-primary text-white px-8 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
             >
-                <Icon v-if="!isSubmitting" name="check_circle" color="text-[20px]" />
-              
-                <Icon v-else name="sync" color="text-[20px] animate-spin" />
-              
+              <Icon v-if="!isSubmitting" name="check_circle" color="text-[18px]" />
+              <Icon v-else name="sync" color="text-[18px] animate-spin" />
               {{ isSubmitting ? 'Création...' : 'Créer la séance' }}
             </button>
           </div>
@@ -284,20 +265,19 @@
       </div>
     </div>
 
-    <!-- Success Modal -->
     <transition name="fade">
-      <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
-        <div class="bg-surface-container-lowest rounded-2xl p-8 max-w-sm w-full border border-outline-variant/20 shadow-lg text-center animate-in zoom-in-95 duration-300">
+      <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full border border-outline-variant/20 shadow-xl text-center animate-in zoom-in-95 duration-300">
           <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="check_circle" color="text-[40px]" />
+            <Icon name="check_circle" color="text-[40px] text-primary" />
           </div>
-          <h3 class="font-h3 text-h3 text-on-surface mb-2">Séance Créée !</h3>
-          <p class="text-body-md text-on-surface-variant mb-6">
-            Le registre a été mis à jour avec succès.
+          <h3 class="text-h3 text-on-surface mb-2 font-bold text-lg">Séance Créée !</h3>
+          <p class="text-body-md text-on-surface-variant mb-6 text-sm">
+            Le registre d'émargement et la leçon ont été sauvegardés avec succès.
           </p>
           <button
-            @click="() => navigateTo('/children')"
-            class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-md hover:opacity-90 transition-all"
+            @click="finishProcess"
+            class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all text-sm"
           >
             Terminer
           </button>
@@ -308,128 +288,116 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { definePageMeta } from '#imports'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch, onMounted } from 'vue'
+import { definePageMeta, useRouter } from '#imports'
+import { classes } from '~/stores/child'
 import { useChildren } from '~/composables/useChild'
 import { useTeacher } from '~/composables/useTeacher'
-import { useSeance } from "~/composables/useSeance"
+import { useSeance } from '~/composables/useSeance'
+import { useToast } from '~/composables/useToast'
 import type { ClasseType } from '~/types/classe'
 import type { SeanceType } from '~/types/seance'
-import { useToast } from '~/composables/useToast'
+import { useAuthStore } from '~/stores/auth'
 
-
-
-const toast=useToast()
-
-// COmposables
-const {childrenPerClass}=useChildren()
-const {listTeachers}=useTeacher()
-const {createSeance, listSeances}=useSeance()
-
-
-// Router
-const router = useRouter()
-
-// Page Layout
 definePageMeta({
   layout: 'dashboard'
 })
 
-// State
+// --- INSTANCIATION DES COMPOSABLES ---
+const authStore = useAuthStore()
+const toast = useToast()
+const router = useRouter()
+
+const { childrenPerClass } = useChildren()
+const { listTeachers } = useTeacher()
+
+// Composable Séances (Gestion de la fiche racine)
+const seanceStore = useSeance()
+const { createSeance, listSeances } = seanceStore
+
+// Composable Participants (Gestion de l'émargement des présents)
+const participantSeanceStore = useParticipantSeance()
+const { createParticipantSeance } = participantSeanceStore
+
+// --- ÉTATS DU STEPPER & INTERFACE ---
 const currentStep = ref(1)
 const isSubmitting = ref(false)
 const showSuccessModal = ref(false)
 const searchTerm = ref('')
-const searchSupervisor= ref('')
 
-
-const type=ref<SeanceType>('NORMAL')
-const classe=ref<ClasseType>('Petit')
-
-
-// Form Data
+// Formulaire racine réactif
 const form = ref({
   title: '',
   date: new Date(),
-  type: type.value,
-  classe: classe.value,
-  authorId: 'teacher-001',
+  type: 'NORMAL' as SeanceType,
+  classe: 'Petit' as ClasseType,
+  authorId: authStore.user ? authStore.user.id : "", 
   supervisorId: ''
 })
 
-
-// Steps
 const steps = [
   { id: 1, label: 'Infos de base' },
   { id: 2, label: 'Présences' },
   { id: 3, label: 'Confirmation' }
 ]
 
-// Children Data
-const children =ref(
-   childrenPerClass.value[form.value.classe]?.map(childPerClass=>{
-      return {
-        ...childPerClass,
-        avatar: "",
-        selected: false
-      }
-    })
-)
+// --- CACHING DES LISTES LOCALES ---
+const children = ref<any[]>([])
+const teachers = ref<any[]>([])
 
-// Supervisor
-const teachers=ref(
-  listTeachers.value.
-  filter(teacher=>teacher.id!==form.value.authorId)?.map(teacher=>{
-    return {
-      ...teacher,
-      avatar: '',
-      selected: false
-    }
+// Recalcule la liste des enfants et des superviseurs si la classe change à l'Étape 1
+watch(() => form.value.classe, (newClass) => {
+  const targets = childrenPerClass.value[newClass] || []
+  children.value = targets.map(c => ({
+    ...c,
+    selected: false
   }))
 
+  teachers.value = listTeachers.value
+    .filter(t => t.id !== form.value.authorId)
+    .map(t => ({
+      ...t,
+      selected: false
+    }))
+}, { immediate: true })
 
-const formatDate = (dateStr: string) => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
-  return new Date(dateStr).toLocaleDateString('fr-FR', options)
-}
-// Computed
+// --- PROPRIÉTÉS CALCULÉES (FILTRES RECHERCHE) ---
 const filteredChildren = computed(() => {
-  if (!searchTerm.value) return children.value
-  return children.value?.filter(child => child.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
-})
-const filteredTeachers = computed(() => {
-  if (!searchSupervisor.value) return teachers.value
-  return teachers.value?.filter(teacher => `${teacher.first_name +' '+teacher.last_name}`.toLowerCase().includes(searchSupervisor.value.toLowerCase()))
-})
-const selectedSupervisor=computed(()=>{
-  return (id: string)=>{
-    teachers.value.forEach(teacher=>teacher.selected=false)
-    const supervisor=teachers.value.find(teacher=>teacher.id==id)
-    if(supervisor) supervisor.selected = !supervisor.selected
-  }
+  if (!searchTerm.value.trim()) return children.value
+  return children.value.filter(c => c.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
 })
 
+const filteredTeachers = computed(() => {
+  return teachers.value
+})
 
 const selectedCount = computed(() => {
-  return children.value?.filter(c => c.selected).length
+  return children.value.filter(c => c.selected).length
 })
 
-// Methods
+// --- ACTIONS MÉTIERS (SÉLECTIONS) ---
 const toggleChild = (id: string) => {
-  const child = children.value?.find(c => c.id === id)
-  if (child) {
-    child.selected = !child.selected
-    
-  }
+  const child = children.value.find(c => c.id === id)
+  if (child) child.selected = !child.selected
 }
 
 const toggleSelectAll = () => {
-  const allSelected = children.value?.every(c => c.selected)
-  children.value?.forEach(c => (c.selected = !allSelected))
-  console.log(children.value)
+  const allSelected = children.value.every(c => c.selected)
+  children.value.forEach(c => (c.selected = !allSelected))
 }
 
+const toggleSupervisorSelection = (id: string) => {
+  teachers.value.forEach(t => {
+    if (t.id === id) {
+      t.selected = !t.selected
+      form.value.supervisorId = t.selected ? t.id : ''
+    } else {
+      t.selected = false
+    }
+  })
+}
+
+// --- NAVIGATIONS DU STEPPER ---
 const goToStep = (step: number) => {
   if (step < currentStep.value || validateStep(currentStep.value)) {
     currentStep.value = step
@@ -437,66 +405,86 @@ const goToStep = (step: number) => {
 }
 
 const nextStep = () => {
-  if (validateStep(currentStep.value)) {
-    currentStep.value++
-  }
+  if (validateStep(currentStep.value)) currentStep.value++
 }
 
 const prevStep = () => {
-  if (currentStep.value > 1) {
-    currentStep.value--
-  }
+  if (currentStep.value > 1) currentStep.value--
 }
 
 const validateStep = (step: number): boolean => {
   if (step === 1) {
     if (!form.value.title.trim()) {
-      toast.info('Veuillez donner un titre à la séance')
-      return false
-    }
-    if (!form.value.date) {
-      alert('Veuillez sélectionner une date')
+      toast.warning('Champ requis', 'Veuillez donner un titre à la leçon du jour.')
       return false
     }
   }
   if (step === 2) {
     if (selectedCount.value === 0) {
-      toast.info('Veuillez sélectionner au moins un enfant')
+      toast.info('Émargement vide', 'Veuillez cocher au moins un enfant présent pour continuer.')
       return false
     }
   }
   return true
 }
 
+// --- 📤 VALIDATION ET ENVOI CRÉATION SÉANCE + PARTICIPANTS (ONE BY ONE) ---
 const handleSubmit = async () => {
-  isSubmitting.value = true
-  const supervisor=teachers.value.find(teacher=>teacher.selected)
-  if(supervisor){
-    form.value.supervisorId =supervisor.id
+  if (!form.value.supervisorId) {
+    toast.info('Superviseur manquant', "Faites le choix obligatoire d'un superviseur témoin.")
+    return
   }
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1500))
 
-  // Create seance
-  // get last id:
-  const last_idSeance= listSeances.value?.splice(-1).map(seance=>{return seance?.id} )
-  const last_id=last_idSeance.toString().split('-')[1]
-  console.log(form)
-  createSeance({id: 'seance-'+(Number(last_id)+1).toString().padStart(3,'0'), ...form.value, created_at: '2026-08-06'})
+  isSubmitting.value = true
+  try {
+    // 1. Création de la fiche séance sur le serveur
+    await createSeance({
+      title: form.value.title,
+      type: form.value.type,
+      classe: form.value.classe,
+      authorId: form.value.authorId,
+      supervisorId: form.value.supervisorId
+    })
 
+    // 2. Récupération de la séance qu'on vient d'insérer en prenant la plus récente du tableau mis à jour
+    const updatedSeances = listSeances.value
+    const latestSeance = updatedSeances[updatedSeances.length - 1]
 
-  isSubmitting.value = false
-  showSuccessModal.value = true
+    if (!latestSeance || !latestSeance.id) {
+      throw new Error("Impossible de retrouver l'identifiant de la séance créée.")
+    }
+
+    // 3. Filtrer uniquement les enfants cochés présents
+    const checkedChildren = children.value.filter(c => c.selected)
+
+    // 4. Inscription des participants "One by One" via le composable dédié
+    for (const child of checkedChildren) {
+      await createParticipantSeance({
+        id: `part-seance-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, // ID unique dynamique
+        seanceId: latestSeance.id, // L'ID récupéré dynamiquement du serveur
+        childId: child.id
+      })
+    }
+    
+    // Tout s'est bien passé ! Affichage du modal de succès.
+    showSuccessModal.value = true
+  } catch (error) {
+    console.error(error)
+    toast.error('Erreur', "Échec lors de la création de la séance ou de l'émargement des élèves.")
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const handleCancel = () => {
-  if (confirm('Voulez-vous vraiment annuler ? Toutes les données saisies seront perdues.')) {
-    router.push('/seances/teacher')
+  if (confirm('Voulez-vous vraiment annuler ? Les émargements courants seront perdus.')) {
+    router.push('/children')
   }
 }
 
-const navigateTo = (path: string) => {
-  router.push(path)
+const finishProcess = () => {
+  showSuccessModal.value = false
+  router.push('/children')
 }
 </script>
 
@@ -505,22 +493,8 @@ const navigateTo = (path: string) => {
 .fade-leave-active {
   transition: opacity 200ms ease-out;
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

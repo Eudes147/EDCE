@@ -1,33 +1,60 @@
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { TypeTest } from '~/types/test'
-import type{Classe, ClasseType} from '~/types/classe'
+import type { ClasseType } from '~/types/classe'
+import type { Child } from '~/types/child'
+import type { Note } from '~/types/test'
+import type { Test } from '~/types/test'
 
-import type { Child, YearGroupedAverages, YearGroupedNotes } from '~/types/child'
 import { useChildren } from "~/composables/useChild"
+import { useTest } from "~/composables/useTest" // Import du composable de tests qu'on a écrit ensemble
 import { getMoyFinal } from '~/utils/getMoyFinal'
-
-// On garde ta fonction pure à l'extérieur, elle s'exécute parfaitement
-import {processNotesAndAverages} from "~/utils/processNotes"
+import { processNotesAndAverages } from "~/utils/processNotes"
 
 export const useNote = () => {
-  const { listChildren } = useChildren()
+  const { listChildren, fetchAllChildren } = useChildren()
+  const { listTests, fetchAllTests } = useTest()
   
-  // Utilisation d'un computed pour l'année en cours
+  const listNotes = ref<Note[]>([])
+  const isLoading = ref(false)
   const actualYear = computed(() => new Date().getFullYear().toString())
 
-  // CORRECTION (3) : Mise en cache réactive globale pour éviter de recalculer à chaque appel de fonction
+  // 🔄 Charger toutes les notes et dépendances depuis le serveur
+  const fetchAllNotesData = async () => {
+    isLoading.value = true
+    try {
+      // Chargement simultané des dépendances enfants et tests
+      await Promise.all([fetchAllChildren?.(), fetchAllTests?.()])
+      
+      const data = await $fetch<any>('/api/notes')
+      listNotes.value = data.listNotes
+    } catch (error) {
+      console.error('Erreur lors du chargement des notes:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // ➕ Ajouter une note (Action Réseau)
+  const createNote = async (notePayload: Omit<Note, 'id' | 'created_at'>) => {
+    try {
+      await $fetch('/api/notes', { method: 'POST', body: notePayload })
+      await fetchAllNotesData() // Rafraîchissement
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // 🔥 MISE EN CACHE RÉACTIVE GLOBALE (mise à jour dynamique grâce aux Refs)
   const notesAndAveragesComputed = computed(() => {
     return {
-      evaluations: processNotesAndAverages('EVALUATION'),
-      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL'),
-      concours: processNotesAndAverages('CONCOURS')
+      evaluations: processNotesAndAverages('EVALUATION', listNotes.value, listTests.value),
+      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL', listNotes.value, listTests.value),
+      concours: processNotesAndAverages('CONCOURS', listNotes.value, listTests.value)
     }
   })
 
-  // Permet de conserver l'accès à l'ancien format si utilisé dans tes composants
   const notesbyYear = computed(() => notesAndAveragesComputed.value)
 
-  // Reste disponible si besoin d'un appel dynamique à la demande
   const getNotesAndAverages = (typeFilter: 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS') => {
     if (typeFilter === 'EVALUATION') return notesAndAveragesComputed.value.evaluations
     if (typeFilter === 'SUNDAY_SCHOOL') return notesAndAveragesComputed.value.sundaySchool
@@ -35,7 +62,6 @@ export const useNote = () => {
   }
 
   const getnotebychildperTestType = (child: Child, testType: TypeTest) => {
-    // CORRECTION (1) : On lit le cache du computed au lieu de réexécuter processNotesAndAverages
     const source = testType === 'EVALUATION' ? notesAndAveragesComputed.value.evaluations 
                  : testType === 'SUNDAY_SCHOOL' ? notesAndAveragesComputed.value.sundaySchool 
                  : notesAndAveragesComputed.value.concours
@@ -47,7 +73,6 @@ export const useNote = () => {
   }
 
   const getPassageDeliberation = (child: Child, moyenneCoupure: number = 10) => {
-    // CORRECTION (1) : Lecture depuis le cache pré-calculé de SUNDAY_SCHOOL
     const moyennesActualYear = notesAndAveragesComputed.value.sundaySchool.moyenne[actualYear.value]
     const childMoyenne = moyennesActualYear?.find(m => m.childId === child.id)
 
@@ -56,39 +81,33 @@ export const useNote = () => {
     }
     return false  
   }
-  const percentSuccessbyClasse=computed(()=>{
-    return (classe: ClasseType)=>{
-    // CORRECTION (1) : Lecture depuis le cache pré-calculé de SUNDAY_SCHOOL
-    const filtredChildren= listChildren.value.filter(child=>child.classe===classe)
-    return (filtredChildren.filter  (child=>getPassageDeliberation(child)).length / filtredChildren.length) * 100
-  }
+
+  const percentSuccessbyClasse = computed(() => {
+    return (classe: ClasseType) => {
+      const filteredChildren = listChildren.value.filter(child => child.classe === classe)
+      if (filteredChildren.length === 0) return 0
+      return (filteredChildren.filter(child => getPassageDeliberation(child)).length / filteredChildren.length) * 100
+    }
   })
-    
-    
 
   const getMoyGenperChildId = (child: Child) => {
-    // CORRECTION (1) : Lecture depuis le cache pré-calculé
     const moyennesEvaluationActualYear = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value]
     const moyennesConcoursActualYear = notesAndAveragesComputed.value.concours.moyenne[actualYear.value]
 
     const moyEval = moyennesEvaluationActualYear?.find(m => m.childId === child.id)?.moyenne
     const moyConcours = moyennesConcoursActualYear?.find(m => m.childId === child.id)?.moyenne
 
-    // CORRECTION (4) : Si l'un des deux est manquant (ex: absent), on considère la note manquante comme un 0 au lieu de tout annuler
     if (moyEval !== undefined || moyConcours !== undefined) {
       return getMoyFinal(moyEval || 0, moyConcours || 0)
     }
-
     return 0
   }
 
   const getClassementFinal = (classe: ClasseType) => {
-    // CORRECTION (1) : Lecture du cache d'évaluation
     const currentYearMoyennes = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value] || []
     
     const finalClassement = currentYearMoyennes.map(moyennebyYear => {
-      const child = listChildren.value.find(c => c.id === moyennebyYear.childId && c.classe==classe)
-      
+      const child = listChildren.value.find(c => c.id === moyennebyYear.childId && c.classe == classe)
       const moyenneFinal = child ? getMoyGenperChildId(child) : 0
       return {
         childId: moyennebyYear.childId,
@@ -99,13 +118,17 @@ export const useNote = () => {
     return finalClassement.sort((a, b) => Number(b.moyGen) - Number(a.moyGen))
   }
 
-  const getNamebyId= (id: string): string=>{
-    const child =listChildren.value.find(child=>child.id===id)
+  const getNamebyId = (id: string): string => {
+    const child = listChildren.value.find(c => c.id === id)
     return child?.name || ''
   }
 
   return {
     notesbyYear,
+    listNotes,
+    isLoading,
+    fetchAllNotesData, // À appeler à l'initialisation de ta page de notes / bulletins
+    createNote,
     getNamebyId,
     getPassageDeliberation,
     getnotebychildperTestType,

@@ -1,49 +1,48 @@
-import type{User} from '~/types/auth'
-import type{ClasseType} from '~/types/classe'
+import type { ClasseType } from '~/types/classe'
 
-// Main Interface: DB
+export type TypeTest = 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS'
+
+// Interface principale répercutée
 export interface Test {
   id: string
   titleTest: string
   classe: ClasseType
   typeTest: TypeTest
-  sujetTest?: File
-  correctionTest?: File
+  sujetTest?: string       // URL Google Drive
+  correctionTest?: string  // URL Google Drive
   authorId: string
   created_at: string
 }
 
-export type TypeTest= 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS'
-
-// Création d'un test
-export interface TestSubmit{
+// Payload d'envoi du formulaire
+export interface TestSubmit {
   titleTest: string
   classe: ClasseType
   typeTest: TypeTest
-  sujetTest?: File
-  correctionTest?: File
+  sujetTest?: string       // URL Google Drive
+  correctionTest?: string  // URL Google Drive
   authorId: string
 }
 
-// Pour l'affichage
 export interface TestDetail {
   titleTest: string
   classe: ClasseType
   typeTest: TypeTest
-  sujetTest?: File
-  correctionTest?: File
+  sujetTest?: string
+  correctionTest?: string
   created_by: string
 }
-// Statistiques
+
 export interface TestStats {
   totalParticipants: number
   successRate: number
   failedRate: number
 }
+
 export interface Note {
-  id: string;
-  childId: string;
-  testId: string;
+  id: string
+  childId: string
+  testId: string
   note: number;
-  created_at: string;
+  created_at: string
 }

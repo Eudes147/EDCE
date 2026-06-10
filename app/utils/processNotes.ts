@@ -1,12 +1,18 @@
-import { mockNotes, mockTests } from '~/data/mockData'
-import type { Child, YearGroupedAverages, YearGroupedNotes } from '~/types/child'
+import type { Test } from '~/types/test'
+import type { Note } from '~/types/test' // Ou l'endroit où réside ton type Note
+import type { YearGroupedAverages, YearGroupedNotes } from '~/types/child'
 
-export function processNotesAndAverages(typeFilter: 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS') {
+export function processNotesAndAverages(
+  typeFilter: 'EVALUATION' | 'SUNDAY_SCHOOL' | 'CONCOURS',
+  currentNotes: Note[],
+  currentTests: Test[]
+) {
   const listNotes: YearGroupedNotes = {}
   const moyenne: YearGroupedAverages = {}
 
-  mockNotes.forEach((note) => {
-    const associatedTest = mockTests.find(t => t.id === note.testId)
+  // 1. Parcours des notes fournies dynamiquement
+  currentNotes.forEach((note) => {
+    const associatedTest = currentTests.find(t => t.id === note.testId)
     if (!associatedTest || associatedTest.typeTest !== typeFilter) return
 
     const year = new Date(note.created_at).getFullYear().toString()
@@ -25,6 +31,7 @@ export function processNotesAndAverages(typeFilter: 'EVALUATION' | 'SUNDAY_SCHOO
     }
   })
 
+  // 2. Calcul des moyennes par année
   Object.keys(listNotes).forEach((year) => {
     if (listNotes[year]) {
       moyenne[year] = listNotes[year].map((childData) => {

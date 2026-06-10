@@ -2,7 +2,6 @@
   <div class="min-h-screen flex items-center justify-center p-margin-mobile md:p-xl font-body-md text-on-surface">
     <div class="w-full max-w-[30rem]">
 
-      <!-- SIGNUP VIEW -->
       <Transition
         name="pop-bottom"
         mode="out-in"
@@ -16,7 +15,6 @@
             <p class="font-body-sm text-body-sm text-on-surface-variant">Join the EDCE administrative community</p>
           </header>
 
-          <!-- Bloc d'affichage des erreurs API -->
           <div 
             v-if="apiErrorMessage" 
             class="mb-md p-sm bg-error/10 border border-error/20 text-error rounded-lg text-body-sm flex items-center gap-xs"
@@ -51,7 +49,20 @@
               </div>
             </div>
 
-            <!-- Email Input with Validation -->
+            <div class="space-y-xs">
+              <label class="font-label-md text-label-md text-on-surface">Gender</label>
+              <select
+                v-model="signupForm.sexe"
+                class="w-full px-md py-sm rounded-lg border border-outline-variant bg-surface text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer appearance-none"
+                required
+                :disabled="isLoading"
+              >
+                <option value="" disabled selected>Select your gender</option>
+                <option value="Masculin">Masculin</option>
+                <option value="Feminin">Féminin</option>
+              </select>
+            </div>
+
             <div class="space-y-xs">
               <label class="font-label-md text-label-md text-on-surface">Email</label>
               <input
@@ -73,7 +84,6 @@
               </p>
             </div>
 
-            <!-- Password Input with Validation -->
             <div class="space-y-xs">
               <label class="font-label-md text-label-md text-on-surface">Password</label>
               <div class="relative">
@@ -129,7 +139,6 @@
               <p v-if="validationErrors.password" class="text-xs font-body-xs text-red-500 mt-xs">
                 {{ validationErrors.password }}
               </p>
-              <!-- Password strength indicator -->
               <div class="flex gap-xs mt-sm">
                 <div
                   v-for="i in 3"
@@ -143,7 +152,6 @@
               </p>
             </div>
 
-            <!-- Confirm Password Input -->
             <div class="space-y-xs">
               <label class="font-label-md text-label-md text-on-surface">Confirm Password</label>
               <div class="relative">
@@ -201,7 +209,6 @@
               </p>
             </div>
 
-            <!-- Terms Acceptance -->
             <div class="flex items-start gap-sm">
               <input
                 id="terms"
@@ -216,7 +223,6 @@
               </label>
             </div>
 
-            <!-- Submit Button -->
             <button
               class="w-full bg-primary-container text-on-primary font-label-md text-label-md py-md rounded-lg hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-sm"
               type="submit"
@@ -229,7 +235,6 @@
               <span>{{ isLoading ? 'Creating Account...' : 'Create Account' }}</span>
             </button>
 
-            <!-- Login Link -->
             <p class="text-center font-body-sm text-body-sm text-on-surface-variant mt-md">
               Already have an account?
               <NuxtLink to="/login" class="text-primary font-bold hover:underline">
@@ -242,7 +247,6 @@
 
     </div>
 
-    <!-- Background Decoration -->
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
       <div class="absolute top-[10%] right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-[80px]"></div>
       <div class="absolute bottom-[10%] left-[5%] w-72 h-72 bg-secondary-container/5 rounded-full blur-[60px]"></div>
@@ -254,7 +258,8 @@
 import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import type { User } from '~/types/auth'
-import { useToast} from '~/composables/useToast' // Assurez-vous que le chemin est correct
+import type { Sexe } from '~/types/index' // MODIFICATION : Import du type Sexe
+import { useToast } from '~/composables/useToast'
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -277,9 +282,10 @@ const signupForm = reactive({
   firstName: '',
   lastName: '',
   email: '',
+  sexe: '' as Sexe | '', // MODIFICATION : Initialisé vide mais typé
   password: '',
   confirmPassword: '',
-  role: 'teacher', // Valeur fixée en minuscule en arrière-plan
+  role: 'teacher',
   acceptTerms: false,
 })
 
@@ -324,6 +330,7 @@ const isFormValid = computed(() => {
   return (
     signupForm.firstName.trim().length > 0 &&
     signupForm.lastName.trim().length > 0 &&
+    signupForm.sexe !== '' && // MODIFICATION : Validation de la sélection du sexe
     isEmailValid.value &&
     isPasswordValid.value &&
     signupForm.acceptTerms
@@ -392,15 +399,16 @@ async function handleSignup(): Promise<void> {
   apiErrorMessage.value = ''
 
   try {
-    // Appel à l'API d'inscription en spécifiant explicitement le type attendu en retour
+    // Appel à l'API d'inscription en transmettant la propriété "sexe"
     const data = await $fetch<{ token: string; user: User }>('/api/auth/register', {
       method: 'POST',
       body: {
         firstName: signupForm.firstName,
         lastName: signupForm.lastName,
         email: signupForm.email,
+        sexe: signupForm.sexe, // MODIFICATION : Ajout du sexe au payload
         password: signupForm.password,
-        role: signupForm.role // Toujours envoyé en tant que "teacher"
+        role: signupForm.role
       }
     })
 
@@ -453,7 +461,7 @@ async function handleSignup(): Promise<void> {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-:deep(input:focus-visible) {
+:deep(input:focus-visible), :deep(select:focus-visible) {
   outline: none;
 }
 </style>

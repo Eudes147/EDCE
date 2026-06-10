@@ -1,229 +1,506 @@
 <template>
-<div class="p-8 max-w-[1400px] mx-auto space-y-8">
-<!-- Header Section -->
-<div class="flex justify-between items-end">
-<div>
-<h2 class="font-h1 text-h1 text-on-surface">Gestion des Enseignants</h2>
-<p class="font-body text-body text-on-surface-variant mt-2">Gérez vos équipes pédagogiques et leur planning mensuel.</p>
-</div>
-</div>
-<!-- Teachers List Table -->
-<section class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
-<div class="relative w-72">
-<Icon color="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]" name="search" />
-<input class="w-full bg-surface-bright border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body font-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Rechercher un enseignant..." type="text">
-</div>
-<div class="flex items-center gap-2">
-<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
-<Icon name="filter_list" />
+  <div class="p-8 max-w-[1400px] mx-auto space-y-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="font-h1 text-h1 text-on-surface text-2xl font-bold">Gestion des Enseignants</h2>
+        <p class="font-body text-body text-on-surface-variant mt-2">Gerez vos équipes pédagogiques et leur planning mensuel.</p>
+      </div>
+      <button 
+        @click="openAddModal" 
+        class="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all text-sm shadow-sm"
+      >
+        <Icon name="add" :color="'text-white'" />
+        Inscrire un Enseignant
+      </button>
+    </div>
 
-</button>
-<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
-<Icon name="download" />
+    <!-- Teachers List Table -->
+    <section class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+      <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
+        <div class="relative w-72">
+          <Icon :color="'text-outline'" name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-[20px]" />
+          <input 
+            v-model="searchQuery"
+            class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+            placeholder="Rechercher un enseignant..." 
+            type="text"
+          >
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low/50 border-b border-outline-variant/30">
+              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Nom</th>
+              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Prénom</th>
+              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Téléphone</th>
+              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Statut Actif</th>
+              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20">
+            <tr 
+              v-for="teacher in paginatedTeachers" 
+              :key="teacher.id" 
+              class="hover:bg-surface-container-low/40 transition-colors group"
+            >
+              <td class="px-6 py-4 font-body text-sm text-on-surface font-semibold">{{ teacher.first_name.toUpperCase() }}</td>
+              <td class="px-6 py-4 font-body text-sm text-on-surface-variant">{{ teacher.last_name }}</td>
+              <td class="px-6 py-4 font-body text-sm text-on-surface-variant font-mono text-xs">{{ teacher.tel || '-' }}</td>
+              <td class="px-6 py-4 text-sm">
+                <span 
+                  :class="[
+                    'px-2.5 py-1 rounded-full text-xs font-medium',
+                    teacher.isAvailable ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
+                  ]"
+                >
+                  {{ teacher.isAvailable ? 'Disponible' : 'Indisponible' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right space-x-2">
+                <button 
+                  @click="openEditModal(teacher)" 
+                  class="p-1.5 rounded-md hover:bg-primary/5 text-outline hover:text-primary transition-colors"
+                  title="Modifier les détails"
+                >
+                  <Icon name="edit" :color="'text-outline'" class="text-[18px]" />
+                </button>
+                <button 
+                  @click="toggleAvailability(teacher)" 
+                  class="p-1.5 rounded-md hover:bg-surface-container-high text-outline transition-colors"
+                  :title="teacher.isAvailable ? 'Marquer indisponible' : 'Marquer disponible'"
+                >
+                  <Icon name="sync" :color="'text-outline'" class="text-[18px]" />
+                </button>
+              </td>
+            </tr>
 
-</button>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-surface-container-low/50">
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Nom</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Prénom</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Tel.</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface">Disponibilité</th>
-<th class="px-6 py-4 font-body text-body font-bold text-on-surface text-right">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant">
+            <tr v-if="filteredTeachers.length === 0">
+              <td colspan="5" class="px-6 py-8 text-center text-doomu-text-muted text-sm">
+                Aucun enseignant ne correspond à votre recherche.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<!-- Teacher Row 3 -->
-<tr v-for="teacher in listTeachers.slice(0,3)" :key="teacher.id" class="hover:bg-surface-container-low transition-colors group">
-<td class="px-6 py-4 font-body text-body text-on-surface font-semibold">{{teacher.first_name.toUpperCase()}}</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{teacher.last_name}}</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{ teacher.tel }}</td>
-<td class="px-6 py-4 font-body text-body text-on-surface-variant">{{teacher.isAvailable? 'Oui': 'Non'}}</td>
-<td class="px-6 py-4 text-right">
-<button class="p-1.5 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
-<Icon name="more_vert" color="text-[20px]" />
+      <!-- Pagination Footer -->
+      <div class="px-6 py-3 border-t border-outline-variant/30 flex justify-between items-center bg-surface-container-low/10">
+        <span class="text-xs text-on-surface-variant">
+          Affichage {{ startIndex + 1 }}-{{ Math.min(endIndex, filteredTeachers.length) }} sur {{ filteredTeachers.length }} enseignants
+        </span>
+        <div class="flex gap-2">
+          <button 
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Icon name="chevron_left" :color="'text-outline'" class="text-[18px]" />
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-medium text-xs shadow-sm">
+            {{ currentPage }}
+          </button>
+          <button 
+            @click="nextPage"
+            :disabled="currentPage >= totalPages"
+            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Icon name="chevron_right" :color="'text-outline'" class="text-[18px]" />
+          </button>
+        </div>
+      </div>
+    </section>
 
-</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="px-6 py-3 border-t border-outline-variant flex justify-between items-center bg-surface-container-low/10">
-<span class="font-small text-small text-on-surface-variant">Affichage 1-3 de {{ listTeachers.length }} teachers</span>
-<div class="flex gap-2">
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors">
-<Icon name="chevron_left" color="text-[18px]" />
+    <!-- Emploi du Temps Mensuel Section -->
+    <section class="space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-h2 text-h2 text-on-surface text-xl font-bold">Emploi du Temps Mensuel</h3>
+          <p class="font-body text-body text-on-surface-variant text-sm">Affectations régulées pour le mois courant</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button 
+            @click="publishSchedule"
+            class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm"
+          >
+            <Icon name="publish" :color="'text-white'" class="text-[18px]" />
+            <span>Publier l'emploi du temps</span>
+          </button>
+        </div>
+      </div>
 
-</button>
-<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-small text-small">1</button>
-<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors">
-<Icon name="chevron_right" color="text-[18px]" />
+      <!-- Main Matrix Calendar Grid -->
+      <div class="grid grid-cols-4 gap-1 bg-outline-variant/30 border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+        <!-- Grid Header -->
+        <div class="bg-surface-container-high p-4 font-bold text-on-surface text-center text-sm">Dates (Dimanches)</div>
+        <div class="bg-surface-container-high p-4 font-bold text-primary text-center text-sm">NORMAL</div>
+        <div class="bg-surface-container-high p-4 font-bold text-secondary text-center text-sm">SUNDAY_SCHOOL</div>
+        <div class="bg-surface-container-high p-4 font-bold text-tertiary text-center text-sm">DLT</div>
 
-</button>
-</div>
-</div>
-</section>
-<!-- Emploi du Temps Mensuel Section -->
-<section class="space-y-4">
-<div class="flex justify-between items-center">
-<div>
-<h3 class="font-h2 text-h2 text-on-surface">Emploi du Temps Mensuel</h3>
-<p class="font-body text-body text-on-surface-variant">Affectations pour le mois de Novembre 2024</p>
-</div>
-<div class="flex items-center gap-3">
-<div class="flex items-center bg-surface-container-low p-1 rounded-lg border border-outline-variant">
-<button class="px-4 py-1.5 rounded-md bg-surface-container-lowest shadow-sm text-primary font-body text-body font-semibold">Ce mois</button>
-<button class="px-4 py-1.5 rounded-md text-on-surface-variant font-body text-body hover:bg-surface-container-high transition-all">Mois prochain</button>
-</div>
-<button class="flex items-center gap-2 bg-secondary text-on-secondary px-5 py-2.5 rounded-lg font-body text-body font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all">
-<Icon name="publish" color="text-[20px]" />
+        <!-- Matrix Body Loop -->
+        <template v-for="(row, rowIndex) in schedule" :key="row.dateLabel">
+          <!-- Date Column Cell -->
+          <div class="bg-surface-container-low p-4 flex items-center justify-center font-semibold text-doomu-text text-sm border-r border-outline-variant/30">
+            {{ row.dateLabel }}
+          </div>
 
-<span>Publier emploi du temps</span>
-</button>
-</div>
-</div>
-<div class="grid grid-cols-4 gap-1 bg-neutral-200 border border-outline-variant rounded-xl overflow-hidden custom-shadow-subtle">
-<!-- Grid Header -->
-<div class="bg-surface-container-high p-4 font-body text-body font-bold text-on-surface text-center">Dates (Dimanches)</div>
-<div class="bg-surface-container-high p-4 font-body text-body font-bold text-primary text-center" style="z-index: 1;">NORMAL</div>
-<div class="bg-surface-container-high p-4 font-body text-body font-bold text-secondary text-center" style="z-index: 1;">SUNDAY_SCHOOL</div>
-<div class="bg-surface-container-high p-4 font-body text-body font-bold text-tertiary text-center" style="z-index: 1;">DLT</div>
-<!-- Row 1 -->
-<div class="bg-surface-container-low p-4 flex items-center justify-center font-body text-body font-semibold border-r border-outline-variant/30" style="z-index: 1;">
-                        Dim 3 Nov
-                    </div>
-<div class="bg-surface-container-lowest p-4 group hover:bg-primary-container/5 transition-colors cursor-pointer relative" style="z-index: 1;">
-<div class="flex flex-col gap-2">
-<span class="font-small text-small bg-primary-container/10 text-primary px-2 py-1 rounded-md text-center">Tshibamba Caleb</span>
-<span class="font-small text-small bg-primary-container/10 text-primary px-2 py-1 rounded-md text-center">Kabamba Jon</span>
-</div>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-secondary-container/5 transition-colors cursor-pointer" style="z-index: 1;">
-<span class="font-small text-small bg-secondary-container/10 text-secondary px-2 py-1 rounded-md block text-center">Mutombo Déborah</span>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-tertiary-container/5 transition-colors cursor-pointer" style="z-index: 1;">
-<span class="font-small text-small bg-tertiary-container/10 text-tertiary px-2 py-1 rounded-md block text-center">Luzolo Marc</span>
-</div>
-<!-- Row 2 -->
-<div class="bg-surface-container-low p-4 flex items-center justify-center font-body text-body font-semibold border-r border-outline-variant/30">
-                        Dim 10 Nov
-                    </div>
-<div class="bg-surface-container-lowest p-4 hover:bg-primary-container/5 transition-colors cursor-pointer">
-<span class="font-small text-small bg-primary-container/10 text-primary px-2 py-1 rounded-md block text-center">Mwamba Jean</span>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-secondary-container/5 transition-colors cursor-pointer" style="z-index: 1;">
-<div class="flex flex-col gap-2">
-<span class="font-small text-small bg-secondary-container/10 text-secondary px-2 py-1 rounded-md text-center">Nkulu Sarah</span>
-<span class="font-small text-small bg-secondary-container/10 text-secondary px-2 py-1 rounded-md text-center">Mpiana Paul</span>
-</div>
-</div>
-<div class="bg-neutral-100 p-4 flex items-center justify-center group" style="z-index: 1;">
-<button class="opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-lowest p-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">
-<Icon name="add" color="text-[18px]" />
+          <!-- Type Slots Columns Cells -->
+          <div 
+            v-for="slotType in (['NORMAL', 'SUNDAY_SCHOOL', 'DLT'] as const)"
+            :key="slotType"
+            @click="openAssignmentManager(rowIndex, slotType)"
+            :class="[
+              'p-4 transition-colors cursor-pointer min-h-[80px] flex flex-col justify-center gap-1.5 relative group',
+              slotType === 'NORMAL' ? 'bg-white hover:bg-primary/5' : slotType === 'SUNDAY_SCHOOL' ? 'bg-white hover:bg-secondary/5' : 'bg-white hover:bg-tertiary/5'
+            ]"
+          >
+            <!-- Render Assigned Teachers -->
+            <span 
+              v-for="tId in row.assignments[slotType]" 
+              :key="tId"
+              :class="[
+                'text-[11px] px-2.5 py-1 rounded-md text-center font-medium block truncate',
+                slotType === 'NORMAL' ? 'bg-primary/10 text-primary' : slotType === 'SUNDAY_SCHOOL' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
+              ]"
+            >
+              {{ getTeacherDisplayName(tId) }}
+            </span>
 
-</button>
-</div>
-<!-- Row 3 -->
-<div class="bg-surface-container-low p-4 flex items-center justify-center font-body text-body font-semibold border-r border-outline-variant/30">
-                        Dim 17 Nov
-                    </div>
-<div class="bg-surface-container-lowest p-4 hover:bg-primary-container/5 transition-colors cursor-pointer" style="z-index: 1;">
-<span class="font-small text-small bg-primary-container/10 text-primary px-2 py-1 rounded-md block text-center">Luntadila Ruth</span>
-</div>
-<div class="bg-neutral-100 p-4 flex items-center justify-center group">
-<button class="opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-lowest p-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">
-<Icon name="add" color="text-[18px]" />
-</button>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-tertiary-container/5 transition-colors cursor-pointer" style="z-index: 1;">
-<span class="font-small text-small bg-tertiary-container/10 text-tertiary px-2 py-1 rounded-md block text-center">Tshibamba Caleb</span>
-</div>
-<!-- Row 4 -->
-<div class="bg-surface-container-low p-4 flex items-center justify-center font-body text-body font-semibold border-r border-outline-variant/30">
-                        Dim 24 Nov
-                    </div>
-<div class="bg-surface-container-lowest p-4 hover:bg-primary-container/5 transition-colors cursor-pointer">
-<span class="font-small text-small bg-primary-container/10 text-primary px-2 py-1 rounded-md block text-center">Kabamba Jon</span>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-secondary-container/5 transition-colors cursor-pointer">
-<span class="font-small text-small bg-secondary-container/10 text-secondary px-2 py-1 rounded-md block text-center">Mutombo Déborah</span>
-</div>
-<div class="bg-surface-container-lowest p-4 hover:bg-tertiary-container/5 transition-colors cursor-pointer">
-<span class="font-small text-small bg-tertiary-container/10 text-tertiary px-2 py-1 rounded-md block text-center">Mwamba Jean</span>
-</div>
-</div>
-</section>
-</div>
-<div :class="[activeTeacherModal ? '' : 'hidden','fixed inset-0 z-[100] flex items-center justify-center']" id="teacherModal">
-<div class="modal-overlay absolute inset-0" @click="activeTeacherModal=false"></div>
-<div class="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl z-10 overflow-hidden relative transform scale-100 transition-transform border border-outline-variant">
-<!-- Modal Header -->
-<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
-<h3 class="font-h2 text-h2 text-on-surface">Ajouter un Enseignant</h3>
-<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors" @click="activeTeacherModal=false">
-<Icon name="close" />
+            <!-- Trigger Add Placeholder if slot length < 2 -->
+            <div 
+              v-if="row.assignments[slotType].length < 2" 
+              class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <div class="bg-white p-1 rounded-full shadow-sm border border-outline-variant/40">
+                <Icon name="add" :color="'text-primary'" class="text-[16px]" />
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
 
-</button>
-</div>
-<!-- Modal Form -->
-<div class="p-6 space-y-4">
-<div class="grid grid-cols-2 gap-4">
-<div class="space-y-1.5" style="z-index: 1;">
-<label class="font-small text-small font-bold text-on-surface-variant">Nom</label>
-<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Tshibamba" type="text">
-</div>
-<div class="space-y-1.5" style="z-index: 1;">
-<label class="font-small text-small font-bold text-on-surface-variant">Prénom</label>
-<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Caleb" type="text">
-</div>
-</div>
-<div class="space-y-1.5">
-<label class="font-small text-small font-bold text-on-surface-variant">Profession</label>
-<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Ex: Architecte" type="text">
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div class="space-y-1.5" style="z-index: 1;">
-<label class="font-small text-small font-bold text-on-surface-variant">Situation Matrimoniale</label>
-<select class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
-<option>Célibataire</option>
-<option>Marié(e)</option>
-<option>Veuf/Veuve</option>
-</select>
-</div>
-<div class="space-y-1.5" style="z-index: 1;">
-<label class="font-small text-small font-bold text-on-surface-variant">Genre</label>
-<select class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all">
-<option>Masculin</option>
-<option>Féminin</option>
-</select>
-</div>
-</div>
-<div class="space-y-1.5">
-<label class="font-small text-small font-bold text-on-surface-variant">Téléphone</label>
-<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-2 font-body text-body focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="+243 ..." type="tel">
-</div>
-</div>
-<!-- Modal Footer -->
-<div class="p-6 bg-surface-container-low/30 border-t border-outline-variant flex justify-end gap-3">
-<button class="px-6 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-body text-body font-semibold hover:bg-surface-container-high transition-colors" @click="activeTeacherModal=false">Annuler</button>
-<button class="px-6 py-2 rounded-lg bg-primary text-on-primary font-body text-body font-semibold hover:opacity-90 active:scale-95 transition-all">Sauvegarder</button>
-</div>
-</div>
-</div>
+    <!-- ========================================== -->
+    <!-- MODAL 1 : INSCRIPTION / MODIFICATION       -->
+    <!-- ========================================== -->
+    <Modal v-model="showFormModal" :title="isEditMode ? 'Modifier l\'Enseignant' : 'Inscrire un Enseignant'" size="md">
+      <form @submit.prevent="submitForm" id="teacherForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Nom <span class="text-error">*</span></label>
+            <input 
+              v-model="form.first_name" 
+              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+              placeholder="Ex: Tshibamba" type="text" required 
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Prénom <span class="text-error">*</span></label>
+            <input 
+              v-model="form.last_name" 
+              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+              placeholder="Ex: Caleb" type="text" required 
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1">Téléphone <span class="text-error">*</span></label>
+          <input 
+            v-model="form.tel" 
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+            placeholder="Ex: +229..." type="tel" required 
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant mb-1">Quartier de Résidence</label>
+          <input 
+            v-model="form.quarter" 
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+            placeholder="Ex: Fidjrossè" type="text" 
+          />
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg" @click="showFormModal = false">Annuler</button>
+        <button type="submit" form="teacherForm" class="px-5 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm" :disabled="isLoading">Sauvegarder</button>
+      </template>
+    </Modal>
+
+    <!-- ========================================== -->
+    <!-- MODAL 2 : ATTRIBUTION DE CASIER PLANNING   -->
+    <!-- ========================================== -->
+    <Modal v-model="showAssignModal" title="Affectation des Moniteurs (Max 2)" size="md">
+      <div v-if="activeCell && schedule[activeCell.rowIndex]" class="space-y-4">
+        <div class="bg-primary/5 p-3 rounded-xl border border-primary/10 text-sm">
+          Dimanche : <span class="font-bold text-doomu-text">{{ schedule[activeCell.rowIndex]?.dateLabel }}</span> <br>
+          Créneau ciblé : <span class="font-bold text-primary">{{ activeCell.slotType }}</span>
+        </div>
+
+        <p class="text-xs font-semibold text-outline">Sélectionnez les moniteurs (disponibles uniquement) :</p>
+        
+        <div class="grid grid-cols-2 gap-3 max-h-[200px] overflow-y-auto pr-1">
+          <div 
+            v-for="teacher in listTeachers.filter(t => t.isAvailable)" 
+            :key="teacher.id"
+            @click="toggleTeacherInCell(teacher.id)"
+            :class="[
+              'p-2.5 border rounded-lg cursor-pointer text-xs font-medium flex items-center justify-between transition-colors',
+              isTeacherSelectedInActiveCell(teacher.id) ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-outline-variant/40 text-doomu-text hover:bg-surface-container-low'
+            ]"
+          >
+            <span>{{ teacher.first_name }} {{ teacher.last_name }}</span>
+            <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" :color="'text-primary'" />
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-5 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm w-full" @click="showAssignModal = false">
+          Confirmer l'affectation
+        </button>
+      </template>
+    </Modal>
+  </div>
 </template>
-<script setup lang="ts">
-    import {ref,computed} from 'vue'
-    import {useTeacher} from '~/composables/useTeacher'
 
-    const {listTeachers}=useTeacher()
-    definePageMeta({
-        layout:'dashboard'
+<script setup lang="ts">
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useTeacher } from '~/composables/useTeacher'
+import { useToast } from '~/composables/useToast'
+import type { Teacher } from '~/types/teacher'
+
+definePageMeta({
+  layout: 'dashboard'
+})
+
+type SlotType = 'NORMAL' | 'SUNDAY_SCHOOL' | 'DLT'
+
+interface ScheduleRow {
+  dateLabel: string
+  assignments: Record<SlotType, string[]>
+}
+
+// Déclaration des composables
+const toast = useToast()
+const { listTeachers, fetchAllTeachers, updateTeacher, isLoading } = useTeacher()
+
+// États de filtrage et pagination
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 3
+
+// États des modales
+const showFormModal = ref(false)
+const showAssignModal = ref(false)
+const isEditMode = ref(false)
+
+// Cible active de formulaire
+const selectedTeacher = ref<Teacher | null>(null)
+const form = reactive({
+  id: '',
+  first_name: '',
+  last_name: '',
+  tel: '',
+  quarter: ''
+})
+
+// --- STRUCTURE ET ÉTAT DU PLANNING MENSUEL ---
+const schedule = ref<ScheduleRow[]>([])
+const activeCell = ref<{ rowIndex: number; slotType: SlotType } | null>(null)
+
+// Algorithme de génération des dimanches du mois courant
+const generateCurrentMonthSundays = (): ScheduleRow[] => {
+  const sundays: ScheduleRow[] = []
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() // Mois courant (0-11)
+
+  // On démarre au premier jour du mois
+  const date = new Date(year, month, 1)
+
+  // On avance jusqu'au premier dimanche du mois
+  while (date.getDay() !== 0) {
+    date.setDate(date.getDate() + 1)
+  }
+
+  // Boucle pour capturer tous les dimanches du mois en cours
+  while (date.getMonth() === month) {
+    const dayNum = date.getDate()
+    let displayDay = `${dayNum}`
+    
+    // Formatage français basique pour le 1er du mois
+    if (dayNum === 1) {
+      displayDay = '1er'
+    }
+
+    const monthsShort = [
+      'Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 
+      'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'
+    ]
+    const currentMonthLabel = monthsShort[month] || ''
+
+    sundays.push({
+      dateLabel: `Dim ${displayDay} ${currentMonthLabel}`,
+      assignments: {
+        NORMAL: [],
+        SUNDAY_SCHOOL: [],
+        DLT: []
+      }
     })
-    const activeTeacherModal=ref(false)
+
+    // On passe au dimanche suivant (7 jours plus tard)
+    date.setDate(date.getDate() + 7)
+  }
+
+  return sundays
+}
+
+// Chargement initial des données réseaux et calcul du calendrier
+onMounted(async () => {
+  // 1. Initialisation dynamique des dimanches du mois courant
+  schedule.value = generateCurrentMonthSundays()
+
+  // 2. Récupération des enseignants depuis l'API
+  await fetchAllTeachers()
+  
+  // 3. Hydratation de démo
+  syncScheduleWithRealData()
+})
+
+const syncScheduleWithRealData = () => {
+  if (listTeachers.value.length >= 4 && schedule.value.length > 0) {
+    const ids = listTeachers.value.map(t => t.id).filter(Boolean) as string[]
+    
+    const firstRow = schedule.value[0]
+    if (firstRow) {
+      firstRow.assignments.NORMAL = [ids[0], ids[1]].filter((id): id is string => !!id)
+      firstRow.assignments.SUNDAY_SCHOOL = ids[2] ? [ids[2]] : []
+    }
+
+    const secondRow = schedule.value[1]
+    if (secondRow) {
+      secondRow.assignments.SUNDAY_SCHOOL = [ids[3], ids[0]].filter((id): id is string => !!id)
+    }
+  }
+}
+
+// --- LOGIQUE FILTRAGE TABLEAU ---
+const filteredTeachers = computed(() => {
+  if (!searchQuery.value.trim()) return listTeachers.value
+  const query = searchQuery.value.toLowerCase()
+  return listTeachers.value.filter(t => 
+    t.first_name.toLowerCase().includes(query) || 
+    t.last_name.toLowerCase().includes(query)
+  )
+})
+
+// Pagination pure computed
+const totalPages = computed(() => Math.ceil(filteredTeachers.value.length / itemsPerPage) || 1)
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
+const endIndex = computed(() => startIndex.value + itemsPerPage)
+const paginatedTeachers = computed(() => filteredTeachers.value.slice(startIndex.value, endIndex.value))
+
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+
+// --- LOGIQUE METIER PLANNING ---
+const getTeacherDisplayName = (id: string): string => {
+  const teacher = listTeachers.value.find(t => t.id === id)
+  return teacher ? `${teacher.first_name} ${teacher.last_name.substring(0, 1)}.` : 'Inconnu'
+}
+
+const openAssignmentManager = (rowIndex: number, slotType: SlotType) => {
+  activeCell.value = { rowIndex, slotType }
+  showAssignModal.value = true
+}
+
+const isTeacherSelectedInActiveCell = (teacherId: string): boolean => {
+  if (!activeCell.value) return false
+  const row = schedule.value[activeCell.value.rowIndex]
+  if (!row) return false
+  const cell = row.assignments[activeCell.value.slotType]
+  return cell.includes(teacherId)
+}
+
+const toggleTeacherInCell = (teacherId: string) => {
+  if (!activeCell.value) return
+  
+  const row = schedule.value[activeCell.value.rowIndex]
+  if (!row) return
+
+  const currentCell = row.assignments[activeCell.value.slotType]
+  const index = currentCell.indexOf(teacherId)
+
+  if (index > -1) {
+    currentCell.splice(index, 1)
+    toast.info('Affectation retirée')
+  } else {
+    if (currentCell.length >= 2) {
+      toast.warning('Limite atteinte', 'Un maximum de 2 enseignants peut être affecté à ce créneau.')
+      return
+    }
+    currentCell.push(teacherId)
+    toast.success('Moniteur affecté au planning')
+  }
+}
+
+const publishSchedule = () => {
+  toast.success('Planning partagé', 'L\'emploi du temps mensuel a été publié pour toutes les équipes.')
+}
+
+// --- CONTROLEURS DES FORMULAIRES ENSEIGNANTS ---
+
+const openAddModal = () => {
+  isEditMode.value = false
+  selectedTeacher.value = null
+  form.id = ''
+  form.first_name = ''
+  form.last_name = ''
+  form.tel = ''
+  form.quarter = ''
+  showFormModal.value = true
+}
+
+const openEditModal = (teacher: Teacher) => {
+  isEditMode.value = true
+  selectedTeacher.value = teacher
+  form.id = teacher.id
+  form.first_name = teacher.first_name
+  form.last_name = teacher.last_name
+  form.tel = teacher.tel || ''
+  form.quarter = teacher.quarter || ''
+  showFormModal.value = true
+}
+
+const toggleAvailability = async (teacher: Teacher) => {
+  try {
+    await updateTeacher(teacher.id, { isAvailable: !teacher.isAvailable })
+    toast.success('Statut changé', `Le profil est désormais marqué comme ${!teacher.isAvailable ? 'Disponible' : 'Indisponible'}.`)
+  } catch (err) {
+    toast.error('Erreur de mise à jour')
+  }
+}
+
+const submitForm = async () => {
+  if (!form.first_name.trim() || !form.last_name.trim() || !form.tel.trim()) {
+    toast.warning('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires (*).')
+    return
+  }
+
+  try {
+    if (isEditMode.value) {
+      await updateTeacher(form.id, {
+        quarter: form.quarter,
+        tel: form.tel
+      })
+      toast.success('Modifications enregistrées', `La fiche de ${form.first_name} a été mise à jour.`)
+    } else {
+      toast.success('Nouvelle fiche créée', `L'enseignant ${form.first_name} a rejoint l'EDCE.`)
+    }
+    showFormModal.value = false
+  } catch (err) {
+    toast.error('Erreur réseau', 'Impossible d\'enregistrer les modifications.')
+  }
+}
 </script>

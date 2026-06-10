@@ -1,151 +1,308 @@
 <template>
-  <div class="p-6">
-    <section class="section-card overflow-hidden" style="transform: translateY(0px);">
-<div class="p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-<h3 class="font-h3 text-h3 flex items-center gap-2">
-<Icon name="school" color="text-primary" />
-                        Liste des Seances crées cette année
-                    </h3>
-<div class="flex items-center gap-3">
-<select v-model="classeSelected" class="bg-surface-container-low border-none rounded-lg text-small px-4 py-2 focus:ring-primary">
-<option v-for="child_classe in classes" :key="child_classe" :value="child_classe">{{ child_classe }}</option>
-</select>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-surface-container-low border-b border-outline-variant/30">
-<tr>
-<th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Titre</th>
-<th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Type</th>
-<th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Classe</th>
-<th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline text-right">Actions</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant/20">
-<tr v-for="seance in getSeancebyMonthAndClasse" class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 flex items-center gap-3">
-<div class="bg-primary/10 text-primary flex items-center justify-center font-bold text-small">{{seance.title}}</div>
+  <div class="p-6 max-w-7xl mx-auto w-full space-y-8">
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="font-h1 text-h1 text-on-background text-2xl font-bold">Registre des Séances</h2>
+        <p class="font-body text-body text-on-surface-variant mt-1">
+          Visualisez, modifiez et supprimez les séances d'enseignement de l'année {{ actualYear }}.
+        </p>
+      </div>
+    </div>
 
-</td>
-<td class="px-6 py-4 text-body">{{ seance.type }}</td>
-<td class="px-6 py-4 text-body">{{ seance.classe }}</td>
+    <section class="section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20">
+      <div class="p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h3 class="font-h3 text-h3 flex items-center gap-2 font-semibold">
+          <Icon name="school" class="text-primary" />
+          Liste des Séances créées cette année
+        </h3>
+        
+        <div class="flex items-center gap-3">
+          <select 
+            v-model="monthSelected" 
+            class="bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none text-doomu-text"
+          >
+            <option v-for="month in months" :key="month" :value="month">
+              {{ month.charAt(0).toUpperCase() + month.slice(1) }}
+            </option>
+          </select>
 
-<td class="px-6 py-4 text-right space-x-2">
-<button @click="view(seance)" class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Voir"><Icon color="text-on-surface-variant" name="visibility" /></button>
-<button @click="edit(seance)" class="text-outline hover:text-primary transition-colors"><Icon name="edit" color="text-[20px]"/>
-</button>
-<button @click="supprimer(seance)" class="text-outline hover:text-error transition-colors"><Icon name="delete" color="text-[20px]"/></button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- View Transaction Modal -->
-    <Modal v-model="showViewModal" title="Détails de la séance" :show-footer="false">
+          <select 
+            v-model="classeSelected" 
+            class="bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none text-doomu-text"
+          >
+            <option v-for="child_classe in classes" :key="child_classe" :value="child_classe">
+              {{ child_classe }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-surface-container-low border-b border-outline-variant/30">
+            <tr>
+              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Titre</th>
+              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Type</th>
+              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Classe</th>
+              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20">
+            <tr 
+              v-for="seance in getSeancebyMonthAndClasse" 
+              :key="seance.id" 
+              class="hover:bg-surface-container-low transition-colors"
+            >
+              <td class="px-6 py-4 flex items-center gap-3">
+                <div class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg font-medium text-small">
+                  {{ seance.title }}
+                </div>
+              </td>
+              <td class="px-6 py-4 text-body text-doomu-text">
+                <span class="px-2 py-1 bg-surface-variant rounded text-xs font-mono tracking-wide">
+                  {{ seance.type }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-body text-doomu-text">{{ seance.classe }}</td>
+
+              <td class="px-6 py-4 text-right space-x-1">
+                <button 
+                  @click="view(seance)" 
+                  class="p-2 text-outline hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" 
+                  title="Voir les détails"
+                >
+                  <Icon name="visibility" class="text-[20px]" />
+                </button>
+                <button 
+                  @click="edit(seance)" 
+                  class="p-2 text-outline hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" 
+                  title="Modifier"
+                >
+                  <Icon name="edit" class="text-[20px]"/>
+                </button>
+                <button 
+                  @click="supprimer(seance)" 
+                  class="p-2 text-outline hover:text-error hover:bg-error/5 rounded-lg transition-colors" 
+                  title="Supprimer"
+                >
+                  <Icon name="delete" class="text-[20px]"/>
+                </button>
+              </td>
+            </tr>
+
+            <tr v-if="isLoading">
+              <td colspan="4" class="px-6 py-10 text-center text-doomu-text-muted font-body">
+                Chargement des séances...
+              </td>
+            </tr>
+            <tr v-else-if="!getSeancebyMonthAndClasse || getSeancebyMonthAndClasse.length === 0">
+              <td colspan="4" class="px-6 py-10 text-center text-doomu-text-muted font-body">
+                Aucune séance trouvée pour la classe <span class="font-semibold text-primary">{{ classeSelected }}</span> en {{ monthSelected }}.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <Modal v-model="showViewModal" title="Détails de la séance" size="md">
       <div v-if="seanceModal" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <p class="text-sm text-doomu-text-muted">ID</p>
-            <p class="font-medium text-doomu-text">{{ seanceModal.id }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Identifiant</p>
+            <p class="font-mono text-xs text-doomu-text bg-doomu-bg p-1 rounded mt-0.5 break-all">{{ seanceModal.id }}</p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Type</p>
-            <p class="font-medium text-doomu-text">{{ seanceModal.type }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Type de rassemblement</p>
+            <p class="font-medium text-doomu-text mt-0.5">{{ seanceModal.type }}</p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Thème / Titre</p>
+            <p class="font-semibold text-doomu-text text-base mt-0.5">{{ seanceModal.title }}</p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Titre</p>
-            <p class="font-medium text-doomu-text">{{ seanceModal.title }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Classe assignée</p>
+            <p class="font-medium text-doomu-text mt-0.5">{{ seanceModal.classe }}</p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Classe</p>
-            <p class="font-medium text-doomu-text">{{ seanceModal.classe }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Date de tenue</p>
+            <p class="font-medium text-doomu-text mt-0.5">{{ formatDate(seanceModal.created_at) }}</p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Date de création</p>
-            <p class="font-medium text-doomu-text">{{ formatDate(seanceModal.created_at) }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Créé(e) par</p>
+            <p class="font-medium text-primary mt-0.5">
+              {{ getAuthorSupervisorbySeance(seanceModal)?.authorName || 'Moniteur non renseigné' }}
+            </p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Créé(e) par</p>
-            <p class="font-medium text-doomu-text">{{ getAuthorSupervisorbySeance(seanceModal).authorName }}</p>
+            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Supervisé par</p>
+            <p class="font-medium text-doomu-text mt-0.5">
+              {{ getAuthorSupervisorbySeance(seanceModal)?.supervisorName || 'Aucun superviseur' }}
+            </p>
           </div>
-          <div>
-            <p class="text-sm text-doomu-text-muted">Supervisé par</p>
-            <p class="font-medium text-doomu-text">{{ getAuthorSupervisorbySeance(seanceModal).supervisorName }}</p>
-          </div>
-  
-        </div>
-        <div class="flex justify-end pt-4 border-t border-doomu-border">
-          <button class="btn-outline" @click="showViewModal = false">Fermer</button>
         </div>
       </div>
+      <template #footer>
+        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">Fermer</button>
+      </template>
     </Modal>
-</section>
+
+    <Modal v-model="showEditModal" title="Modifier la séance" size="md">
+      <div v-if="seanceModal" class="space-y-4">
+        <form @submit.prevent="handleUpdate" id="editSeanceForm" class="space-y-4">
+          <div>
+            <label class="block font-caption text-caption text-outline mb-1.5">Titre de la Séance</label>
+            <input 
+              v-model="seanceModal.title" 
+              class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none focus:border-primary" 
+              type="text" 
+              required 
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-caption text-caption text-outline mb-1.5">Type</label>
+              <select v-model="seanceModal.type" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
+                <option v-for="typeS in typeSeances" :key="typeS" :value="typeS">{{ typeS }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-caption text-caption text-outline mb-1.5">Classe</label>
+              <select v-model="seanceModal.classe" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
+                <option v-for="c in classes" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <template #footer>
+        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg" @click="showEditModal = false">Annuler</button>
+        <button type="submit" form="editSeanceForm" class="px-6 py-2 bg-primary text-white rounded-lg shadow-sm" :disabled="isLoading">Enregistrer</button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showDeleteModal" title="Supprimer la séance" size="sm">
+      <div v-if="seanceModal" class="space-y-3 text-center py-2">
+        <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
+          <Icon name="delete" class="text-[24px]" />
+        </div>
+        <p class="text-body font-medium text-doomu-text">Êtes-vous sûr de vouloir supprimer définitivement cette séance ? Tous les émargements associés seront perdus.</p>
+        <p class="text-sm font-bold text-error bg-error/5 p-2 rounded border border-error/20 break-words">
+          {{ seanceModal.title }}
+        </p>
+      </div>
+      <template #footer>
+        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text w-full hover:bg-doomu-bg" @click="showDeleteModal = false">Annuler</button>
+        <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error-dark" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+      </template>
+    </Modal>
   </div>
 </template>
+
 <script setup lang="ts">
-import { definePageMeta } from '#imports';
-import { computed, ref } from 'vue';
-import { useParticipantSeance } from '~/composables/useParticipant';
-import { useSeance } from '~/composables/useSeance';
-import { classes } from '~/stores/child';
-import type { ClasseType } from '~/types/classe';
-import type { Month } from '~/types/index';
-import type { Seance } from '~/types/seance';
+import { ref, computed, onMounted } from 'vue'
+import { classes } from '~/stores/child'
+import { useSeance } from '~/composables/useSeance'
+import { useParticipantSeance } from '~/composables/useParticipant'
+import { useToast } from '~/composables/useToast'
+import type { ClasseType } from '~/types/classe'
+import type { Month } from '~/types/index'
+import type { Seance } from '~/types/seance'
 
-const showViewModal=ref(false)
-const seanceModal=ref<Seance>()
+definePageMeta({
+  layout: 'dashboard'
+})
 
+// Composables
+const toast = useToast()
+const { groupSeanceperYear, typeSeances, fetchAllSeances, updateSeance, deleteSeance, isLoading } = useSeance()
+const { getAuthorSupervisorbySeance } = useParticipantSeance()
 
-  definePageMeta({
-    layout: 'dashboard'
-  })
-  
-  const months = ref<Month[]>([
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre'
-  ])
+// États d'affichage & Modales
+const showViewModal = ref(false)
+const showEditModal = ref(false)
+const showDeleteModal = ref(false)
+const seanceModal = ref<Seance | null>(null)
 
-  const {getChildbySeanceId, getAuthorSupervisorbySeance}=useParticipantSeance()
+// Filtres de recherche
+const classeSelected = ref<ClasseType>("Petit")
 const monthSelected = ref<Month>('janvier')
-  const formatDate = (dateStr: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
-    return new Date(dateStr).toLocaleDateString('fr-FR', options)
-  }
+const actualYear = computed(() => new Date().getFullYear().toString())
 
-  const actualYear = computed(() => new Date().getFullYear().toString())
-  const classeSelected=ref<ClasseType>("Petit")
-  const {groupSeanceperYear}= useSeance()
-  const getSeanceActualYear=computed(()=>{
-    return groupSeanceperYear.value[actualYear.value]
+const months = ref<Month[]>([
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+])
+
+// Cycle de vie : Charger les données
+onMounted(async () => {
+  await fetchAllSeances()
+})
+
+// --- LOGIQUE FILTRES COMPUTED ---
+const getSeanceActualYear = computed(() => {
+  return groupSeanceperYear.value[actualYear.value] || []
+})
+
+const getSeancebyMonthAndClasse = computed(() => {
+  return getSeanceActualYear.value.filter(seance => {
+    if (!seance.created_at) return false
+    const seanceMonth = new Date(seance.created_at).toLocaleString('fr-FR', { month: 'long' })
+    return seanceMonth.toLowerCase() === monthSelected.value && seance.classe === classeSelected.value
   })
-  const getSeancebyMonthAndClasse=computed(()=>{
-    return getSeanceActualYear.value?.filter(seance=>{
-      const seanceMonth=new Date(seance.created_at).toLocaleString('fr-FR', {month: 'long'})
-      return seanceMonth.toLowerCase() ===monthSelected.value && seance.classe === classeSelected.value
+})
 
+// Formateur de date utilitaire
+const formatDate = (dateStr: string | Date) => {
+  if (!dateStr) return '-'
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
+  return new Date(dateStr).toLocaleDateString('fr-FR', options)
+}
+
+// --- GESTIONNAIRES ACTIONS ---
+
+const view = (seance: Seance) => {
+  seanceModal.value = { ...seance }
+  showViewModal.value = true
+}
+
+const edit = (seance: Seance) => {
+  seanceModal.value = { ...seance }
+  showEditModal.value = true
+}
+
+const supprimer = (seance: Seance) => {
+  seanceModal.value = seance
+  showDeleteModal.value = true
+}
+
+// 📝 Enregistrement des modifications (PUT)
+const handleUpdate = async () => {
+  if (!seanceModal.value) return
+  try {
+    await updateSeance(seanceModal.value.id, {
+      title: seanceModal.value.title,
+      type: seanceModal.value.type,
+      classe: seanceModal.value.classe
     })
-  })
+    toast.success('Séance mise à jour', 'Les détails du cours ont été modifiés.')
+    showEditModal.value = false
+  } catch (err) {
+    toast.error('Erreur', 'Impossible de modifier la séance.')
+  }
+}
 
-  const view=(seance: Seance)=>{
-    seanceModal.value=seance
-    showViewModal.value=!showViewModal.value
+// ❌ Validation de suppression (DELETE)
+const confirmDelete = async () => {
+  if (!seanceModal.value) return
+  const title = seanceModal.value.title
+  try {
+    await deleteSeance(seanceModal.value.id)
+    toast.success('Séance annulée', `La séance "${title}" a été supprimée.`);
+    showDeleteModal.value = false
+    seanceModal.value = null
+  } catch (err) {
+    toast.error('Erreur d\'annulation', 'Le serveur a bloqué la suppression de cette séance.')
   }
-  const edit=(seance: Seance)=>{
-    return 
-  }
-  const supprimer=(seance: Seance)=>{
-    return 
-  }
-
+}
 </script>

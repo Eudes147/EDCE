@@ -7,24 +7,32 @@ import {
   type RegisterData, 
   type AuthResponse, 
   type AuthState, 
-  defaultPermissions 
+  defaultPermissions,
+  type UserPermissions,
 } from '~/types/auth'
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
-    isAuthentificated: false,
-    isInitialized: false,
-    isLoading: false,
-    permissions: JSON.parse(JSON.stringify(defaultPermissions)) // Deep copy pour éviter les mutations partagées
-  }),
+  state: (): AuthState => {
+    // 🍪 Initialisation des cookies Nuxt pour la persistance (SSR-friendly)
+    const userCookie = useCookie<User | null>('auth_user')
+    const permissionsCookie = useCookie<any>('auth_permissions')
+    const isAuthCookie = useCookie<boolean>('auth_is_authenticated')
+
+    return {
+      // On récupère la valeur du cookie, sinon on remet à l'état par défaut
+      user: userCookie.value || null,
+      isAuthentificated: isAuthCookie.value || false,
+      isInitialized: !!userCookie.value,
+      isLoading: false,
+      permissions: permissionsCookie.value || JSON.parse(JSON.stringify(defaultPermissions))
+    }
+  },
 
   getters: {
     isAdmin: (state) => state.user?.status === "admin",
     userEmail: (state) => state.user?.email ?? "",
     userInitials: (state) => {
       if (!state.user) return '??'
-      // Sécurité si les champs sont vides
       const last = state.user.last_name?.[0] ?? ''
       const first = state.user.first_name?.[0] ?? ''
       return `${last}${first}`.toUpperCase()
@@ -36,35 +44,47 @@ export const useAuthStore = defineStore('auth', {
     userStatus: (state) => state.user?.status || null,
 
     // Permissions dynamiques basées sur l'état des permissions
-    canCreateChild: (state) => state.permissions?.teacher.canCreateChild ?? false,
-    canCreateNote: (state) => state.permissions?.teacher.canCreateNote ?? false,
-    canCreateTest: (state) => state.permissions?.moderator.canCreateTest ?? false,
-    canEditNote: (state) => state.permissions?.moderator.canEditNote ?? false,
-    canAccessDashboard: (state) => state.permissions?.admin.canAccessDashboard ?? false,
-    canAttributePermission: (state) => state.permissions?.admin.canAttributePermission ?? false,
+    canCreateChild: (state) => state.permissions?.teacher?.canCreateChild ?? false,
+    canCreateNote: (state) => state.permissions?.teacher?.canCreateNote ?? false,
+    canCreateTest: (state) => state.permissions?.moderator?.canCreateTest ?? false,
+    canEditNote: (state) => state.permissions?.moderator?.canEditNote ?? false,
+    canAccessDashboard: (state) => state.permissions?.admin?.canAccessDashboard ?? false,
+    canAttributePermission: (state) => state.permissions?.admin?.canAttributePermission ?? false,
   },
 
   actions: {
+    // Synchronise l'état local Pinia avec les Cookies Nuxt
+    saveStateToCookies() {
+      const maxAge = 60 * 60 * 24 // Durée de 1 jour
+
+      const userCookie = useCookie<User | null>('auth_user', { maxAge })
+      const permissionsCookie = useCookie<any>('auth_permissions', { maxAge })
+      const isAuthCookie = useCookie<boolean>('auth_is_authenticated', { maxAge })
+
+      userCookie.value = this.user
+      permissionsCookie.value = this.permissions
+      isAuthCookie.value = this.isAuthentificated
+    },
+
     setAuthData(data: AuthResponse | null) {
       if (data) {
         this.user = data.user
         this.permissions = data.permissions
         this.isAuthentificated = true
         this.isInitialized = true
+        this.saveStateToCookies()
       } else {
         this.clearAuthData()
       }
     },
 
     setPermissions(status: UserStatus) {
-      // On repart d'une structure propre et vidée
       this.permissions = {
         admin: { canAccessDashboard: false, canAttributePermission: false },
         moderator: { canCreateTest: false, canEditNote: false },
         teacher: { canCreateChild: false, canCreateNote: false }
       }
 
-      // Attribution stricte selon le rôle
       if (status === "admin") {
         this.permissions.admin.canAccessDashboard = true
         this.permissions.admin.canAttributePermission = true
@@ -77,12 +97,25 @@ export const useAuthStore = defineStore('auth', {
         this.permissions.teacher.canCreateChild = true
         this.permissions.teacher.canCreateNote = true
       }
+
+      // On sauvegarde l'état mis à jour des permissions dans les cookies
+      const permissionsCookie = useCookie<UserPermissions>('auth_permissions')
+      permissionsCookie.value = this.permissions
     },
 
     clearAuthData() {
+      // Suppression de tous les cookies d'authentification
       const authCookie = useCookie('auth_token')
-      authCookie.value = null // Supprime le cookie d'authentification
+      const userCookie = useCookie('auth_user')
+      const permissionsCookie = useCookie('auth_permissions')
+      const isAuthCookie = useCookie('auth_is_authenticated')
 
+      authCookie.value = null
+      userCookie.value = null
+      permissionsCookie.value = null
+      isAuthCookie.value = null
+
+      // Réinitialisation de l'état
       this.user = null
       this.isAuthentificated = false
       this.isInitialized = false
@@ -93,6 +126,14 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       if (this.user?.status === "admin") {
         user.status = status
+        
+        // Si l'admin modifie son propre statut, on synchronise les cookies
+        if (this.user.id === user.id) {
+          this.user.status = status
+          this.setPermissions(status)
+          this.saveStateToCookies()
+        }
+
         this.setLoading(false)
         return true
       }
@@ -110,27 +151,28 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: LoginCredentials): Promise<boolean> {
       this.setLoading(true)
       try {
-        // Envoi des identifiants au serveur Nitro
         const response = await $fetch<{ token: string; user: User }>('/api/auth/login', {
           method: 'POST',
           body: credentials
         })
 
-        // Stockage du token temporaire dans les cookies Nuxt
-        const authCookie = useCookie('auth_token', { maxAge: 60 * 60 * 24 }) // Expire en 1 jour
+        // 1. Stockage du token
+        const authCookie = useCookie('auth_token', { maxAge: 60 * 60 * 24 })
         authCookie.value = response.token
 
-        // Initialisation des données de l'utilisateur
+        // 2. Initialisation de l'état local
         this.user = response.user
         this.isAuthentificated = true
         this.isInitialized = true
         
-        // Calcul et mise en place des permissions associées à son rôle
+        // 3. Calcul des permissions
         this.setPermissions(response.user.status)
+
+        // 4. Persistence des données utilisateur
+        this.saveStateToCookies()
 
         return true
       } catch (error: any) {
-        // Renvoie l'erreur brute pour qu'elle soit attrapée par le composant Vue
         throw new Error(error.data?.message || error.statusMessage || "Impossible de se connecter.")
       } finally {
         this.setLoading(false)
@@ -143,13 +185,11 @@ export const useAuthStore = defineStore('auth', {
     async register(registerData: RegisterData): Promise<boolean> {
       this.setLoading(true)
       try {
-        // Envoi des données d'inscription au serveur Nitro
         const response = await $fetch<{ token: string; user: User }>('/api/auth/register', {
           method: 'POST',
           body: registerData
         })
 
-        // Optionnel : Connecter automatiquement l'utilisateur après inscription
         const authCookie = useCookie('auth_token', { maxAge: 60 * 60 * 24 })
         authCookie.value = response.token
 
@@ -157,6 +197,9 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthentificated = true
         this.isInitialized = true
         this.setPermissions(response.user.status)
+        
+        // Persistence des données utilisateur après inscription
+        this.saveStateToCookies()
 
         return true
       } catch (error: any) {
@@ -172,12 +215,11 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.setLoading(true)
       try {
-        // Si tu veux notifier ton serveur de la déconnexion
+        // Envoi optionnel au serveur
         // await $fetch('/api/auth/logout', { method: 'POST' })
       } catch (error) {
         console.error("Erreur lors de la déconnexion serveur", error)
       } finally {
-        // Quoi qu'il arrive, on nettoie le local et on redirige
         this.clearAuthData()
         this.setLoading(false)
         await navigateTo('/login')

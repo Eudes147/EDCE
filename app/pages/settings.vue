@@ -33,10 +33,6 @@
               Enseignants (Teachers)
               <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">{{ teachersList.length }}</span>
             </h3>
-            <button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-body text-body flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-sm">
-              <Icon name="add" />
-              Nouvel Utilisateur
-            </button>
           </div>
 
           <div v-if="isUsersLoading" class="py-12 text-center text-on-surface-variant text-body-sm">
@@ -221,17 +217,19 @@ definePageMeta({
 // --- INJECTION DU NEW COMPOSABLE USER ---
 const { listUsers, isUsersLoading, fetchUsers, changeUserRole } = useUsers()
 
+// Déclenchement automatique de la récupération au montage du composant
 onMounted(async () => {
   await fetchUsers()
 })
 
 // --- TRIS CALCULÉS ET DYNAMIQUES DES SECTIONS DE RÔLES ---
+// Ajout d'une sécurité (|| []) pour éviter le crash si listUsers est temporairement indéfini
 const teachersList = computed(() => {
-  return listUsers.value.filter(u => u.status === 'teacher')
+  return (listUsers.value || []).filter(u => u.status === 'teacher')
 })
 
 const moderatorsList = computed(() => {
-  return listUsers.value.filter(u => u.status === 'moderator')
+  return (listUsers.value || []).filter(u => u.status === 'moderator')
 })
 
 // --- ACTION AUTOMATIQUE DE CHANGEMENT DE STATUT (ROLE) ---
@@ -242,6 +240,8 @@ const handleRoleSwitch = async (user: User, newRole: UserStatus) => {
   const success = await changeUserRole(user, newRole)
   if (success) {
     alert("Le statut de l'utilisateur a été mis à jour avec succès.")
+    // Optionnel : Re-fetch les utilisateurs pour s'assurer que le state global est à jour
+    await fetchUsers()
   } else {
     alert("Erreur lors de la modification. Vérifiez vos droits d'administrateur.")
   }
@@ -266,7 +266,6 @@ const permissionsList = ref([
   { title: 'Partage de documents externe', description: 'Permet le partage de liens vers des ressources hors plateforme.', icon: 'share', iconColor: 'text-primary', bg: 'bg-primary/10', value: true }
 ])
 </script>
-
 <style scoped>
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;

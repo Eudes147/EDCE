@@ -173,7 +173,6 @@ async function handleLogin() {
   errorMessage.value = ''
 
   try {
-    // 1. Appel HTTP vers notre API Nitro avec $fetch
     const data = await $fetch<{ token: string; user: User }>('/api/auth/login', {
       method: 'POST',
       body: {
@@ -181,9 +180,9 @@ async function handleLogin() {
         password: loginForm.password
       }
     })
-    toast.success('Login réussie à EDCE!') // Affichage d'un toast de succès
+    toast.success('Login réussie à EDCE!')
 
-    // 2. Sauvegarde du Token dans le Cookie (valable 30 jours si 'remember' est coché)
+    // 2. Sauvegarde du Token
     const tokenCookie = useCookie('auth_token', {
       maxAge: loginForm.remember ? 60 * 60 * 24 * 30 : undefined,
       path: '/'
@@ -195,7 +194,10 @@ async function handleLogin() {
     authStore.isAuthentificated = true
     authStore.setPermissions(data.user.status)
 
-    // 4. Redirection selon le rôle configuré
+    // ✅ AJOUTE CECI: Sauvegarde tout dans les cookies
+    authStore.saveStateToCookies()
+
+    // 4. Redirection
     if (authStore.userStatus === 'admin') {
       await navigateTo('/dashboard')
     } else {
@@ -203,7 +205,6 @@ async function handleLogin() {
     }
 
   } catch (error: any) {
-    // Interception et affichage du message d'erreur serveur
     errorMessage.value = error.data?.message || 'Identifiants invalides ou problème réseau.'
     toast.error('Login error:', error)
   } finally {

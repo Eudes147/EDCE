@@ -182,12 +182,18 @@ definePageMeta({
 
 // Accès aux instances des composables
 const childrenInfos = useChildren()
-const { getChildrenByActivityTitle } = useParticipantEventActivity()
+const { getChildrenByActivityTitle,fetchAllEventData } = useParticipantEventActivity()
 
 // Hydratation au cycle de vie (Optionnel mais sécuritaire si vos stores requièrent un fetch)
 onMounted(async () => {
-  if ('fetchAllChildren' in childrenInfos) {
-    await (childrenInfos as any).fetchAllChildren()
+  try {
+    // On lance les deux requêtes en parallèle pour aller plus vite
+    await Promise.all([
+      childrenInfos.fetchAllChildren(),
+      fetchAllEventData()
+    ])
+  } catch (error) {
+    console.error("Erreur lors du chargement des données au montage:", error)
   }
 })
 

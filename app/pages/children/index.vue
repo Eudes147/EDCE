@@ -1,26 +1,24 @@
 <template>
-  <div class="p-8 max-w-7xl mx-auto w-full space-y-8">
-    <!-- Header Section -->
-    <div class="flex justify-between items-end">
+  <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6 md:space-y-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
       <div>
-        <h2 class="font-h1 text-h1 text-on-background text-2xl font-bold">Gestion des Enfants</h2>
-        <p class="font-body text-body text-on-surface-variant mt-1">
+        <h2 class="font-h1 text-xl md:text-h1 text-on-background font-bold">Gestion des Enfants</h2>
+        <p class="font-body text-sm md:text-body text-on-surface-variant mt-1">
           Supervisez les inscriptions, les notes et les participations aux événements de vos enfants.
         </p>
       </div>
     </div>
 
-    <!-- 1. Children List Table -->
     <section class="section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20">
-      <div class="p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h3 class="font-h3 text-h3 flex items-center gap-2 font-semibold">
+      <div class="p-4 md:p-6 border-b border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 class="font-h3 text-base md:text-h3 flex items-center gap-2 font-semibold">
           <Icon name="format_list_bulleted" class="text-primary" />
           Liste des Enfants
         </h3>
-        <div class="flex items-center gap-3">
+        <div class="w-full sm:w-auto">
           <select 
             v-model="classeSelected" 
-            class="bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none"
+            class="w-full sm:w-auto bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none"
           >
             <option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">
               {{ child_classe }}
@@ -29,7 +27,7 @@
         </div>
       </div>
       
-      <div class="overflow-x-auto">
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-surface-container-low border-b border-outline-variant/30">
             <tr>
@@ -60,71 +58,107 @@
                 <button @click.stop="view(child)" class="text-outline hover:text-primary transition-colors" title="Voir">
                   <Icon name="visibility" class="text-[20px]"/>
                 </button>
-                <button @click.stop="edit(child)" class="text-outline hover:text-primary transition-colors" title="Modifier">
-                  <Icon name="edit" class="text-[20px]"/>
+                <button @click.stop="edit(child)" class="text-outline hover:text-primary transition-colors" title="Editer">
+                  <Icon name="edit" class="text-[20px]" />
                 </button>
                 <button @click.stop="supprimer(child)" class="text-outline hover:text-error transition-colors" title="Supprimer">
                   <Icon name="delete" class="text-[20px]"/>
                 </button>
               </td>
             </tr>
-            <tr v-if="!childrenPerClass[classeSelected] || childrenPerClass[classeSelected]?.length === 0">
-              <td colspan="4" class="px-6 py-8 text-center text-doomu-text-muted font-body">
-                Aucun enfant inscrit dans cette classe.
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
+
+      <div class="block md:hidden divide-y divide-outline-variant/20">
+        <div 
+          v-for="child in childrenPerClass[classeSelected]" 
+          :key="`mobile-${child.id}`"
+          @click="attribute(child)"
+          class="p-4 flex flex-col gap-3 transition-colors"
+          :class="attributeChild?.id === child.id ? 'bg-primary/5' : 'bg-white'"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                {{ getFullName(child.name).initials }}
+              </div>
+              <div>
+                <p class="font-body text-sm font-bold text-doomu-text">{{ child.name }}</p>
+                <p class="text-xs text-outline-variant">{{ child.classe }} • {{ child?.nivScolaire || 'Non défini' }}</p>
+              </div>
+            </div>
+            
+            <span v-if="attributeChild?.id === child.id" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-semibold">Sélectionné</span>
+          </div>
+
+          <div class="flex justify-end gap-4 pt-1 border-t border-dashed border-outline-variant/20">
+            <button @click.stop="view(child)" class="flex items-center gap-1 text-xs text-outline hover:text-primary px-2 py-1 bg-surface-container-low rounded">
+              <Icon name="visibility" size="1.1rem"/> Voir
+            </button>
+            <button @click.stop="edit(child)" class="flex items-center gap-1 text-xs text-outline hover:text-primary px-2 py-1 bg-surface-container-low rounded">
+              <Icon name="edit" size="1.1rem" /> Éditer
+            </button>
+            <button @click.stop="supprimer(child)" class="flex items-center gap-1 text-xs text-error hover:bg-error/10 px-2 py-1 bg-error/5 rounded">
+              <Icon name="delete" size="1.1rem"/> Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="!childrenPerClass[classeSelected] || childrenPerClass[classeSelected]?.length === 0" class="px-6 py-8 text-center text-doomu-text-muted font-body text-sm">
+        Aucun enfant inscrit dans cette classe.
+      </div>
     </section>
 
-    <!-- 2. Attribution de Notes & 5. Add New Child (Asymmetric Grid) -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Attribution de Notes -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
       <div class="lg:col-span-2 section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20 flex flex-col justify-between">
         <div>
-          <div class="p-6 border-b border-outline-variant/30 flex justify-between items-center">
-            <h3 class="font-h3 text-h3 flex items-center gap-2 font-semibold">
+          <div class="p-4 md:p-6 border-b border-outline-variant/30 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+            <h3 class="font-h3 text-base md:text-h3 flex items-center gap-2 font-semibold">
               <Icon name="assignment" class="text-secondary-container"/>
               Attribution de Notes
             </h3>
-            <div class="flex items-center gap-2">
-              <span class="text-small text-outline">Test:</span>
-              <select v-model="testSelectedId" class="text-small bg-transparent border-none font-medium text-primary cursor-pointer focus:ring-0 focus:outline-none">
+            <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg w-full sm:w-auto">
+              <span class="text-small text-outline whitespace-nowrap">Test:</span>
+              <select v-model="testSelectedId" class="text-small bg-transparent border-none font-medium text-primary cursor-pointer focus:ring-0 focus:outline-none w-full">
                 <option v-for="test in getTestbyClasse(classeSelected)" :value="test.id" :key="test.id">
                   {{ test.titleTest }}
                 </option>
               </select>
             </div>
           </div>
-          <div class="p-6">
+          
+          <div class="p-4 md:p-6">
             <div class="space-y-4">
               <div v-if="!attributeChild" class="flex items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-dashed border-outline-variant/40">
-                <p class="text-doomu-text-muted text-sm">Sélectionnez un enfant dans la liste ci-dessus en cliquant sur sa ligne pour lui attribuer une note.</p>
+                <p class="text-doomu-text-muted text-xs md:text-sm">Sélectionnez un enfant dans la liste ci-dessus (en cliquant sur sa ligne ou sa carte) pour lui attribuer une note.</p>
               </div>
-              <div v-else class="flex items-center gap-4 bg-surface-container-low p-3 rounded-xl border border-primary/20">
-                <div class="flex-1 font-body text-body font-medium text-doomu-text">
-                  Note pour : <span class="text-primary font-bold">{{ attributeChild.name }}</span>
+              <div v-else class="flex flex-col sm:flex-row sm:items-center gap-4 bg-surface-container-low p-4 rounded-xl border border-primary/20">
+                <div class="flex-1 font-body text-sm md:text-body font-medium text-doomu-text">
+                  Note pour : <span class="text-primary font-bold block sm:inline">{{ attributeChild?.name }}</span>
                 </div>
-                <div class="w-24">
-                  <input 
-                    v-model="note" 
-                    class="w-full bg-white border border-outline-variant/50 rounded-lg text-small px-3 py-1.5 focus:ring-primary focus:outline-none text-doomu-text" 
-                    placeholder="Note" 
-                    type="number"
-                    min="0"
-                    max="20"
-                    step="0.25"
-                  />
-                </div>
-                <div class="w-32">
-                  <button 
-                    class="w-full bg-primary text-white hover:bg-primary-dark transition-all text-small font-semibold py-1.5 rounded-lg shadow-sm" 
-                    @click="saveNote(attributeChild.id, testSelectedId)"
-                    :disabled="isNoteLoading"
-                  >
-                    Enregistrer
-                  </button>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                  <div class="flex-1 sm:w-24">
+                    <input 
+                      v-model="note" 
+                      class="w-full bg-white border border-outline-variant/50 rounded-lg text-small px-3 py-2 focus:ring-primary focus:outline-none text-doomu-text" 
+                      placeholder="Note" 
+                      type="number"
+                      min="0"
+                      max="20"
+                      step="0.25"
+                    />
+                  </div>
+                  <div class="flex-1 sm:w-32">
+                    <button 
+                      class="w-full bg-primary text-white hover:bg-primary-dark transition-all text-small font-semibold py-2 rounded-lg shadow-sm" 
+                      @click="saveNote(attributeChild.id, testSelectedId)"
+                      :disabled="isNoteLoading"
+                    >
+                      Enregistrer
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -132,9 +166,8 @@
         </div>
       </div>
 
-      <!-- Quick Form: Add New Child -->
-      <div class="section-card p-6 h-fit bg-white rounded-xl shadow-sm border border-outline-variant/20">
-        <h3 class="font-h3 text-h3 mb-6 flex items-center gap-2 font-semibold">
+      <div class="section-card p-4 md:p-6 h-fit bg-white rounded-xl shadow-sm border border-outline-variant/20">
+        <h3 class="font-h3 text-base md:text-h3 mb-4 md:mb-6 flex items-center gap-2 font-semibold">
           <Icon name="add_circle" class="text-primary"/>
           Nouvelle Inscription
         </h3>
@@ -143,7 +176,7 @@
             <label class="block font-caption text-caption text-outline mb-1.5">Nom Complet <span class="text-error">*</span></label>
             <input v-model="formChild.name" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: AHOUNANSOU Viviane" type="text" required />
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-caption text-caption text-outline mb-1.5">Genre</label>
               <select v-model="formChild.sexe" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none">
@@ -156,7 +189,7 @@
               <input v-model="dateSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none" type="date" required />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-caption text-caption text-outline mb-1.5">Classe EDCE</label>
               <select v-model="formChild.classe" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none">
@@ -198,201 +231,179 @@
       </div>
     </div>
 
-    <!-- ⬇️ LES DEUX CARDS D'ÉVÉNEMENTS RÉINTÉGRÉES ICI ⬇️ -->
-<div class="space-y-6">
-    <!-- ========================================== -->
-    <!-- SECTION DES CARDS COMPACTES (MAX 2)        -->
-    <!-- ========================================== -->
-    <div v-if="isLoading" class="text-sm text-on-surface-variant italic py-4">
-      Chargement des activités...
-    </div>
+    <div class="space-y-4 md:space-y-6">
+      <div v-if="isLoading" class="text-sm text-on-surface-variant italic py-4">
+        Chargement des activités...
+      </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div 
-        v-for="(children, activityTitle) in limitedActivitiesWithChildren" 
-        :key="activityTitle"
-        class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-primary transition-all group"
-      >
-        <div>
-          <!-- En-tête de la carte d'activité -->
-          <div class="flex items-center gap-2 mb-3">
-            <span class="w-2 h-2 rounded-full bg-primary"></span>
-            <h4 class="font-bold font-h3 text-on-surface text-base group-hover:text-primary transition-colors">
-              {{ activityTitle }}
-            </h4>
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div 
+          v-for="(children, activityTitle) in getLimitedActivitiesWithChildren('Arbre de noël')" 
+          :key="activityTitle"
+          class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 md:p-5 shadow-sm flex flex-col justify-between hover:border-primary transition-all group"
+        >
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <h4 class="font-bold font-h3 text-on-surface text-base group-hover:text-primary transition-colors">
+                {{ activityTitle }}
+              </h4>
+            </div>
+            <p class="text-caption text-on-surface-variant mb-4">Participants récents :</p>
+            <ul class="space-y-2 mb-6">
+              <li v-if="children.length === 0" class="text-xs text-on-surface-variant italic pl-2">Aucun participant enregistré</li>
+              <li 
+                v-for="child in children.slice(0, 3)" 
+                :key="child.id"
+                class="flex items-center gap-2 text-sm text-on-surface font-body bg-surface-container-low/50 px-3 py-1.5 rounded-lg"
+              >
+                <Icon name="person" class="text-on-surface-variant text-[16px]" />
+                {{ child.name }}
+              </li>
+              <li v-if="children.length > 3" class="text-caption text-primary font-medium pl-2 italic">
+                + {{ children.length - 3 }} autre(s) enfant(s) inscrit(s)
+              </li>
+            </ul>
           </div>
-
-          <!-- Liste limitée à 3 enfants participants -->
-          <p class="text-caption text-on-surface-variant mb-4">
-            Participants récents :
-          </p>
-          
-          <ul class="space-y-2 mb-6">
-            <!-- Si aucun participant n'est trouvé dans le mock pour cette activité -->
-            <li v-if="children.length === 0" class="text-xs text-on-surface-variant italic pl-2">
-              Aucun participant enregistré
-            </li>
-
-            <li 
-              v-for="child in children.slice(0, 3)" 
-              :key="child.id"
-              class="flex items-center gap-2 text-sm text-on-surface font-body bg-surface-container-low/50 px-3 py-1.5 rounded-lg"
-            >
-              <Icon name="person" class="text-on-surface-variant text-[16px]" />
-              {{ child.last_name }} {{ child.first_name }}
-            </li>
-            
-            <!-- Indicateur de surplus -->
-            <li v-if="children.length > 3" class="text-caption text-primary font-medium pl-2 italic">
-              + {{ children.length - 3 }} autre(s) enfant(s) inscrit(s)
-            </li>
-          </ul>
+          <button 
+            @click="openAssociationModal(activityTitle)"
+            class="w-full bg-primary/5 hover:bg-primary text-primary hover:text-on-primary font-bold py-2.5 px-4 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-primary/10"
+          >
+            <Icon name="person_add" /> Inscrire un enfant
+          </button>
         </div>
 
-        <!-- Bouton d'action pour associer un enfant -->
-        <button 
-          @click="openAssociationModal(activityTitle)"
-          class="w-full bg-primary/5 hover:bg-primary text-primary hover:text-on-primary font-bold py-2.5 px-4 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-primary/10"
+        <div 
+          v-for="(children, activityTitle) in getLimitedActivitiesWithChildren('Soirée récréative des enfants')" 
+          :key="activityTitle"
+          class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 md:p-5 shadow-sm flex flex-col justify-between hover:border-primary transition-all group"
         >
-          <Icon name="person_add" />
-          Associer un enfant
-        </button>
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <h4 class="font-bold font-h3 text-on-surface text-base group-hover:text-primary transition-colors">
+                {{ activityTitle }}
+              </h4>
+            </div>
+            <p class="text-caption text-on-surface-variant mb-4">Participants récents :</p>
+            <ul class="space-y-2 mb-6">
+              <li v-if="children.length === 0" class="text-xs text-on-surface-variant italic pl-2">Aucun participant enregistré</li>
+              <li 
+                v-for="child in children.slice(0, 3)" 
+                :key="child.id"
+                class="flex items-center gap-2 text-sm text-on-surface font-body bg-surface-container-low/50 px-3 py-1.5 rounded-lg"
+              >
+                <Icon name="person" class="text-on-surface-variant text-[16px]" />
+                {{ child.name }}
+              </li>
+              <li v-if="children.length > 3" class="text-caption text-primary font-medium pl-2 italic">
+                + {{ children.length - 3 }} autre(s) enfant(s) inscrit(s)
+              </li>
+            </ul>
+          </div>
+          <button 
+            @click="openAssociationModal(activityTitle)"
+            class="w-full bg-primary/5 hover:bg-primary text-primary hover:text-on-primary font-bold py-2.5 px-4 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-primary/10"
+          >
+            <Icon name="person_add" /> Inscrire un enfant
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODALE D'ASSOCIATION ENFANT 🔁 ACTIVITÉ    -->
-    <!-- ========================================== -->
-    <Modal 
-      v-model="isModalOpen" 
-      :title="`Inscrire un enfant à : ${selectedActivityTitle}`" 
-      size="md"
-    >
+    <Modal v-model="isModalOpen" :title="`Inscrire à : ${selectedActivityTitle}`" size="md">
       <div class="space-y-4 py-2">
-        <p class="text-body-sm text-on-surface-variant">
-          Sélectionnez l'enfant à inscrire à cette session d'activité d'événement.
-        </p>
-
-        <!-- Sélecteur d'enfants issus de listChildren du composable -->
+        <p class="text-body-sm text-on-surface-variant">Sélectionnez l'enfant à inscrire à cette session d'activité.</p>
         <div class="flex flex-col gap-1.5">
           <label class="text-caption font-bold text-on-surface-variant">Enfants disponibles</label>
-          <select 
-            v-model="selectedChildId"
-            class="w-full p-3 border border-outline-variant rounded-xl bg-white focus:ring-2 focus:ring-primary focus:border-primary text-sm font-body text-on-surface"
-          >
+          <select v-model="selectedChildId" class="w-full p-3 border border-outline-variant rounded-xl bg-white focus:ring-2 focus:ring-primary focus:border-primary text-sm font-body text-on-surface">
             <option value="" disabled>-- Choisir un enfant --</option>
-            <option 
-              v-for="child in childrenPerClass[classeSelected]" 
-              :key="child.id" 
-              :value="child.id"
-            >
+            <option v-for="child in childrenPerClass[classeSelected]" :key="child.id" :value="child.id">
               {{ child.name ? child.name.toUpperCase() : '' }}
             </option>
           </select>
         </div>
-
-        <div class="p-3 bg-surface-container-high rounded-xl flex gap-2 items-start mt-2">
-          <Icon name="info" class="text-primary mt-0.5" />
-          <p class="text-xs text-on-surface-variant">
-            L'inscription ajoutera immédiatement l'enfant au registre de l'activité liée à l'année en cours.
-          </p>
-        </div>
       </div>
-
       <template #footer>
-        <div class="flex gap-2 w-full">
-          <button 
-            class="px-4 py-2.5 border border-outline rounded-xl text-on-surface w-full hover:bg-surface-container active:scale-95 transition-all text-sm font-bold" 
-            @click="isModalOpen = false"
-          >
-            Annuler
-          </button>
-          <button 
-            class="px-4 py-2.5 bg-primary text-on-primary font-bold rounded-xl w-full hover:opacity-90 active:scale-95 transition-all text-sm shadow-sm flex items-center justify-center gap-1"
-            :disabled="!selectedChildId"
-            @click="submitAssociation"
-          >
-            <Icon name="done" />
-            Confirmer l'inscription
+        <div class="flex flex-col sm:flex-row gap-2 w-full">
+          <button class="px-4 py-2.5 border border-outline rounded-xl text-on-surface w-full hover:bg-surface-container transition-all text-sm font-bold order-2 sm:order-1" @click="isModalOpen = false">Annuler</button>
+          <button class="px-4 py-2.5 bg-primary text-on-primary font-bold rounded-xl w-full hover:opacity-90 transition-all text-sm flex items-center justify-center gap-1 order-1 sm:order-2" :disabled="!selectedChildId" @click="submitAssociation">
+            <Icon name="done" /> Confirmer
           </button>
         </div>
       </template>
     </Modal>
-  </div>
     
-    <!-- Modal : Parents -->
     <Modal v-model="activeParentModal" title="Informations Parents" size="md">
-      <div class="space-y-6">
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block font-caption text-caption text-outline mb-1.5">Civilité</label>
-              <select v-model="formChild.sexeParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none">
-                <option value="Masculin">Mr (Père)</option>
-                <option value="Feminin">Mme (Mère)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-caption text-caption text-outline mb-1.5">Nom de famille hérité</label>
-              <input class="w-full bg-surface-container-low/60 border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 text-doomu-text-muted font-medium" :value="formChild.name ? formChild.name.trim().split(' ')[0] : '-'" disabled type="text" />
-            </div>
+      <div class="space-y-4 py-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-caption text-caption text-outline mb-1.5">Civilité</label>
+            <select v-model="formChild.sexeParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
+              <option value="Masculin">Mr (Père)</option>
+              <option value="Feminin">Mme (Mère)</option>
+            </select>
           </div>
           <div>
-            <label class="block font-caption text-caption text-outline mb-1.5">Téléphone du Responsable <span class="text-error">*</span></label>
-            <input v-model="formChild.telParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: +2290195487596" type="tel" />
+            <label class="block font-caption text-caption text-outline mb-1.5">Nom de famille</label>
+            <input class="w-full bg-surface-container-low/60 border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 text-doomu-text-muted font-medium" :value="formChild.name ? formChild.name.trim().split(' ')[0] : '-'" disabled type="text" />
           </div>
+        </div>
+        <div>
+          <label class="block font-caption text-caption text-outline mb-1.5">Téléphone du Responsable <span class="text-error">*</span></label>
+          <input v-model="formChild.telParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-small px-4 py-2.5 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: +2290195487596" type="tel" />
         </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors" @click="activeParentModal = false">Annuler</button>
-        <button class="px-6 py-2 bg-primary text-white font-semibold rounded-lg shadow-sm" @click="validateParent">Valider le parent</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
+          <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors w-full sm:w-auto" @click="activeParentModal = false">Annuler</button>
+          <button class="px-6 py-2 bg-primary text-white font-semibold rounded-lg shadow-sm w-full sm:w-auto" @click="validateParent">Valider</button>
+        </div>
       </template>
     </Modal>
 
-    <!-- Modal : View -->
     <Modal v-model="showViewModal" title="Détails de l'enfant" size="md">
       <div v-if="childSelected" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <p class="text-sm text-doomu-text-muted">Nom Complet</p>
-            <p class="font-medium text-doomu-text text-base">{{ childSelected.name }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="border-b sm:border-none pb-2 sm:pb-0">
+            <p class="text-xs text-doomu-text-muted">Nom Complet</p>
+            <p class="font-medium text-doomu-text text-base">{{ childSelected?.name }}</p>
+          </div>
+          <div class="border-b sm:border-none pb-2 sm:pb-0">
+            <p class="text-xs text-doomu-text-muted">Genre</p>
+            <p class="font-medium text-doomu-text">{{ childSelected?.sexe }}</p>
+          </div>
+          <div class="border-b sm:border-none pb-2 sm:pb-0">
+            <p class="text-xs text-doomu-text-muted">Classe EDCE</p>
+            <p class="font-medium text-doomu-text">{{ childSelected?.classe }}</p>
+          </div>
+          <div class="border-b sm:border-none pb-2 sm:pb-0">
+            <p class="text-xs text-doomu-text-muted">Niv. Scolaire</p>
+            <p class="font-medium text-doomu-text">{{ childSelected?.nivScolaire || 'Non défini' }}</p>
+          </div>
+          <div class="border-b sm:border-none pb-2 sm:pb-0">
+            <p class="text-xs text-doomu-text-muted">Téléphone Enfant</p>
+            <p class="font-medium text-doomu-text">{{ childSelected?.tel || 'Aucun' }}</p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Genre</p>
-            <p class="font-medium text-doomu-text">{{ childSelected.sexe }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-doomu-text-muted">Classe EDCE</p>
-            <p class="font-medium text-doomu-text">{{ childSelected.classe }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-doomu-text-muted">Niv. Scolaire</p>
-            <p class="font-medium text-doomu-text">{{ childSelected.nivScolaire || 'Non défini' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-doomu-text-muted">Téléphone Enfant</p>
-            <p class="font-medium text-doomu-text">{{ childSelected.tel || 'Aucun' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-doomu-text-muted">Téléphone Parent</p>
+            <p class="text-xs text-doomu-text-muted">Téléphone Parent</p>
             <p class="font-medium text-doomu-text">{{ childSelected.telParent }}</p>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">Fermer</button>
+        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors w-full sm:w-auto" @click="showViewModal = false">Fermer</button>
       </template>
     </Modal>
 
-    <!-- Modal : Edit -->
     <Modal v-model="showEditModal" title="Modifier la fiche enfant" size="md">
-      <div v-if="childSelected" class="space-y-4">
+      <div v-if="childSelected" class="py-2">
         <form @submit.prevent="handleUpdate" id="editChildForm" class="space-y-4">
           <div>
             <label class="block font-caption text-caption text-outline mb-1.5">Nom Complet</label>
             <input v-model="childSelected.name" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none focus:border-primary" type="text" required />
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-caption text-caption text-outline mb-1.5">Genre</label>
               <select v-model="childSelected.sexe" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
@@ -405,7 +416,7 @@
               <input v-model="editDateSelected" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none" type="date" required />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-caption text-caption text-outline mb-1.5">Classe EDCE</label>
               <select v-model="childSelected.classe" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
@@ -424,25 +435,28 @@
         </form>
       </div>
       <template #footer>
-        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg" @click="showEditModal = false">Annuler</button>
-        <button type="submit" form="editChildForm" class="px-6 py-2 bg-primary text-white rounded-lg shadow-sm" :disabled="isLoading">Enregistrer</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
+          <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg w-full sm:w-auto order-2 sm:order-1" @click="showEditModal = false">Annuler</button>
+          <button type="submit" form="editChildForm" class="px-6 py-2 bg-primary text-white rounded-lg shadow-sm w-full sm:w-auto order-1 sm:order-2" :disabled="isLoading">Enregistrer</button>
+        </div>
       </template>
     </Modal>
 
-    <!-- Modal : Delete -->
     <Modal v-model="showDeleteModal" title="Supprimer la fiche d'inscription" size="sm">
       <div v-if="childSelected" class="space-y-3 text-center py-2">
         <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
           <Icon name="delete" class="text-[24px]" />
         </div>
-        <p class="text-body font-medium text-doomu-text">Confirmez-vous la désinscription définitive de l'enfant ?</p>
-        <p class="text-sm font-bold text-error bg-error/5 p-2 rounded border border-error/20">
-          {{ childSelected.name }} ({{ childSelected.classe }})
+        <p class="text-body font-medium text-doomu-text text-sm">Confirmez-vous la désinscription définitive de l'enfant ?</p>
+        <p class="text-xs font-bold text-error bg-error/5 p-3 rounded border border-error/20 break-words">
+          {{ childSelected.name }} <br class="sm:hidden" />({{ childSelected.classe }})
         </p>
       </div>
       <template #footer>
-        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text w-full hover:bg-doomu-bg" @click="showDeleteModal = false">Annuler</button>
-        <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error-dark" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full">
+          <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text w-full hover:bg-doomu-bg order-2 sm:order-1" @click="showDeleteModal = false">Annuler</button>
+          <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error-dark order-1 sm:order-2" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+        </div>
       </template>
     </Modal>
   </div>
@@ -457,6 +471,7 @@ import { useNote } from '~/composables/useNote'
 import { useToast } from '~/composables/useToast'
 import type { ClasseType } from '~/types/classe'
 import type { Child, childSubmit } from '~/types/child'
+import type {EventType} from '~/types/activity'
 
 definePageMeta({
   layout: 'dashboard',
@@ -466,7 +481,7 @@ definePageMeta({
 const actualYear = computed(() => new Date().getFullYear().toString())
 const toast = useToast()
 const { childrenPerClass, getFullName, fetchAllChildren, createChild, updateChild, deleteChild, isLoading } = useChildren()
-const { getTestbyClasse } = useTest()
+const { getTestbyClasse, fetchAllTests } = useTest()
 const { createNote } = useNote() 
 
 // --- INSTANCIATION DU STORE DES PARTICIPANTS (Résout l'erreur 7022 & 2769) ---
@@ -519,6 +534,7 @@ const selectedChildId = ref('')
 
 // --- CHARGEMENT INITIAL GLOBAL ---
 onMounted(async () => {
+  await fetchAllTests()
   await fetchAllChildren()
   await fetchAllEventData()
   resetTestSelection()
@@ -546,14 +562,21 @@ watch(classeSelected, () => {
 })
 
 // --- PROPRIETE CALCULEE : PARTICIPANTS ---
-const limitedActivitiesWithChildren = computed<Record<string, any[]>>(() => {
-  // Appel sécurisé via l'instance du store pour éviter l'initialisation implicite 'any'
-  const fullCrossedData = participantEventStore.getChildrenByActivityTitle('2026', 'regular' as any) as Record<string, any[]>
+// --- FONCTION : PARTICIPANTS ---
+// On remplace "computed" par une fonction simple
+const getLimitedActivitiesWithChildren = (eventType: EventType) => {
+  // 1. Appel du store
+  const fullCrossedData = participantEventStore.getChildrenByActivityTitle('2026', eventType)
   
+  // 2. Vérification de sécurité (si fullCrossedData est null/undefined)
+  if (!fullCrossedData) return {}
+
+  // 3. Transformation
   return Object.fromEntries(
     Object.entries(fullCrossedData).slice(0, 2)
   )
-})
+}
+
 
 // --- ACTIONS METIERS : ENFANTS ---
 const attribute = (child: Child) => {

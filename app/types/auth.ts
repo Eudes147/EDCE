@@ -10,7 +10,7 @@ export interface User {
   sexe: Sexe
   status: UserStatus
   quarter?: string
-  birth_date: Date
+  birth_date?: Date
   created_at: string
 }
 // Sexe
@@ -58,6 +58,8 @@ export interface RegisterData {
   email: string
   sexe: Sexe
   password: string
+  tel?:string
+  birth_date?:string
 }
 
 // Etat de de l'authentification

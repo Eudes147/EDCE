@@ -30,13 +30,13 @@
         </thead>
         <tbody class="divide-y divide-outline-variant/20">
           <tr 
-            v-for="(activity, index) in listActivities" 
+            v-for="(activity, index) in paginatedActivities" 
             :key="activity.id" 
             class="hover:bg-surface-container-low transition-colors group"
           >
             <td class="px-6 py-4">
               <div class="w-8 h-8 rounded-full flex justify-center items-center bg-primary/10 text-primary text-sm font-bold">
-                {{ index + 1 }}
+                {{ globalIndex(index) }}
               </div>
             </td>
             <td class="px-6 py-4 text-body font-medium text-doomu-text">{{ activity.title }}</td>
@@ -74,6 +74,49 @@
           </tr>
         </tbody>
       </table>
+
+      <div 
+        v-if="totalPages > 1" 
+        class="p-4 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between gap-4 select-none"
+      >
+        <p class="font-body text-xs text-on-surface-variant">
+          Affichage de <span class="font-semibold text-doomu-text">{{ startRow }}</span> à 
+          <span class="font-semibold text-doomu-text">{{ endRow }}</span> sur 
+          <span class="font-semibold text-primary">{{ listActivities.length }}</span> activités
+        </p>
+
+        <div class="flex items-center gap-2">
+          <button 
+            @click="prevPage" 
+            :disabled="currentPage === 1"
+            class="p-2 border border-outline-variant/40 rounded-lg text-outline hover:bg-primary/5 hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-outline transition-all"
+          >
+            <Icon name="chevron_left" class="text-[20px]" />
+          </button>
+
+          <button 
+            v-for="page in totalPages" 
+            :key="page"
+            @click="currentPage = page"
+            :class="[
+              'w-8 h-8 rounded-lg font-body text-xs font-semibold transition-all',
+              currentPage === page 
+                ? 'bg-primary text-white shadow-sm' 
+                : 'border border-outline-variant/20 text-doomu-text hover:bg-primary/5 hover:text-primary'
+            ]"
+          >
+            {{ page }}
+          </button>
+
+          <button 
+            @click="nextPage" 
+            :disabled="currentPage === totalPages"
+            class="p-2 border border-outline-variant/40 rounded-lg text-outline hover:bg-primary/5 hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-outline transition-all"
+          >
+            <Icon name="chevron_right" class="text-[20px]" />
+          </button>
+        </div>
+      </div>
     </div>
 
     <Modal v-model="showViewModal" title="Détails de l'activité" size="md">
@@ -98,11 +141,7 @@
       </template>
     </Modal>
 
-    <Modal 
-      v-model="showFormModal" 
-      :title="isEditMode ? 'Modifier l\'activité' : 'Ajouter une nouvelle activité'" 
-      size="md"
-    >
+    <Modal v-model="showFormModal" :title="isEditMode ? 'Modifier l\'activité' : 'Ajouter une nouvelle activité'" size="md">
       <form @submit.prevent="submitForm" id="activityForm" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-doomu-text mb-1">Titre de l'activité <span class="text-error">*</span></label>
@@ -116,19 +155,10 @@
         </div>
       </form>
       <template #footer>
-        <button 
-          type="button" 
-          class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors" 
-          @click="showFormModal = false"
-        >
+        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors" @click="showFormModal = false">
           Annuler
         </button>
-        <button 
-          type="submit" 
-          form="activityForm"
-          class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-          :disabled="isLoading"
-        >
+        <button type="submit" form="activityForm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors" :disabled="isLoading">
           {{ isEditMode ? 'Sauvegarder les modifications' : 'Créer l\'activité' }}
         </button>
       </template>
@@ -146,17 +176,10 @@
         <p class="text-xs text-doomu-text-muted">Cette action est irréversible et supprimera toutes les planifications liées.</p>
       </div>
       <template #footer>
-        <button 
-          class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors w-full" 
-          @click="showDeleteModal = false"
-        >
+        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors w-full" @click="showDeleteModal = false">
           Annuler
         </button>
-        <button 
-          class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark transition-colors w-full" 
-          @click="confirmDelete"
-          :disabled="isLoading"
-        >
+        <button class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark transition-colors w-full" @click="confirmDelete" :disabled="isLoading">
           Supprimer définitivement
         </button>
       </template>
@@ -164,19 +187,16 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import type { Activity } from '~/types/activity'
 import { useActivities } from '~/composables/useActivity'
 import { useToast } from '~/composables/useToast'
 
-// Configuration de la page
 definePageMeta({
   layout: 'dashboard'
 })
 
-// Déclaration des composables avec les bonnes méthodes
 const { 
   listActivities, 
   fetchAllData, 
@@ -194,19 +214,57 @@ const showFormModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditMode = ref(false)
 
-// Cible active de manipulation
 const selectedActivity = ref<Activity | null>(null)
 
-// Formulaire réactif
 const form = reactive({
   id: '',
   title: ''
 })
 
-// Récupération initiale de TOUTES les données (activités + événements)
+// 🔢 ÉTATS DE LA PAGINATION
+const currentPage = ref(1)
+const itemsPerPage = 10
+
 onMounted(async () => {
   await fetchAllData()
 })
+
+// Réinitialiser la page à 1 si le catalogue global d'activités change (ex: suite à une suppression ou un chargement)
+watch(() => listActivities.value.length, () => {
+  if (currentPage.value > totalPages.value && totalPages.value > 0) {
+    currentPage.value = totalPages.value
+  }
+})
+
+// --- LOGIQUE DE PAGINATION (COMPUTED) ---
+const totalPages = computed(() => Math.ceil(listActivities.value.length / itemsPerPage))
+
+const paginatedActivities = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return listActivities.value.slice(start, end)
+})
+
+// Éléments de statistiques d'affichage de la ligne basse
+const startRow = computed(() => listActivities.value.length === 0 ? 0 : (currentPage.value - 1) * itemsPerPage + 1)
+const endRow = computed(() => {
+  const currentEnd = currentPage.value * itemsPerPage
+  return currentEnd > listActivities.value.length ? listActivities.value.length : currentEnd
+})
+
+// Fonctions de Navigation
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+// Calcul continu pour le badge de la première colonne (ID)
+const globalIndex = (localIndex: number) => {
+  return (currentPage.value - 1) * itemsPerPage + localIndex + 1
+}
 
 // --- ACTIONS MODALES ---
 const openViewModal = (activity: Activity) => {
@@ -235,7 +293,7 @@ const openDeleteModal = (activity: Activity) => {
   showDeleteModal.value = true
 }
 
-// --- SOUMISSION FORMULAIRE (AJOUT / MODIFICATION) ---
+// --- SOUMISSION FORMULAIRE ---
 const submitForm = async () => {
   if (!form.title.trim()) {
     toast.warning('Champs requis', "Veuillez renseigner le titre de l'activité.")
@@ -244,13 +302,12 @@ const submitForm = async () => {
 
   try {
     if (isEditMode.value) {
-      // Cas de la Modification : Passage des arguments séparés requis par ton composable
       await updateActivity(form.id, form.title)
       toast.success('Activité mise à jour', `L'activité "${form.title}" a été modifiée avec succès.`)
     } else {
-      // Cas de la Création
       await createActivity(form.title)
       toast.success('Activité créée', `L'activité "${form.title}" a bien été ajoutée au catalogue.`)
+      currentPage.value = totalPages.value // Se déplacer automatiquement sur la dernière page pour voir le nouvel élément
     }
     showFormModal.value = false
   } catch (err) {

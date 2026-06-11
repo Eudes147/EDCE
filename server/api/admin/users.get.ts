@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
   try {
     // 3. On nettoie la propriété 'password' de chaque utilisateur avant l'envoi au client
     return mockUsers.map((u) => {
-      const { password, ...userWithoutPassword } = u
-      return userWithoutPassword
+      // const { password, ...userWithoutPassword } = u
+      return u
     })
   } catch (error) {
     throw createError({

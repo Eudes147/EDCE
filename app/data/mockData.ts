@@ -14,6 +14,48 @@ import type {ParticipantSeance, ParticipantEventActivity} from '~/types/particip
 import type{Note} from "~/types/test"
 
 import type { User } from '~/types/auth'
+import type {MonthlySchedulePayload} from '~/types/monthlySchedule'
+
+
+export const mockMonthlySchedule = {
+  success: true,
+  monthKey: "2026-06",
+  status: "published",
+  rows: [
+    {
+      dateLabel: "Dim 7 Juin",
+      assignments: {
+        NORMAL: ["teacher-1", "teacher-2"], // IDs fictifs correspondants à vos enseignants
+        SUNDAY_SCHOOL: ["teacher-3"],
+        DLT: []
+      }
+    },
+    {
+      dateLabel: "Dim 14 Juin",
+      assignments: {
+        NORMAL: ["teacher-2"],
+        SUNDAY_SCHOOL: ["teacher-1", "teacher-4"],
+        DLT: ["teacher-3"]
+      }
+    },
+    {
+      dateLabel: "Dim 21 Juin",
+      assignments: {
+        NORMAL: ["teacher-4", "teacher-3"],
+        SUNDAY_SCHOOL: [],
+        DLT: ["teacher-1"]
+      }
+    },
+    {
+      dateLabel: "Dim 28 Juin",
+      assignments: {
+        NORMAL: ["teacher-1"],
+        SUNDAY_SCHOOL: ["teacher-2"],
+        DLT: ["teacher-4"]
+      }
+    }
+  ]
+}
 
 export const mockUsers: User[] = [
   // ==========================================

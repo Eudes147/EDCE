@@ -297,7 +297,13 @@ import { useSeance } from '~/composables/useSeance'
 import { useToast } from '~/composables/useToast'
 import type { ClasseType } from '~/types/classe'
 import type { SeanceType } from '~/types/seance'
+import type { Child } from '~/types/child'
 import { useAuthStore } from '~/stores/auth'
+import { useParticipantSeance } from '~/composables/useParticipant'
+
+// --- CORRECTION DU TYPE POUR L'UI ---
+// On crée un type local qui inclut la propriété 'selected' requise par le template
+type ChildWithSelection = Child & { selected: boolean }
 
 definePageMeta({
   layout: 'dashboard'
@@ -308,8 +314,8 @@ const authStore = useAuthStore()
 const toast = useToast()
 const router = useRouter()
 
-const { childrenPerClass } = useChildren()
-const { listTeachers } = useTeacher()
+const { childrenPerClass, fetchAllChildren } = useChildren()
+const { listTeachers, fetchAllTeachers } = useTeacher()
 
 // Composable Séances (Gestion de la fiche racine)
 const seanceStore = useSeance()
@@ -342,16 +348,23 @@ const steps = [
 ]
 
 // --- CACHING DES LISTES LOCALES ---
-const children = ref<any[]>([])
+// Utilisation du type étendu pour éviter les erreurs 2339
+const children = ref<ChildWithSelection[]>([])
 const teachers = ref<any[]>([])
 
-// Recalcule la liste des enfants et des superviseurs si la classe change à l'Étape 1
-watch(() => form.value.classe, (newClass) => {
-  const targets = childrenPerClass.value[newClass] || []
+// --- FONCTION DE SYNCHRONISATION DE LA CLASSE ---
+// Centralise la logique pour éviter les crashs si le store est vide au départ
+const updateChildrenList = (targetClass: ClasseType) => {
+  const targets = childrenPerClass.value[targetClass] || []
   children.value = targets.map(c => ({
     ...c,
     selected: false
   }))
+}
+
+// Recalcule la liste des enfants et des superviseurs si la classe change à l'Étape 1
+watch(() => form.value.classe, (newClass) => {
+  updateChildrenList(newClass)
 
   teachers.value = listTeachers.value
     .filter(t => t.id !== form.value.authorId)
@@ -361,8 +374,26 @@ watch(() => form.value.classe, (newClass) => {
     }))
 }, { immediate: true })
 
+// Dans ton bloc "CACHING DES LISTES LOCALES / WATCHERS"
+
+// 1. Ton watcher existant pour les enfants :
+watch(childrenPerClass, () => {
+  updateChildrenList(form.value.classe)
+}, { deep: true })
+
+// 2. LA CORRECTION : Ajoute ce watcher pour les enseignants 🟢
+watch(listTeachers, (newList) => {
+  teachers.value = newList
+    .filter(t => t.id !== form.value.authorId)
+    .map(t => ({
+      ...t,
+      selected: false
+    }))
+}, { deep: true, immediate: true })
+
+
 // --- PROPRIÉTÉS CALCULÉES (FILTRES RECHERCHE) ---
-const filteredChildren = computed(() => {
+const filteredChildren = computed<ChildWithSelection[]>(() => {
   if (!searchTerm.value.trim()) return children.value
   return children.value.filter(c => c.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
 })
@@ -486,6 +517,13 @@ const finishProcess = () => {
   showSuccessModal.value = false
   router.push('/children')
 }
+
+onMounted(async () => {
+  await fetchAllChildren()
+  await fetchAllTeachers()
+  // Sécurité pour forcer le premier rendu si les données sont déjà là en cache
+  updateChildrenList(form.value.classe)
+})
 </script>
 
 <style scoped>

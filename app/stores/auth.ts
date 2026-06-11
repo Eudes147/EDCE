@@ -224,6 +224,18 @@ export const useAuthStore = defineStore('auth', {
         this.setLoading(false)
         await navigateTo('/login')
       }
+    },
+     initializeFromCookies() {
+    const userCookie = useCookie<User | null>('auth_user')
+    const permissionsCookie = useCookie<any>('auth_permissions')
+    const isAuthCookie = useCookie<boolean>('auth_is_authenticated')
+
+    if (userCookie.value) {
+      this.user = userCookie.value
+      this.isAuthentificated = isAuthCookie.value || false
+      this.isInitialized = true
+      this.permissions = permissionsCookie.value || JSON.parse(JSON.stringify(defaultPermissions))
     }
+  },
   }
 })

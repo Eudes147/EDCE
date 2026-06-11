@@ -6,13 +6,13 @@
         <h2 class="font-h1 text-h1 text-on-surface text-2xl font-bold">Gestion des Enseignants</h2>
         <p class="font-body text-body text-on-surface-variant mt-2">Gerez vos équipes pédagogiques et leur planning mensuel.</p>
       </div>
-      <button 
+      <!-- <button 
         @click="openAddModal" 
         class="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all text-sm shadow-sm"
       >
         <Icon name="add" :color="'text-white'" />
         Inscrire un Enseignant
-      </button>
+      </button> -->
     </div>
 
     <!-- Teachers List Table -->
@@ -123,10 +123,11 @@
         <div class="flex items-center gap-3">
           <button 
             @click="publishSchedule"
-            class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm"
+            :disabled="isPublishing"
+            class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Icon name="publish" :color="'text-white'" class="text-[18px]" />
-            <span>Publier l'emploi du temps</span>
+            <Icon :name="isPublishing ? 'sync' : 'publish'" :color="'text-white'" :class="['text-[18px]', { 'animate-spin': isPublishing }]" />
+            <span>{{ isPublishing ? 'Publication...' : "Publier l'emploi du temps" }}</span>
           </button>
         </div>
       </div>
@@ -267,6 +268,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'
+import { useSchedule } from '~/composables/useSchedule' // <-- AJOUT du nouveau composable
 import { useToast } from '~/composables/useToast'
 import type { Teacher } from '~/types/teacher'
 
@@ -284,6 +286,7 @@ interface ScheduleRow {
 // Déclaration des composables
 const toast = useToast()
 const { listTeachers, fetchAllTeachers, updateTeacher, isLoading } = useTeacher()
+const { isPublishing, saveAndPublishSchedule } = useSchedule() // <-- INJECTION de la logique de publication
 
 // États de filtrage et pagination
 const searchQuery = ref('')
@@ -316,20 +319,16 @@ const generateCurrentMonthSundays = (): ScheduleRow[] => {
   const year = now.getFullYear()
   const month = now.getMonth() // Mois courant (0-11)
 
-  // On démarre au premier jour du mois
   const date = new Date(year, month, 1)
 
-  // On avance jusqu'au premier dimanche du mois
   while (date.getDay() !== 0) {
     date.setDate(date.getDate() + 1)
   }
 
-  // Boucle pour capturer tous les dimanches du mois en cours
   while (date.getMonth() === month) {
     const dayNum = date.getDate()
     let displayDay = `${dayNum}`
     
-    // Formatage français basique pour le 1er du mois
     if (dayNum === 1) {
       displayDay = '1er'
     }
@@ -349,22 +348,16 @@ const generateCurrentMonthSundays = (): ScheduleRow[] => {
       }
     })
 
-    // On passe au dimanche suivant (7 jours plus tard)
     date.setDate(date.getDate() + 7)
   }
 
   return sundays
 }
 
-// Chargement initial des données réseaux et calcul du calendrier
+// Chargement initial
 onMounted(async () => {
-  // 1. Initialisation dynamique des dimanches du mois courant
   schedule.value = generateCurrentMonthSundays()
-
-  // 2. Récupération des enseignants depuis l'API
   await fetchAllTeachers()
-  
-  // 3. Hydratation de démo
   syncScheduleWithRealData()
 })
 
@@ -395,7 +388,6 @@ const filteredTeachers = computed(() => {
   )
 })
 
-// Pagination pure computed
 const totalPages = computed(() => Math.ceil(filteredTeachers.value.length / itemsPerPage) || 1)
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
 const endIndex = computed(() => startIndex.value + itemsPerPage)
@@ -445,12 +437,29 @@ const toggleTeacherInCell = (teacherId: string) => {
   }
 }
 
-const publishSchedule = () => {
-  toast.success('Planning partagé', 'L\'emploi du temps mensuel a été publié pour toutes les équipes.')
+// --- LOGIQUE DE PUBLICATION EFFECTIVE ---
+const publishSchedule = async () => {
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}` // Donne "2026-06"
+
+  // Construction du payload propre
+  const payload = {
+    monthKey,
+    status: 'published',
+    rows: schedule.value
+  }
+
+  // Appel de la méthode du composable
+  const success = await saveAndPublishSchedule(payload)
+
+  if (success) {
+    toast.success('Planning partagé', 'L\'emploi du temps mensuel a été publié avec succès pour toutes les équipes.')
+  } else {
+    toast.error('Échec de publication', 'Une erreur est survenue lors de l\'enregistrement de l\'emploi du temps.')
+  }
 }
 
 // --- CONTROLEURS DES FORMULAIRES ENSEIGNANTS ---
-
 const openAddModal = () => {
   isEditMode.value = false
   selectedTeacher.value = null

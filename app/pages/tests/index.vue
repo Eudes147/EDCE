@@ -171,12 +171,12 @@
 
       <div class="space-y-xs">
         <label class="block font-label-md text-on-surface">Type de test</label>
-        <div class="grid grid-cols-3 gap-sm">
+        <div class="grid grid-cols-3 gap-1">
           <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
             <input v-model="typeTest" class="w-4 h-4 text-primary focus:ring-primary" name="testType" type="radio" value="EVALUATION">
             <span class="font-label-md text-doomu-text">Évaluation</span>
           </label>
-          <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+          <label class="flex items-center gap-1 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
             <input v-model="typeTest" class="w-4 h-4 text-primary focus:ring-primary" name="testType" type="radio" value="SUNDAY_SCHOOL">
             <span class="font-label-md text-doomu-text">Sun_School</span>
           </label>
@@ -185,6 +185,17 @@
             <span class="font-label-md text-doomu-text">Concours</span>
           </label>
         </div>
+      </div>
+      <div class="space-y-xs">
+        <div class="grid grid-cols-2 gap-sm">
+          <label class="block font-label-md text-on-surface">Lien du Test (drive)
+            <input v-model="sujetTest" required class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-doomu-text outline-none" placeholder="ex: Evaluation Mai 2026" type="text">
+          </label>
+          <label class="block font-label-md text-on-surface">Lien de la Correction
+            <input v-model="correctionTest" required class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-doomu-text outline-none" placeholder="ex: Evaluation Mai 2026" type="text">
+          </label>
+        </div>
+        
       </div>
     </form>
     <template #footer>
@@ -278,6 +289,8 @@ const titleTest = ref('')
 const typeTest = ref<TypeTest>('EVALUATION')
 const classe = ref<ClasseType>('JuniorA')
 const searchTest = ref('')
+const sujetTest=ref('')
+const correctionTest=ref('')
 
 // États de navigation/pagination
 const currentPage = ref(1)
@@ -298,6 +311,8 @@ onMounted(async () => {
     fetchAllTeachers(),
     fetchAllTests()
   ])
+  authStore.initializeFromCookies()
+
 })
 
 const formatDate = (dateStr: string) => {
@@ -385,8 +400,8 @@ const handleSubmitForm = async () => {
         titleTest: titleTest.value,
         classe: classe.value,
         typeTest: typeTest.value,
-        sujetTest: '',
-        correctionTest: '',
+        sujetTest: sujetTest.value,
+        correctionTest: correctionTest.value,
         authorId: authStore.user?.id || ""
       })
       toast.success('Test créé', `Le nouveau test "${titleTest.value}" a bien été ajouté au catalogue.`)

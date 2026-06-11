@@ -54,13 +54,13 @@
         </div>
         
         <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Séances créées (Classe)</p>
+          <p class="font-label-sm text-on-surface-variant mb-1">Séances créées</p>
           <div class="flex items-baseline justify-between">
             <h3 class="font-h1 text-h1 text-primary">{{ getStatsSeance.count }}</h3>
             <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{ (getStatsSeance.rate * 100).toFixed(2) }}%</span>
           </div>
           <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary" :style="`width: ${getStatsSeance.rate * 100}%`"></div>
+            <div class="h-full bg-primary" :style="`width: ${(getStatsSeance.rate * 100)}%`"></div>
           </div>
         </div>
 
@@ -90,12 +90,17 @@
             <div v-for="classe in classeEDCE" :key="classe" class="flex-1 flex flex-col items-center gap-2">
               <div class="w-full bg-primary/20 rounded-t-md hover:bg-primary transition-colors" :style="`height: calc(10rem * ${childrenPerClassCount(classe)?.rate || 0})`"></div>
               <span class="font-label-sm text-on-surface-variant">{{ classe }}</span>
-            </div>      
+            </div>
           </div>
         </div>
 
-        <div class="glass-card p-lg">
-          <h4 class="font-h3 text-h3 mb-lg">Succès aux examens (Sunday school)</h4>
+        <div @click="showSuccessModal = true" class="glass-card p-lg success-sunday cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300">
+          <div class="flex justify-between items-center mb-lg">
+            <h4 class="font-h3 text-h3">Succès aux examens (Sunday school)</h4>
+            <span class="text-xs text-primary font-medium underline flex items-center gap-1">
+              <Icon name="visibility" size="1.1rem" /> Détails de réussite
+            </span>
+          </div>
           <div class="space-y-md">
             <div v-for="classe in classeEDCE" :key="classe">
               <div class="flex justify-between mb-2">
@@ -180,9 +185,12 @@
           </div>
         </div>
 
-        <div class="xl:col-span-2 glass-card">
-          <div class="p-md border-b border-outline-variant">
+        <div @click="showDeliberationModal = true" class="xl:col-span-2 glass-card deliberation cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300">
+          <div class="p-md border-b border-outline-variant flex justify-between items-center">
             <h4 class="font-label-md text-on-surface font-bold uppercase tracking-wider">Délibération de fin d'année (Top 3)</h4>
+            <span class="text-xs text-primary font-medium underline flex items-center gap-1">
+              <Icon name="workspace_premium" size="1.1rem" /> Délibération Complète
+            </span>
           </div>
           <div class="p-lg">
             <div v-for="(classementFinal, index) in classementsFinal.slice(0, 3)" :key="classementFinal.childId" class="space-y-md">
@@ -198,6 +206,81 @@
         </div>
       </div>
     </div>
+
+    <Modal v-model="showSuccessModal" :title="`Statut des Examens (Sunday School) — Classe : ${filtreClasse}`" size="lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-1 max-h-[60vh] overflow-y-auto">
+        <div class="space-y-3">
+          <h5 class="flex items-center gap-2 font-bold text-green-700 bg-green-50 p-2 rounded-lg sticky top-0">
+            <Icon name="check_circle" class="text-green-600" />
+            Enfants Réussis ({{ successSundayList.passed.length }})
+          </h5>
+          <div v-if="successSundayList.passed.length === 0" class="text-sm text-on-surface-variant italic p-4 text-center">
+            Aucun élève n'a validé pour l'instant.
+          </div>
+          <div v-for="item in successSundayList.passed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-3 rounded-lg">
+            <span class="font-label-md text-on-surface">{{ item.name }}</span>
+            <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded font-bold text-sm">
+              {{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h5 class="flex items-center gap-2 font-bold text-error bg-error/5 p-2 rounded-lg sticky top-0">
+            <Icon name="cancel" class="text-error" />
+            Enfants Échoués ({{ successSundayList.failed.length }})
+          </h5>
+          <div v-if="successSundayList.failed.length === 0" class="text-sm text-on-surface-variant italic p-4 text-center">
+            Aucun échec enregistré. Bravo !
+          </div>
+          <div v-for="item in successSundayList.failed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-3 rounded-lg">
+            <span class="font-label-md text-on-surface">{{ item.name }}</span>
+            <span class="px-2.5 py-1 bg-error/10 text-error rounded font-bold text-sm">
+              {{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-5 py-2 bg-doomu-bg hover:bg-doomu-border border border-outline-variant/50 rounded-lg text-doomu-text transition-colors" @click="showSuccessModal = false">
+          Fermer
+        </button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showDeliberationModal" :title="`Registre de Délibération Générale — Classe : ${filtreClasse}`" size="md">
+      <div class="p-1 max-h-[60vh] overflow-y-auto space-y-2">
+        <p class="text-xs text-on-surface-variant mb-4">
+          Voici le classement récapitulatif par moyenne générale globale (Calcul combiné Évaluations + Concours) pour l'année en cours.
+        </p>
+        <div 
+          v-for="(row, idx) in totalDeliberationList" 
+          :key="row.childId" 
+          class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-3 rounded-xl hover:bg-surface-container-high transition-colors"
+        >
+          <span :class="['w-7 text-center font-bold font-h3', idx === 0 ? 'text-secondary text-lg' : idx < 3 ? 'text-primary' : 'text-on-surface-variant']">
+            {{ idx + 1 }}
+          </span>
+          <div class="flex-1 flex justify-between items-center">
+            <span class="font-label-md text-on-surface font-medium">{{ row.name }}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-on-surface-variant">Moy:</span>
+              <span class="font-bold text-base text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/20">
+                {{ Number(row.moyGen).toFixed(2) }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div v-if="totalDeliberationList.length === 0" class="text-center py-8 text-on-surface-variant italic">
+          Aucune donnée disponible pour cette classe.
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" @click="showDeliberationModal = false">
+          Terminer l'analyse
+        </button>
+      </template>
+    </Modal>
   </main>
 
   <div v-else class="md:hidden min-h-[max(884px,100dvh)] w-full font-body-md text-body-md overflow-x-hidden bg-background">
@@ -254,8 +337,9 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
-import { computed, ref, onMounted, inject } from 'vue' // 👈 Correction : Ajout de onMounted
+import { computed, ref, onMounted, inject } from 'vue'
 import { useChildren } from '~/composables/useChild'
 import { useNote } from '~/composables/useNote'
 import { useSeance } from '~/composables/useSeance'
@@ -265,7 +349,6 @@ import { getFullName } from '~/utils/getFullName'
 import type { ClasseType } from '../types/classe'
 import { useRouter } from 'vue-router'
 
-// 1. Appel unique de l'API de statistiques (via ton Composable global)
 const { stats, pending, error } = useDashboard()
 
 const router = useRouter()
@@ -273,14 +356,16 @@ const navigateTo = (to: string) => {
   router.push(to)
 } 
 
-// 2. Extraction des listes issues des states de l'API
 const listChildrenFromApi = computed(() => stats.value?.listStats?.listChildren || [])
 const listSeancesFromApi = computed(() => stats.value?.listStats.listSeances || [])
 
 const classeEDCE = ref<ClasseType[]>(classes)
 const filtreClasse = ref<ClasseType>("Petit")
 
-// 3. STATS ET FILTRES DYNAMIQUES (Synchronisés à l'API)
+// --- NOUVEAUX ÉTATS DES MODALS INTELLIGENTS ---
+const showSuccessModal = ref(false)
+const showDeliberationModal = ref(false)
+
 const totalStatistics = computed(() => stats.value?.totalStats)
 const teacherStatistics = computed(() => stats.value?.teachersStats)
 
@@ -296,19 +381,15 @@ const percentTeachers = computed(() => {
   return available / total
 })
 
-const childrenPerClassCount = computed(() => { 
-  return (classe: ClasseType) => {
-    return stats.value?.childrenStats?.childrenPerClass?.find((c: any) => c.classe === classe)
-  }
-})
+const childrenPerClassCount = (classe: ClasseType) => {
+  return stats.value?.childrenStats?.childrenPerClass?.find((c: any) => c.classe === classe)
+}
 
-// Filtrage local des listes vivantes transmises par l'API selon la classe choisie
 const childrenFiltered = computed(() => {
   return listChildrenFromApi.value.filter((child: any) => child.classe === filtreClasse.value)
 })
 
 const filteredParentInfos = computed(() => {
-  // Récupération des infos parents calculées proprement par l'API pour la classe active
   return listChildrenFromApi.value
     .filter((child: any) => child.classe === filtreClasse.value)
     .map((child: any) => {
@@ -318,21 +399,65 @@ const filteredParentInfos = computed(() => {
     })
 })
 
-// Séances
 const getStatsSeance = computed(() => {
   const count = listSeancesFromApi.value.filter((s: any) => s.classe === filtreClasse.value).length
   const totalSeances = listSeancesFromApi.value.length || 1
-  return { count, rate: count / totalSeances }
+  return { count: count, rate: count / totalSeances }
 })
 
-// 4. LOGIQUE DES NOTES (Fonctions pures réactives)
-const { getClassementFinal, getNamebyId, percentSuccessbyClasse } = useNote()
+// --- LOGIQUE DES NOTES & MODALS DÉTAILLÉES ---
+const { 
+  getClassementFinal, 
+  getNamebyId, 
+  percentSuccessbyClasse, 
+  fetchAllNotesData, 
+  getPassageDeliberation,
+  notesbyYear,
+  getMoyGenperChildId 
+} = useNote()
 
 const classementsFinal = computed(() => {
   return getClassementFinal(filtreClasse.value)
 })
 
-// Helpers utilitaires
+// 🎛️ Traitement pour la Modal 1 : Succès et Échecs de la classe (Filtré sur l'année actuelle en Sunday School)
+const successSundayList = computed(() => {
+  const currentYear = new Date().getFullYear().toString()
+  const sundaySchoolMoyennes = notesbyYear.value?.sundaySchool?.moyenne?.[currentYear] || []
+  
+  const passed: any[] = []
+  const failed: any[] = []
+
+  childrenFiltered.value.forEach((child: any) => {
+    const isPassed = getPassageDeliberation(child)
+    const childMoy = sundaySchoolMoyennes.find((m: any) => m.childId === child.id)?.moyenne ?? null
+    
+    const childPayload = { id: child.id, name: child.name, moyenne: childMoy }
+    if (isPassed) {
+      passed.push(childPayload)
+    } else {
+      failed.push(childPayload)
+    }
+  })
+
+  // Tri décroissant pour la lisibilité
+  passed.sort((a, b) => b.moyenne - a.moyenne)
+  failed.sort((a, b) => b.moyenne - a.moyenne)
+
+  return { passed, failed }
+})
+
+// 🎛️ Traitement pour la Modal 2 : Délibération complète de toute la classe (Par moyenne générale)
+const totalDeliberationList = computed(() => {
+  return classementsFinal.value.map((row: any) => {
+    return {
+      childId: row.childId,
+      name: getNamebyId(row.childId),
+      moyGen: row.moyGen
+    }
+  }).filter(item => item.name !== '') // Nettoyage de sécurité si un enfant n'est pas trouvé
+})
+
 const getAgeByBirthDate = (birthDate: string | Date) => {
   const today = new Date()
   const birth = new Date(birthDate)
@@ -342,11 +467,11 @@ const getAgeByBirthDate = (birthDate: string | Date) => {
   return age
 }
 
-// 5. ANIMATIONS ET INTERACTIONS
 const desktopMain = ref<HTMLElement | null>(null)
 const showDashboardMenu = inject<() => void>('showDashboardMenu')
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchAllNotesData()
   document.querySelectorAll<HTMLElement>('.glass-card').forEach((card) => {
     card.addEventListener('mouseenter', () => card.style.borderColor = '#2D5BE3')
     card.addEventListener('mouseleave', () => card.style.borderColor = '#E8E4DE')

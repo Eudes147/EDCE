@@ -105,6 +105,7 @@
       </div>
     </section>
 
+    <!-- 🔍 MODALE : DÉTAILS DE LA SÉANCE -->
     <Modal v-model="showViewModal" title="Détails de la séance" size="md">
       <div v-if="seanceModal" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
@@ -143,10 +144,22 @@
         </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">Fermer</button>
+        <div class="flex justify-between items-center w-full">
+          <button 
+            v-if="seanceModal"
+            class="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md hover:bg-secondary-dark transition-colors shadow-sm"
+            @click="openParticipantsFromView"
+          >
+            <Icon name="groups" class="text-[18px]" />
+            Voir les participants
+          </button>
+          
+          <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">Fermer</button>
+        </div>
       </template>
     </Modal>
 
+    <!-- 📝 MODALE : MODIFIER LA SÉANCE -->
     <Modal v-model="showEditModal" title="Modifier la séance" size="md">
       <div v-if="seanceModal" class="space-y-4">
         <form @submit.prevent="handleUpdate" id="editSeanceForm" class="space-y-4">
@@ -181,6 +194,7 @@
       </template>
     </Modal>
 
+    <!-- ❌ MODALE : SUPPRIMER LA SÉANCE -->
     <Modal v-model="showDeleteModal" title="Supprimer la séance" size="sm">
       <div v-if="seanceModal" class="space-y-3 text-center py-2">
         <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
@@ -194,6 +208,55 @@
       <template #footer>
         <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text w-full hover:bg-doomu-bg" @click="showDeleteModal = false">Annuler</button>
         <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error-dark" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+      </template>
+    </Modal>
+
+    <!-- 👥 MODALE : LISTE DES PARTICIPANTS INSÉRÉE ICI -->
+    <Modal v-model="showParticipantsModal" title="Liste des Participants" size="lg">
+      <div v-if="seanceModal" class="space-y-5">
+        <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 flex flex-col gap-1">
+          <span class="text-xs text-doomu-text-muted uppercase font-mono">Séance sélectionnée</span>
+          <h4 class="font-semibold text-base text-doomu-text">{{ seanceModal.title }}</h4>
+          <p class="text-small text-on-surface-variant flex items-center gap-2">
+            <span class="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded font-medium">{{ seanceModal.classe }}</span>
+            • {{ formatDate(seanceModal.created_at) }}
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
+            <span class="font-medium text-small text-doomu-text">Élèves présents</span>
+            <span class="px-2.5 py-0.5 bg-secondary/10 text-secondary text-xs rounded-full font-bold">
+              {{ currentSeanceParticipants.length }} inscrit(s)
+            </span>
+          </div>
+
+          <!-- Liste des enfants trouvés -->
+          <div v-if="currentSeanceParticipants.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
+            <div 
+              v-for="child in currentSeanceParticipants" 
+              :key="child.id"
+              class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-outline-variant/40 transition-all"
+            >
+              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
+                {{ child.name.substring(0, 2) }}
+              </div>
+              <div class="flex flex-col">
+                <span class="font-body text-small text-doomu-text font-medium">{{ child.name }}</span>
+                <span v-if="child.nivScolaire" class="text-[11px] text-doomu-text-muted">{{ child.nivScolaire }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Si aucun enfant n'a été coché présent -->
+          <div v-else class="text-center py-8 text-doomu-text-muted">
+            <Icon name="face" class="text-[40px] text-outline mb-2 mx-auto" />
+            <p class="font-body text-small italic">Aucun enfant n'a été émargé présent pour cette séance.</p>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors ml-auto" @click="showParticipantsModal = false">Fermer</button>
       </template>
     </Modal>
   </div>
@@ -216,12 +279,14 @@ definePageMeta({
 // Composables
 const toast = useToast()
 const { groupSeanceperYear, typeSeances, fetchAllSeances, updateSeance, deleteSeance, isLoading } = useSeance()
-const { getAuthorSupervisorbySeance } = useParticipantSeance()
+// Extraction de 'getChildbySeanceId' depuis ton composable
+const { getAuthorSupervisorbySeance, fetchAllSeanceData, getChildbySeanceId } = useParticipantSeance()
 
 // États d'affichage & Modales
 const showViewModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
+const showParticipantsModal = ref(false)
 const seanceModal = ref<Seance | null>(null)
 
 // Filtres de recherche
@@ -237,9 +302,17 @@ const months = ref<Month[]>([
 // Cycle de vie : Charger les données
 onMounted(async () => {
   await fetchAllSeances()
+  await fetchAllSeanceData()
 })
 
-// --- LOGIQUE FILTRES COMPUTED ---
+// --- 👥 LOGIQUE FILTRE PARTICIPANTS ---
+// Récupère dynamiquement la liste des enfants de la séance ouverte dans la modale
+const currentSeanceParticipants = computed(() => {
+  if (!seanceModal.value?.id) return []
+  return getChildbySeanceId(seanceModal.value.id)
+})
+
+// --- LOGIQUE FILTRES COMPUTED SÉANCES ---
 const getSeanceActualYear = computed(() => {
   return groupSeanceperYear.value[actualYear.value] || []
 })
@@ -260,10 +333,14 @@ const formatDate = (dateStr: string | Date) => {
 }
 
 // --- GESTIONNAIRES ACTIONS ---
-
 const view = (seance: Seance) => {
   seanceModal.value = { ...seance }
   showViewModal.value = true
+}
+
+const openParticipantsFromView = () => {
+  showViewModal.value = false
+  showParticipantsModal.value = true
 }
 
 const edit = (seance: Seance) => {
@@ -276,7 +353,6 @@ const supprimer = (seance: Seance) => {
   showDeleteModal.value = true
 }
 
-// 📝 Enregistrement des modifications (PUT)
 const handleUpdate = async () => {
   if (!seanceModal.value) return
   try {
@@ -292,7 +368,6 @@ const handleUpdate = async () => {
   }
 }
 
-// ❌ Validation de suppression (DELETE)
 const confirmDelete = async () => {
   if (!seanceModal.value) return
   const title = seanceModal.value.title

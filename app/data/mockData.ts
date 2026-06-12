@@ -25,33 +25,33 @@ export const mockMonthlySchedule = {
     {
       dateLabel: "Dim 7 Juin",
       assignments: {
-        NORMAL: ["teacher-1", "teacher-2"], // IDs fictifs correspondants à vos enseignants
-        SUNDAY_SCHOOL: ["teacher-3"],
+        NORMAL: ["teacher-001", "teacher-002"], // IDs fictifs correspondants à vos enseignants
+        SUNDAY_SCHOOL: ["teacher-003"],
         DLT: []
       }
     },
     {
       dateLabel: "Dim 14 Juin",
       assignments: {
-        NORMAL: ["teacher-2"],
-        SUNDAY_SCHOOL: ["teacher-1", "teacher-4"],
-        DLT: ["teacher-3"]
+        NORMAL: ["teacher-002"],
+        SUNDAY_SCHOOL: ["teacher-001", "teacher-004"],
+        DLT: ["teacher-003"]
       }
     },
     {
       dateLabel: "Dim 21 Juin",
       assignments: {
-        NORMAL: ["teacher-4", "teacher-3"],
+        NORMAL: ["teacher-004", "teacher-003"],
         SUNDAY_SCHOOL: [],
-        DLT: ["teacher-1"]
+        DLT: ["teacher-001"]
       }
     },
     {
       dateLabel: "Dim 28 Juin",
       assignments: {
-        NORMAL: ["teacher-1"],
-        SUNDAY_SCHOOL: ["teacher-2"],
-        DLT: ["teacher-4"]
+        NORMAL: ["teacher-001"],
+        SUNDAY_SCHOOL: ["teacher-002"],
+        DLT: ["teacher-004"]
       }
     }
   ]

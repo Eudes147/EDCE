@@ -43,9 +43,9 @@
           <thead class="bg-surface-container-low border-b border-outline-variant/40">
             <tr>
               <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 w-[45%] lg:w-auto">Titre</th>
-              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 w-[20%] lg:w-auto">Type</th>
-              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 w-[15%] lg:w-auto">Classe</th>
-              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-[20%] min-w-[120px] lg:w-48">Actions</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 w-[20%] lg:w-auto max-md:hidden">Type</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 w-[15%] lg:w-auto max-md:hidden">Classe</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-[20%] min-w-[120px] lg:w-48 ">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/30">
@@ -59,13 +59,13 @@
                 </div>
               </td>
 
-              <td class="px-5 py-5 md:px-6 align-middle">
+              <td class="px-5 py-5 md:px-6 align-middle  max-md:hidden">
                 <span class="inline-block px-3 py-1 bg-surface-container rounded-md text-[10px] md:text-xs font-mono tracking-wide text-on-surface-variant font-medium uppercase border border-outline-variant/20">
                   {{ seance.type }}
                 </span>
               </td>
 
-              <td class="px-5 py-5 md:px-6 font-body text-xs md:text-sm text-on-surface font-medium whitespace-nowrap align-middle">
+              <td class="px-5 py-5 md:px-6 font-body text-xs md:text-sm text-on-surface font-medium whitespace-nowrap align-middle  max-md:hidden">
                 {{ seance.classe }}
               </td>
 

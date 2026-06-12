@@ -306,7 +306,7 @@ definePageMeta({
 
 // --- MULTI-COMPOSABLES BINDING ---
 const { listUsers, isUsersLoading, fetchUsers, changeUserRole } = useUsers()
-const { showToast } = useToast() // Composable injecté de manière pérenne
+const toast = useToast() // Composable injecté de manière pérenne
 
 const isProcessing = ref(false)
 
@@ -326,7 +326,7 @@ onMounted(async () => {
   try {
     await fetchUsers()
   } catch (err) {
-    showToast({ message: "Échec du chargement des profils du système.", type: 'error' })
+    toast.error("Échec du chargement des profils du système.")
   }
 })
 
@@ -361,13 +361,13 @@ const confirmRoleSwitch = async () => {
   try {
     const success = await changeUserRole(user, newRole)
     if (success) {
-      showToast({ message: `Le statut de ${user.first_name} a été mis à jour vers "${newRole}".`, type: 'success' })
+      toast.info(`Le statut de ${user.first_name} a été mis à jour vers "${newRole}".`)
       await fetchUsers() // Rafraîchissement
     } else {
-      showToast({ message: "Action non autorisée. Vérifiez vos privilèges Admin.", type: 'error' })
+      toast.info("Action non autorisée. Vérifiez vos privilèges Admin.")
     }
   } catch (error) {
-    showToast({ message: "Erreur réseau lors de la mise à jour.", type: 'error' })
+    toast.error("Erreur réseau lors de la mise à jour.")
   } finally {
     isProcessing.value = false
     closeModal()
@@ -394,11 +394,11 @@ const permissionsList = ref([
 ])
 
 const savePermissions = () => {
-  showToast({ message: "Configuration des permissions sauvegardée avec succès.", type: 'success' })
+  toast.success("Configuration des permissions sauvegardée avec succès.")
 }
 
 const markAllAsRead = () => {
-  showToast({ message: "Toutes les notifications ont été marquées comme lues.", type: 'success' })
+  toast.success("Toutes les notifications ont été marquées comme lues.")
 }
 </script>
 

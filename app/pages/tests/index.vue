@@ -173,9 +173,119 @@
         </div>
       </div>
     </div>
+
+    <Modal v-model="activeTestModal" :title="isEditMode ? 'Modifier l\'Épreuve' : 'Créer un nouveau Test'" size="md">
+      <form @submit.prevent="handleSubmitForm" id="testForm" class="space-y-4 py-1">
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Titre de l'épreuve <span class="text-error">*</span></label>
+          <input 
+            v-model="titleTest" 
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium" 
+            placeholder="Ex: Évaluation Mensuelle de Doctrine" type="text" required 
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Type de Test</label>
+            <select v-model="typeTest" class="w-full bg-white border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium">
+              <option value="EVALUATION">EVALUATION</option>
+              <option value="SUNDAY_SCHOOL">SUNDAY_SCHOOL</option>
+              <option value="CONCOURS">CONCOURS</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Classe</label>
+            <select v-model="classe" class="w-full bg-white border border-outline-variant rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium">
+              <option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">{{ child_classe }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Contenu du Sujet (URL ou Texte)</label>
+          <textarea 
+            v-model="sujetTest" 
+            rows="3"
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
+            placeholder="Lien du PDF ou énoncé complet..."
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Lien / Contenu du Corrigé</label>
+          <textarea 
+            v-model="correctionTest" 
+            rows="2"
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
+            placeholder="Éléments de réponse ou lien du corrigé..."
+          ></textarea>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium" @click="activeTestModal = false">
+          Annuler
+        </button>
+        <button type="submit" form="testForm" class="px-6 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity" :disabled="isLoadingTests">
+          {{ isEditMode ? 'Sauvegarder' : 'Créer l\'épreuve' }}
+        </button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showViewModal" title="Détails de l'Épreuve" size="lg">
+      <div v-if="selectedTest" class="space-y-4 py-1 text-sm text-on-surface">
+        <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/40 space-y-2">
+          <h4 class="text-base font-bold text-primary">{{ selectedTest.titleTest }}</h4>
+          <div class="flex flex-wrap gap-4 text-xs font-medium text-on-surface-variant">
+            <span>Classe : <b class="text-on-surface">{{ selectedTest.classe }}</b></span>
+            <span>Type : <b class="text-on-surface">{{ selectedTest.typeTest }}</b></span>
+            <span>Date : <b class="text-on-surface">{{ formatDate(selectedTest.created_at) }}</b></span>
+          </div>
+        </div>
+
+        <div v-if="selectedTest.sujetTest" class="space-y-1">
+          <span class="block text-xs font-bold uppercase text-on-surface-variant tracking-wide">Énoncé / Sujet :</span>
+          <div class="bg-white p-3 border border-outline-variant rounded-lg font-mono text-xs whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar">
+            {{ selectedTest.sujetTest }}
+          </div>
+        </div>
+
+        <div v-if="selectedTest.correctionTest" class="space-y-1">
+          <span class="block text-xs font-bold uppercase text-on-surface-variant tracking-wide">Corrigé :</span>
+          <div class="bg-white p-3 border border-outline-variant rounded-lg font-mono text-xs whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar">
+            {{ selectedTest.correctionTest }}
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <button type="button" class="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity w-full sm:w-auto" @click="showViewModal = false">
+          Fermer
+        </button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showDeleteModal" title="Confirmer la suppression" size="sm">
+      <div v-if="selectedTest" class="space-y-2 py-1 text-center sm:text-left">
+        <p class="text-sm font-medium text-on-surface">
+          Êtes-vous sûr de vouloir supprimer définitivement l'épreuve <span class="font-bold text-error">"{{ selectedTest.titleTest }}"</span> ?
+        </p>
+        <p class="text-xs text-on-surface-variant">Cette action est irréversible et retirera le test du catalogue.</p>
+      </div>
+
+      <template #footer>
+        <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium" @click="showDeleteModal = false">
+          Annuler
+        </button>
+        <button type="button" class="px-5 py-2 bg-error text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity" @click="confirmDelete" :disabled="isLoadingTests">
+          Supprimer
+        </button>
+      </template>
+    </Modal>
+
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { definePageMeta } from '#imports'
@@ -193,10 +303,9 @@ definePageMeta({
   layout: 'dashboard',
 })
 
-// Ajout de la variable réactive pour contrôler l'état de la recherche mobile
+// Configuration recherche mobile
 const showMobileSearch = ref(false)
 
-// [Garder absolument tout le reste de tes scripts, fonctions, hooks inchangés]
 // Configuration des composables et stores
 const toast = useToast()
 const authStore = useAuthStore()
@@ -215,8 +324,8 @@ const titleTest = ref('')
 const typeTest = ref<TypeTest>('EVALUATION')
 const classe = ref<ClasseType>('JuniorA')
 const searchTest = ref('')
-const sujetTest=ref('')
-const correctionTest=ref('')
+const sujetTest = ref('')
+const correctionTest = ref('')
 
 // États de navigation/pagination
 const currentPage = ref(1)
@@ -238,7 +347,6 @@ onMounted(async () => {
     fetchAllTests()
   ])
   authStore.initializeFromCookies()
-
 })
 
 const formatDate = (dateStr: string) => {
@@ -253,7 +361,6 @@ watch([classe, monthSelected, searchTest], () => {
 })
 
 // --- MOTEUR DES PROPRIETES CALCULEES (FILTRAGES COUPLÉS) ---
-
 const testTotal = computed(() => {
   return totalTests.value(classe.value, monthSelected.value) || []
 })
@@ -276,12 +383,13 @@ const goToPage = (page: number) => {
 }
 
 // --- CONTRÔLEURS ET MANAGEMENT DES EVENEMENTS ---
-
 const openCreateModal = () => {
   isEditMode.value = false
   selectedTest.value = null
   titleTest.value = ''
   typeTest.value = 'EVALUATION'
+  sujetTest.value = ''
+  correctionTest.value = ''
   activeTestModal.value = true
 }
 
@@ -291,6 +399,8 @@ const openEditModal = (test: Test) => {
   titleTest.value = test.titleTest
   typeTest.value = test.typeTest
   classe.value = test.classe
+  sujetTest.value = test.sujetTest || ''
+  correctionTest.value = test.correctionTest || ''
   activeTestModal.value = true
 }
 
@@ -317,7 +427,9 @@ const handleSubmitForm = async () => {
       await updateTest(selectedTest.value.id, {
         titleTest: titleTest.value,
         classe: classe.value,
-        typeTest: typeTest.value
+        typeTest: typeTest.value,
+        sujetTest: sujetTest.value,
+        correctionTest: correctionTest.value
       })
       toast.success('Test modifié', `L'épreuve "${titleTest.value}" a été actualisée.`)
     } else {
@@ -344,7 +456,7 @@ const confirmDelete = async () => {
   const title = selectedTest.value.titleTest
   try {
     await deleteTest(selectedTest.value.id)
-    toast.success('Test supprimé', `L'épreuve "${title}" a bien été retirée.`);
+    toast.success('Test supprimé', `L'épreuve "${title}" a bien été retirée.`)
     showDeleteModal.value = false
     selectedTest.value = null
   } catch (err) {
@@ -367,6 +479,7 @@ const glassCard = computed(() => {
   }
 })
 </script>
+
 <style scoped>
 .ultra-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .glass-card { background: #FFFFFF; border: 1px solid #E8E4DE; border-radius: 16px; }

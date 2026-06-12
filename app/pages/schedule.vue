@@ -1,8 +1,6 @@
 <template>
-  <!-- Conteneur adaptatif : p-3 sur mobile évoluant vers p-8 sur desktop pour un meilleur confort de lecture -->
   <div class="p-3 sm:p-4 md:p-8 max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
     
-    <!-- 📋 EN-TÊTE RESPONSIVE (S'empile proprement sur smartphone) -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-outline-variant/30 pb-4">
       <div>
         <h2 class="font-h1 text-lg sm:text-xl md:text-2xl font-bold text-on-surface">Planning des Enseignants</h2>
@@ -14,23 +12,19 @@
       </div>
     </div>
 
-    <!-- ÉTAT DE CHARGEMENT RÉSEAU -->
     <div v-if="isLoadingSchedule" class="p-8 sm:p-12 text-center bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
       <div class="animate-spin inline-block w-5 h-5 border-[2px] border-primary border-t-transparent rounded-full mb-2"></div>
       <p class="text-xs sm:text-sm text-on-surface-variant">Récupération du calendrier en cours...</p>
     </div>
 
-    <!-- ÉTAT DE PLANNING NON PUBLIÉ -->
     <div v-else-if="scheduleRows.length === 0" class="text-center py-12 sm:py-16 bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl shadow-sm space-y-3">
       <Icon name="event_busy" class="text-3xl sm:text-4xl text-outline mx-auto" />
       <h3 class="text-sm sm:text-base font-bold text-on-surface">Aucun planning publié</h3>
       <p class="text-xs sm:text-sm text-on-surface-variant max-w-xs sm:max-w-md mx-auto">L'emploi du temps de ce mois n'a pas encore été validé par l'équipe administrative.</p>
     </div>
 
-    <!-- AFFICHAGE DU PLANNING DE SERVICE -->
     <section v-else class="space-y-4 animate-fade-in">
       
-      <!-- 🖥️ VERSION DESKTOP : Grille unifiée (Visible à partir de l'écran md) -->
       <div class="hidden md:grid grid-cols-4 gap-1 bg-outline-variant/30 border border-outline-variant rounded-xl overflow-hidden shadow-sm">
         
         <div class="bg-surface-container-high p-4 font-bold text-on-surface text-center text-sm">Dates (Dimanches)</div>
@@ -70,27 +64,23 @@
         </template>
       </div>
 
-      <!-- 📱 VERSION MOBILE/TABLETTE : Timeline de fiches Sunday (Masquée sur PC) -->
       <div class="block md:hidden space-y-4">
         <div 
           v-for="row in scheduleRows" 
           :key="`mobile-${row.dateLabel}`" 
           class="bg-white border border-outline-variant/60 rounded-xl p-3.5 shadow-sm space-y-3.5"
         >
-          <!-- En-tête du dimanche concerné -->
           <div class="flex items-center gap-2 border-b border-outline-variant/30 pb-2.5">
             <Icon name="calendar_today" class="text-primary shrink-0" size="1.1rem" />
             <h4 class="font-bold text-xs sm:text-sm text-on-surface">{{ row.dateLabel }}</h4>
           </div>
 
-          <!-- Alignement vertical ordonné des trois créneaux horaires de service -->
           <div class="space-y-3.5 pt-1">
             <div 
               v-for="slotType in (['NORMAL', 'SUNDAY_SCHOOL', 'DLT'] as const)" 
               :key="`mobile-slot-${slotType}`"
               class="flex flex-col gap-1.5"
             >
-              <!-- Étiquette dynamique du type de culte -->
               <div class="flex items-center gap-1.5">
                 <span :class="[
                   'w-1.5 h-1.5 rounded-full shrink-0',
@@ -104,7 +94,6 @@
                 </span>
               </div>
 
-              <!-- Cartes des enseignants affectés -->
               <div class="pl-3 flex flex-wrap gap-1.5">
                 <div 
                   v-for="teacherId in row.assignments[slotType]" 
@@ -137,29 +126,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useSchedule } from '~/composables/useSchedule'
+import { computed, onMounted, ref } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'
+import { useToast } from '~/composables/useToast'
 import type { Teacher } from '~/types/teacher'
 
+const toast=useToast()
 definePageMeta({
   layout: 'dashboard'
 })
 
 // Composables
-const { fetchCurrentSchedule, isLoadingSchedule, currentSchedule } = useSchedule()
 const { listTeachers, fetchAllTeachers } = useTeacher()
 
+// États réactifs locaux
 const scheduleRows = ref<any[]>([])
+const isLoadingSchedule = ref(true)
+const currentSchedule = ref<{ monthKey: string; status: string } | null>(null)
+
+// Format de clé dynamique pour cibler le mois actuel "YYYY-MM" (2026-06)
+const currentMonthKey = computed(() => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+})
 
 // --- 🛠️ RESOLUTION "ENSEIGNANT EXTERNE" ---
-// Nous indexons la table d'association à la fois par 'id' de document ET par 'uid' (d'authentification)
 const teachersMap = computed(() => {
   const map: Record<string, Teacher> = {}
   listTeachers.value.forEach((teacher: Teacher) => {
-    if (teacher.id) {
-      map[teacher.id] = teacher
-    }
     if (teacher.id) {
       map[teacher.id] = teacher
     }
@@ -168,23 +164,46 @@ const teachersMap = computed(() => {
 })
 
 onMounted(async () => {
-  // Chargement simultané des données
+  // Chargement simultané des enseignants et de l'emploi du temps
+  await fetchAllTeachers()
   await Promise.all([
-    fetchAllTeachers(),
-    fetchCurrentSchedule().then(rows => scheduleRows.value = rows)
+    loadScheduleForCurrentMonth()
   ])
 })
+
+// Appel direct au endpoint GET de ton API
+const loadScheduleForCurrentMonth = async () => {
+  isLoadingSchedule.value = true
+  try {
+    const response = await $fetch<any>(`/api/schedules/${currentMonthKey.value}`, {
+      method: 'GET'
+    })
+
+    if (response && response.success) {
+      currentSchedule.value = {
+        monthKey: response.monthKey,
+        status: response.status
+      }
+      scheduleRows.value = response.rows || []
+    }
+  } catch (error: any) {
+    toast.error('[Vue Schedule GET] Erreur lors de la récupération du planning :', error)
+    // Réinitialisation si planning absent (ex: erreur 404)
+    currentSchedule.value = null
+    scheduleRows.value = []
+  } finally {
+    isLoadingSchedule.value = false
+  }
+}
 
 // --- RESOLUTION DES IDENTITES PEDAGOGIQUES AVEC FILTRE SÉCURISÉ ---
 const getTeacherFullName = (id: string | undefined): string => {
   if (!id) return 'Enseignant non assigné'
   
-  // 1. Recherche par dictionnaire indexé (ultra-rapide)
   let teacher = teachersMap.value[id]
   
-  // 2. Recherche par filtre d'appoint au cas où l'indexation n'a pas fini de s'exécuter
   if (!teacher) {
-    teacher = listTeachers.value.find(t => t.id === id || t.id === id)
+    teacher = listTeachers.value.find(t => t.id === id)
   }
   
   if (!teacher) return 'Enseignant externe'
@@ -192,7 +211,7 @@ const getTeacherFullName = (id: string | undefined): string => {
 }
 
 // Formatage de la période
-const formatMonthKey = (monthKey: string | undefined): string => {
+const formatMonthKey = (monthKey: string): string => {
   if (!monthKey) return '-'
   
   if (monthKey.includes('-')) {

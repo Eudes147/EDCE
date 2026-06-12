@@ -20,14 +20,6 @@
             type="text"
           >
         </div>
-        
-        <button 
-          @click="openAddModal"
-          class="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm shadow-sm hover:opacity-90 active:scale-95 transition-all"
-        >
-          <Icon name="add" size="1.15rem" />
-          <span>Inscrire un enseignant</span>
-        </button>
       </div>
       
       <div class="overflow-x-auto custom-scrollbar">
@@ -48,7 +40,7 @@
             >
               <td class="px-4 py-3.5 md:px-6">
                 <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 border border-primary/10">
+                  <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 border border-primary/10">
                     {{ teacher.first_name.substring(0, 1) }}{{ teacher.last_name.substring(0, 1) }}
                   </div>
                   <div class="flex flex-col min-w-0">
@@ -282,7 +274,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'
-import { useSchedule } from '~/composables/useSchedule' // <-- AJOUT du nouveau composable
 import { useToast } from '~/composables/useToast'
 import type { Teacher } from '~/types/teacher'
 
@@ -300,7 +291,6 @@ interface ScheduleRow {
 // Déclaration des composables
 const toast = useToast()
 const { listTeachers, fetchAllTeachers, updateTeacher, isLoading } = useTeacher()
-const { isPublishing, saveAndPublishSchedule } = useSchedule() // <-- INJECTION de la logique de publication
 
 // États de filtrage et pagination
 const searchQuery = ref('')
@@ -311,6 +301,8 @@ const itemsPerPage = 3
 const showFormModal = ref(false)
 const showAssignModal = ref(false)
 const isEditMode = ref(false)
+const isPublishing = ref(false)
+const hasExistingSchedule = ref(false) // Permet d'arbitrer entre POST et PUT
 
 // Cible active de formulaire
 const selectedTeacher = ref<Teacher | null>(null)
@@ -326,12 +318,20 @@ const form = reactive({
 const schedule = ref<ScheduleRow[]>([])
 const activeCell = ref<{ rowIndex: number; slotType: SlotType } | null>(null)
 
+// Format de clé dynamique pour le mois actuel "YYYY-MM" (2026-06)
+const currentMonthKey = computed(() => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+})
+
 // Algorithme de génération des dimanches du mois courant
 const generateCurrentMonthSundays = (): ScheduleRow[] => {
   const sundays: ScheduleRow[] = []
   const now = new Date()
   const year = now.getFullYear()
-  const month = now.getMonth() // Mois courant (0-11)
+  const month = now.getMonth()
 
   const date = new Date(year, month, 1)
 
@@ -371,23 +371,33 @@ const generateCurrentMonthSundays = (): ScheduleRow[] => {
 // Chargement initial
 onMounted(async () => {
   schedule.value = generateCurrentMonthSundays()
-  await fetchAllTeachers()
-  syncScheduleWithRealData()
+  
+  // Exécution parallèle du chargement des enseignants et de l'EDT existant
+  await Promise.all([
+    fetchAllTeachers(),
+    loadExistingSchedule()
+  ])
 })
 
-const syncScheduleWithRealData = () => {
-  if (listTeachers.value.length >= 4 && schedule.value.length > 0) {
-    const ids = listTeachers.value.map(t => t.id).filter(Boolean) as string[]
-    
-    const firstRow = schedule.value[0]
-    if (firstRow) {
-      firstRow.assignments.NORMAL = [ids[0], ids[1]].filter((id): id is string => !!id)
-      firstRow.assignments.SUNDAY_SCHOOL = ids[2] ? [ids[2]] : []
-    }
+// Récupération de l'emploi du temps existant si disponible (GET)
+const loadExistingSchedule = async () => {
+  try {
+    const response = await $fetch<any>(`/api/schedules/${currentMonthKey.value}`, {
+      method: 'GET'
+    })
 
-    const secondRow = schedule.value[1]
-    if (secondRow) {
-      secondRow.assignments.SUNDAY_SCHOOL = [ids[3], ids[0]].filter((id): id is string => !!id)
+    if (response && response.success && Array.isArray(response.rows)) {
+      schedule.value = response.rows
+      hasExistingSchedule.value = true
+      console.log(`[Vue Schedule] Planning existant chargé pour ${currentMonthKey.value}`)
+    }
+  } catch (error: any) {
+    // Si l'erreur est un 404, c'est normal (aucun planning créé pour l'instant)
+    if (error.statusCode === 404) {
+      hasExistingSchedule.value = false
+      console.log(`[Vue Schedule] Aucun planning préexistant pour ${currentMonthKey.value}. Mode création (POST).`)
+    } else {
+      console.error('[Vue Schedule] Erreur lors de la vérification du planning existant:', error)
     }
   }
 }
@@ -451,25 +461,41 @@ const toggleTeacherInCell = (teacherId: string) => {
   }
 }
 
-// --- LOGIQUE DE PUBLICATION EFFECTIVE ---
+// --- LOGIQUE DE PUBLICATION EFFECTIVE (POST / PUT) ---
 const publishSchedule = async () => {
-  const now = new Date()
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}` // Donne "2026-06"
+  if (isPublishing.value) return
+  isPublishing.value = true
 
-  // Construction du payload propre
-  const payload = {
-    monthKey,
-    status: 'published',
-    rows: schedule.value
-  }
+  try {
+    // Arbitrage dynamique selon l'état actuel de la base
+    const method = hasExistingSchedule.value ? 'PUT' : 'POST'
+    const url = hasExistingSchedule.value 
+      ? `/api/schedules/${currentMonthKey.value}` 
+      : '/api/schedules'
 
-  // Appel de la méthode du composable
-  const success = await saveAndPublishSchedule(payload)
+    const payload = {
+      monthKey: currentMonthKey.value,
+      status: 'published',
+      rows: schedule.value
+    }
 
-  if (success) {
-    toast.success('Planning partagé', 'L\'emploi du temps mensuel a été publié avec succès pour toutes les équipes.')
-  } else {
-    toast.error('Échec de publication', 'Une erreur est survenue lors de l\'enregistrement de l\'emploi du temps.')
+    const response = await $fetch<any>(url, {
+      method,
+      body: payload
+    })
+
+    if (response && response.success) {
+      hasExistingSchedule.value = true // Fixé à true car l'entité existe désormais en base
+      toast.success(
+        hasExistingSchedule.value ? 'Planning mis à jour' : 'Planning partagé', 
+        `L'emploi du temps mensuel a été enregistré avec succès pour ${currentMonthKey.value}.`
+      )
+    }
+  } catch (err: any) {
+    console.error('[Vue Schedule publish] Échec :', err)
+    toast.error('Échec de publication', err.statusMessage || 'Une erreur est survenue lors de l\'enregistrement.')
+  } finally {
+    isPublishing.value = false
   }
 }
 

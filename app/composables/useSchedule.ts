@@ -1,50 +1,135 @@
-import { ref } from 'vue'
+// server/utils/scheduleStore.ts
 
-export const useSchedule = () => {
-  const isPublishing = ref(false)
-  const isLoadingSchedule = ref(false)
-  const currentSchedule = ref<any>(null)
+import { mockMonthlySchedule } from '~/data/mockData'
+import { useToast } from '~/composables/useToast'
 
-  // Envoi / Publication (POST)
-  const saveAndPublishSchedule = async (payload: any) => {
-    isPublishing.value = true
-    try {
-      await $fetch('/api/schedules/publish', {
-        method: 'POST',
-        body: payload
-      })
-      return true
-    } catch (error) {
-      console.error("Erreur lors de la publication :", error)
-      return false
-    } finally {
-      isPublishing.value = false
-    }
-  }
+/**
+ * Store en mémoire pour les schedules (pour tests/développement)
+ * Remplace temporairement la BD Prisma
+ */
+const toast=useToast()
+interface ScheduleData {
+  monthKey: string
+  status: string
+  matrixData: string // JSON stringifié
+  createdAt: Date
+  updatedAt: Date
+}
 
-  // Récupération / Consultation (GET)
-  const fetchCurrentSchedule = async () => {
-    isLoadingSchedule.value = true
-    try {
-      const response = await $fetch<any>('/api/schedules/current')
-      if (response && response.success) {
-        currentSchedule.value = response
-        return response.rows
-      }
-      return []
-    } catch (error) {
-      console.error("Erreur lors de la récupération :", error)
-      return []
-    } finally {
-      isLoadingSchedule.value = false
-    }
-  }
+// Map pour stocker les schedules en mémoire
+const scheduleStore = new Map<string, ScheduleData>()
 
-  return {
-    isPublishing,
-    isLoadingSchedule,
-    currentSchedule,
-    saveAndPublishSchedule,
-    fetchCurrentSchedule
+/**
+ * Initialiser le store avec les données mockées
+ */
+export const initializeScheduleStore = () => {
+  // Vider le store existant
+  scheduleStore.clear()
+
+  // Remplir avec les données mockées
+  if (mockMonthlySchedule && mockMonthlySchedule.monthKey) {
+    scheduleStore.set(mockMonthlySchedule.monthKey, {
+      monthKey: mockMonthlySchedule.monthKey,
+      status: mockMonthlySchedule.status =='published' ? 'published' : 'draft',
+      matrixData: JSON.stringify(mockMonthlySchedule.rows),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    console.log(`[ScheduleStore] Initialisé avec ${scheduleStore.size} schedule(s) mockée(s)`)
   }
 }
+
+/**
+ * Créer ou mettre à jour un schedule (upsert)
+ */
+export const upsertSchedule = (
+  monthKey: string,
+  status: string,
+  rows: any[]
+): ScheduleData => {
+  const now = new Date()
+  const existing = scheduleStore.get(monthKey)
+
+  const schedule: ScheduleData = {
+    monthKey,
+    status: status as 'draft' | 'published',
+    matrixData: JSON.stringify(rows),
+    createdAt: existing ? existing.createdAt : now,
+    updatedAt: now,
+  }
+
+  scheduleStore.set(monthKey, schedule)
+  toast.success(`[ScheduleStore] Upsert: ${monthKey}`)
+
+  return schedule
+}
+
+/**
+ * Récupérer un schedule par monthKey
+ */
+export const getSchedule = (monthKey: string): ScheduleData | null => {
+  const schedule = scheduleStore.get(monthKey)
+  if (schedule) {
+    toast.success(`[ScheduleStore] Get: ${monthKey} (trouvé)`)
+  } else {
+    toast.success(`[ScheduleStore] Get: ${monthKey} (non trouvé)`)
+  }
+  return schedule || null
+}
+
+/**
+ * Mettre à jour un schedule (update)
+ */
+export const updateSchedule = (
+  monthKey: string,
+  updates: { status?: string; rows?: any[] }
+): ScheduleData | null => {
+  const existing = scheduleStore.get(monthKey)
+
+  if (!existing) {
+    toast.success(`[ScheduleStore] Update: ${monthKey} (non trouvé)`)
+    return null
+  }
+
+  const updated: ScheduleData = {
+    ...existing,
+    status: (updates.status as 'draft' | 'published') || existing.status,
+    matrixData: updates.rows ? JSON.stringify(updates.rows) : existing.matrixData,
+    updatedAt: new Date(),
+  }
+
+  scheduleStore.set(monthKey, updated)
+  toast.success(`[ScheduleStore] Update: ${monthKey}`)
+
+  return updated
+}
+
+/**
+ * Supprimer un schedule (optionnel)
+ */
+export const deleteSchedule = (monthKey: string): boolean => {
+  const deleted = scheduleStore.delete(monthKey)
+  if (deleted) {
+    toast.success(`[ScheduleStore] Delete: ${monthKey}`)
+  }
+  return deleted
+}
+
+/**
+ * Obtenir tous les schedules (optionnel)
+ */
+export const getAllSchedules = (): ScheduleData[] => {
+  return Array.from(scheduleStore.values())
+}
+
+/**
+ * Réinitialiser le store (optionnel)
+ */
+export const resetScheduleStore = () => {
+  scheduleStore.clear()
+  toast.success(`[ScheduleStore] Reset complet`)
+}
+
+// Initialiser au démarrage
+initializeScheduleStore()

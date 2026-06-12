@@ -465,6 +465,7 @@ export const mockChildren: Child[] = [
     tel: '+225 07 12 34 56',
     telParent: '+225 05 98 76 54',
     sexe: 'Feminin',
+    nivScolaire: 'CM2',
     sexeParent: 'Masculin',
     adresse: 'Cocody, Abidjan',
     created_at: '2025-11-07T08:22:00Z'
@@ -477,6 +478,7 @@ export const mockChildren: Child[] = [
     tel: '+225 07 45 67 89',
     telParent: '+225 05 23 45 67',
     sexe: 'Masculin',
+
     sexeParent: 'Feminin',
     adresse: 'Yopougon, Abidjan',
     created_at: '2025-09-25T12:15:00Z'
@@ -512,6 +514,7 @@ export const mockChildren: Child[] = [
     tel: '+225 07 99 88 77',
     telParent: '+225 05 44 33 22',
     sexe: 'Feminin',
+    nivScolaire: 'Tle',
     sexeParent: 'Masculin',
     adresse: 'Plateau, Abidjan',
     created_at: '2025-07-01T10:00:00Z'
@@ -524,6 +527,7 @@ export const mockChildren: Child[] = [
     telParent: '+225 05 63 12 78',
     sexe: 'Masculin',
     sexeParent: 'Masculin',
+    nivScolaire: "3e",
     adresse: 'Adjamé, Abidjan',
     created_at: '2025-12-01T07:15:00Z'
   },
@@ -543,6 +547,7 @@ export const mockChildren: Child[] = [
     id: 'child-008',
     classe: 'Moyen',
     name: 'Souleymane Diallo',
+    nivScolaire: 'Tle',
     birth_date: new Date('2017-02-14'),
     telParent: '+225 05 31 09 27',
     sexe: 'Masculin',

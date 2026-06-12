@@ -1,28 +1,19 @@
 <template>
-  <div class="p-8 max-w-[1400px] mx-auto space-y-8">
-    <!-- Header Section -->
+  <div class="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 md:space-y-8">
     <div class="flex justify-between items-end">
       <div>
-        <h2 class="font-h1 text-h1 text-on-surface text-2xl font-bold">Gestion des Enseignants</h2>
-        <p class="font-body text-body text-on-surface-variant mt-2">Gerez vos équipes pédagogiques et leur planning mensuel.</p>
+        <h2 class="font-h1 text-xl md:text-h1 font-bold text-on-surface">Gestion des Enseignants</h2>
+        <p class="font-body text-xs md:text-sm text-on-surface-variant mt-1">Gérez vos équipes pédagogiques et leur planning mensuel.</p>
       </div>
-      <!-- <button 
-        @click="openAddModal" 
-        class="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all text-sm shadow-sm"
-      >
-        <Icon name="add" :color="'text-white'" />
-        Inscrire un Enseignant
-      </button> -->
     </div>
 
-    <!-- Teachers List Table -->
-    <section class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+    <section class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm">
       <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
-        <div class="relative w-72">
-          <Icon :color="'text-outline'" name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-[20px]" />
+        <div class="relative w-full max-w-xs">
+          <Icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70" color="1.2rem" />
           <input 
             v-model="searchQuery"
-            class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
+            class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface" 
             placeholder="Rechercher un enseignant..." 
             type="text"
           >
@@ -31,54 +22,56 @@
       
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-surface-container-low/50 border-b border-outline-variant/30">
-              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Nom</th>
-              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Prénom</th>
-              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Téléphone</th>
-              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface">Statut Actif</th>
-              <th class="px-6 py-4 font-body text-sm font-bold text-on-surface text-right">Actions</th>
+          <thead class="bg-surface-container-low/50 border-b border-outline-variant/40">
+            <tr>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Nom</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Prénom</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Téléphone</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Statut Actif</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-32">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant/20">
+          <tbody class="divide-y divide-outline-variant/40">
             <tr 
               v-for="teacher in paginatedTeachers" 
               :key="teacher.id" 
               class="hover:bg-surface-container-low/40 transition-colors group"
             >
               <td class="px-6 py-4 font-body text-sm text-on-surface font-semibold">{{ teacher.first_name.toUpperCase() }}</td>
-              <td class="px-6 py-4 font-body text-sm text-on-surface-variant">{{ teacher.last_name }}</td>
-              <td class="px-6 py-4 font-body text-sm text-on-surface-variant font-mono text-xs">{{ teacher.tel || '-' }}</td>
+              <td class="px-6 py-4 font-body text-sm text-on-surface-variant font-medium">{{ teacher.last_name }}</td>
+              <td class="px-6 py-4 font-mono text-xs text-on-surface-variant tracking-wide">{{ teacher.tel || '-' }}</td>
               <td class="px-6 py-4 text-sm">
                 <span 
                   :class="[
-                    'px-2.5 py-1 rounded-full text-xs font-medium',
+                    'px-2.5 py-1 rounded-full text-xs font-semibold',
                     teacher.isAvailable ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
                   ]"
                 >
                   {{ teacher.isAvailable ? 'Disponible' : 'Indisponible' }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right space-x-2">
-                <button 
-                  @click="openEditModal(teacher)" 
-                  class="p-1.5 rounded-md hover:bg-primary/5 text-outline hover:text-primary transition-colors"
-                  title="Modifier les détails"
-                >
-                  <Icon name="edit" :color="'text-outline'" class="text-[18px]" />
-                </button>
-                <button 
-                  @click="toggleAvailability(teacher)" 
-                  class="p-1.5 rounded-md hover:bg-surface-container-high text-outline transition-colors"
-                  :title="teacher.isAvailable ? 'Marquer indisponible' : 'Marquer disponible'"
-                >
-                  <Icon name="sync" :color="'text-outline'" class="text-[18px]" />
-                </button>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button 
+                    @click="openEditModal(teacher)" 
+                    class="p-1.5 rounded-md hover:bg-primary/5 text-on-surface-variant hover:text-primary transition-colors"
+                    title="Modifier les détails"
+                  >
+                    <Icon name="edit" color="1.1rem" />
+                  </button>
+                  <button 
+                    @click="toggleAvailability(teacher)" 
+                    class="p-1.5 rounded-md hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors"
+                    :title="teacher.isAvailable ? 'Marquer indisponible' : 'Marquer disponible'"
+                  >
+                    <Icon name="sync" color="1.1rem" />
+                  </button>
+                </div>
               </td>
             </tr>
 
             <tr v-if="filteredTeachers.length === 0">
-              <td colspan="5" class="px-6 py-8 text-center text-doomu-text-muted text-sm">
+              <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant italic text-sm">
                 Aucun enseignant ne correspond à votre recherche.
               </td>
             </tr>
@@ -86,96 +79,87 @@
         </table>
       </div>
 
-      <!-- Pagination Footer -->
-      <div class="px-6 py-3 border-t border-outline-variant/30 flex justify-between items-center bg-surface-container-low/10">
-        <span class="text-xs text-on-surface-variant">
+      <div class="px-6 py-3 border-t border-outline-variant/40 flex justify-between items-center bg-surface-container-low/10">
+        <span class="text-xs text-on-surface-variant font-medium">
           Affichage {{ startIndex + 1 }}-{{ Math.min(endIndex, filteredTeachers.length) }} sur {{ filteredTeachers.length }} enseignants
         </span>
-        <div class="flex gap-2">
+        <div class="flex gap-1.5">
           <button 
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Icon name="chevron_left" :color="'text-outline'" class="text-[18px]" />
+            <Icon name="chevron_left" color="1.1rem" />
           </button>
-          <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-medium text-xs shadow-sm">
+          <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-semibold text-xs shadow-sm">
             {{ currentPage }}
           </button>
           <button 
             @click="nextPage"
             :disabled="currentPage >= totalPages"
-            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Icon name="chevron_right" :color="'text-outline'" class="text-[18px]" />
+            <Icon name="chevron_right" color="1.1rem" />
           </button>
         </div>
       </div>
     </section>
 
-    <!-- Emploi du Temps Mensuel Section -->
     <section class="space-y-4">
-      <div class="flex justify-between items-center">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h3 class="font-h2 text-h2 text-on-surface text-xl font-bold">Emploi du Temps Mensuel</h3>
-          <p class="font-body text-body text-on-surface-variant text-sm">Affectations régulées pour le mois courant</p>
+          <h3 class="font-h2 text-lg md:text-h2 font-bold text-on-surface">Emploi du Temps Mensuel</h3>
+          <p class="font-body text-xs md:text-sm text-on-surface-variant">Affectations régulées pour le mois courant</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
           <button 
             @click="publishSchedule"
             :disabled="isPublishing"
-            class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center justify-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            <Icon :name="isPublishing ? 'sync' : 'publish'" :color="'text-white'" :class="['text-[18px]', { 'animate-spin': isPublishing }]" />
+            <Icon :name="isPublishing ? 'sync' : 'publish'" :class="[{ 'animate-spin': isPublishing }]" color="1.1rem" />
             <span>{{ isPublishing ? 'Publication...' : "Publier l'emploi du temps" }}</span>
           </button>
         </div>
       </div>
 
-      <!-- Main Matrix Calendar Grid -->
-      <div class="grid grid-cols-4 gap-1 bg-outline-variant/30 border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-        <!-- Grid Header -->
-        <div class="bg-surface-container-high p-4 font-bold text-on-surface text-center text-sm">Dates (Dimanches)</div>
-        <div class="bg-surface-container-high p-4 font-bold text-primary text-center text-sm">NORMAL</div>
-        <div class="bg-surface-container-high p-4 font-bold text-secondary text-center text-sm">SUNDAY_SCHOOL</div>
-        <div class="bg-surface-container-high p-4 font-bold text-tertiary text-center text-sm">DLT</div>
+      <div class="grid grid-cols-4 gap-[1px] bg-outline-variant/60 border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+        <div class="bg-surface-container-high p-4 font-bold text-on-surface text-center text-xs md:text-sm uppercase tracking-wider">Dates (Dimanches)</div>
+        <div class="bg-surface-container-high p-4 font-bold text-primary text-center text-xs md:text-sm uppercase tracking-wider">NORMAL</div>
+        <div class="bg-surface-container-high p-4 font-bold text-secondary text-center text-xs md:text-sm uppercase tracking-wider">SUNDAY_SCHOOL</div>
+        <div class="bg-surface-container-high p-4 font-bold text-tertiary text-center text-xs md:text-sm uppercase tracking-wider">DLT</div>
 
-        <!-- Matrix Body Loop -->
         <template v-for="(row, rowIndex) in schedule" :key="row.dateLabel">
-          <!-- Date Column Cell -->
-          <div class="bg-surface-container-low p-4 flex items-center justify-center font-semibold text-doomu-text text-sm border-r border-outline-variant/30">
+          <div class="bg-surface-container-low/60 p-4 flex items-center justify-center font-bold text-on-surface text-xs md:text-sm text-center">
             {{ row.dateLabel }}
           </div>
 
-          <!-- Type Slots Columns Cells -->
           <div 
             v-for="slotType in (['NORMAL', 'SUNDAY_SCHOOL', 'DLT'] as const)"
             :key="slotType"
             @click="openAssignmentManager(rowIndex, slotType)"
             :class="[
-              'p-4 transition-colors cursor-pointer min-h-[80px] flex flex-col justify-center gap-1.5 relative group',
-              slotType === 'NORMAL' ? 'bg-white hover:bg-primary/5' : slotType === 'SUNDAY_SCHOOL' ? 'bg-white hover:bg-secondary/5' : 'bg-white hover:bg-tertiary/5'
+              'p-3 transition-colors cursor-pointer min-h-[85px] flex flex-col justify-center gap-1.5 relative group bg-white',
+              slotType === 'NORMAL' ? 'hover:bg-primary/5' : slotType === 'SUNDAY_SCHOOL' ? 'hover:bg-secondary/5' : 'hover:bg-tertiary/5'
             ]"
           >
-            <!-- Render Assigned Teachers -->
             <span 
               v-for="tId in row.assignments[slotType]" 
               :key="tId"
               :class="[
-                'text-[11px] px-2.5 py-1 rounded-md text-center font-medium block truncate',
-                slotType === 'NORMAL' ? 'bg-primary/10 text-primary' : slotType === 'SUNDAY_SCHOOL' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'
+                'text-[10px] md:text-xs px-2 py-1 rounded-md text-center font-semibold block truncate border',
+                slotType === 'NORMAL' ? 'bg-primary/5 text-primary border-primary/10' : slotType === 'SUNDAY_SCHOOL' ? 'bg-secondary/5 text-secondary border-secondary/10' : 'bg-tertiary/5 text-tertiary border-tertiary/10'
               ]"
             >
               {{ getTeacherDisplayName(tId) }}
             </span>
 
-            <!-- Trigger Add Placeholder if slot length < 2 -->
             <div 
               v-if="row.assignments[slotType].length < 2" 
-              class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"
+              class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded"
             >
-              <div class="bg-white p-1 rounded-full shadow-sm border border-outline-variant/40">
-                <Icon name="add" :color="'text-primary'" class="text-[16px]" />
+              <div class="bg-white p-1.5 rounded-full shadow-md border border-outline-variant/40 flex items-center justify-center text-primary">
+                <Icon name="add" color="1rem" />
               </div>
             </div>
           </div>
@@ -183,88 +167,85 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- MODAL 1 : INSCRIPTION / MODIFICATION       -->
-    <!-- ========================================== -->
     <Modal v-model="showFormModal" :title="isEditMode ? 'Modifier l\'Enseignant' : 'Inscrire un Enseignant'" size="md">
-      <form @submit.prevent="submitForm" id="teacherForm" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
+      <div class="py-1">
+        <form @submit.prevent="submitForm" id="teacherForm" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Nom <span class="text-error">*</span></label>
+              <input 
+                v-model="form.first_name" 
+                class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium" 
+                placeholder="Ex: Tshibamba" type="text" required 
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Prénom <span class="text-error">*</span></label>
+              <input 
+                v-model="form.last_name" 
+                class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium" 
+                placeholder="Ex: Caleb" type="text" required 
+              />
+            </div>
+          </div>
           <div>
-            <label class="block text-xs font-bold text-on-surface-variant mb-1">Nom <span class="text-error">*</span></label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Téléphone <span class="text-error">*</span></label>
             <input 
-              v-model="form.first_name" 
-              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
-              placeholder="Ex: Tshibamba" type="text" required 
+              v-model="form.tel" 
+              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium font-mono" 
+              placeholder="Ex: +229..." type="tel" required 
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-on-surface-variant mb-1">Prénom <span class="text-error">*</span></label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Quartier de Résidence</label>
             <input 
-              v-model="form.last_name" 
-              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
-              placeholder="Ex: Caleb" type="text" required 
+              v-model="form.quarter" 
+              class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium" 
+              placeholder="Ex: Fidjrossè" type="text" 
             />
           </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-on-surface-variant mb-1">Téléphone <span class="text-error">*</span></label>
-          <input 
-            v-model="form.tel" 
-            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
-            placeholder="Ex: +229..." type="tel" required 
-          />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-on-surface-variant mb-1">Quartier de Résidence</label>
-          <input 
-            v-model="form.quarter" 
-            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-doomu-text" 
-            placeholder="Ex: Fidjrossè" type="text" 
-          />
-        </div>
-      </form>
+        </form>
+      </div>
       <template #footer>
-        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg" @click="showFormModal = false">Annuler</button>
-        <button type="submit" form="teacherForm" class="px-5 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm" :disabled="isLoading">Sauvegarder</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
+          <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium order-2 sm:order-1" @click="showFormModal = false">Annuler</button>
+          <button type="submit" form="teacherForm" class="px-6 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity order-1 sm:order-2" :disabled="isLoading">Sauvegarder</button>
+        </div>
       </template>
     </Modal>
 
-    <!-- ========================================== -->
-    <!-- MODAL 2 : ATTRIBUTION DE CASIER PLANNING   -->
-    <!-- ========================================== -->
     <Modal v-model="showAssignModal" title="Affectation des Moniteurs (Max 2)" size="md">
-      <div v-if="activeCell && schedule[activeCell.rowIndex]" class="space-y-4">
-        <div class="bg-primary/5 p-3 rounded-xl border border-primary/10 text-sm">
-          Dimanche : <span class="font-bold text-doomu-text">{{ schedule[activeCell.rowIndex]?.dateLabel }}</span> <br>
-          Créneau ciblé : <span class="font-bold text-primary">{{ activeCell.slotType }}</span>
+      <div v-if="activeCell && schedule[activeCell.rowIndex]" class="space-y-4 py-1">
+        <div class="bg-primary/5 p-4 rounded-xl border border-primary/10 text-xs md:text-sm space-y-1">
+          <p class="text-on-surface-variant font-medium">Dimanche : <span class="font-bold text-on-surface">{{ schedule[activeCell.rowIndex]?.dateLabel }}</span></p>
+          <p class="text-on-surface-variant font-medium">Créneau ciblé : <span class="font-bold text-primary">{{ activeCell.slotType }}</span></p>
         </div>
 
-        <p class="text-xs font-semibold text-outline">Sélectionnez les moniteurs (disponibles uniquement) :</p>
+        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Sélectionnez les moniteurs (disponibles uniquement) :</p>
         
-        <div class="grid grid-cols-2 gap-3 max-h-[200px] overflow-y-auto pr-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
           <div 
             v-for="teacher in listTeachers.filter(t => t.isAvailable)" 
             :key="teacher.id"
             @click="toggleTeacherInCell(teacher.id)"
             :class="[
-              'p-2.5 border rounded-lg cursor-pointer text-xs font-medium flex items-center justify-between transition-colors',
-              isTeacherSelectedInActiveCell(teacher.id) ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-outline-variant/40 text-doomu-text hover:bg-surface-container-low'
+              'p-3 border rounded-xl cursor-pointer text-sm font-semibold flex items-center justify-between transition-all',
+              isTeacherSelectedInActiveCell(teacher.id) ? 'bg-primary/5 border-primary text-primary' : 'bg-white border-outline-variant/60 text-on-surface hover:bg-surface-container-low'
             ]"
           >
-            <span>{{ teacher.first_name }} {{ teacher.last_name }}</span>
-            <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" :color="'text-primary'" />
+            <span class="truncate">{{ teacher.first_name }} {{ teacher.last_name }}</span>
+            <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" color="1.1rem" class="text-primary flex-shrink-0 ml-2" />
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="px-5 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm w-full" @click="showAssignModal = false">
+        <button class="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold shadow-sm w-full hover:opacity-90 transition-opacity text-sm" @click="showAssignModal = false">
           Confirmer l'affectation
         </button>
       </template>
     </Modal>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'

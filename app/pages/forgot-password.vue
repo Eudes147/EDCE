@@ -4,13 +4,12 @@
       <Transition name="auth-transition" mode="out-in">
         <div class="auth-card rounded-xl p-md md:p-lg">
           <header class="mb-lg">
-            <h2 class="font-h3 text-h3 text-on-surface">Forgot your password?</h2>
+            <h2 class="font-h3 text-h3 text-on-surface">Mot de passe oublié?</h2>
             <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">
-              Enter your email address and we'll send you a link to reset your password.
+              Entre ton adresse email et nous vous enverrons le lien de réinitialisation.
             </p>
           </header>
 
-          <!-- Notification de succès globale -->
           <div 
             v-if="isSubmittedSuccessfully" 
             class="mb-md p-sm bg-green-500/10 border border-green-500/20 text-green-600 rounded-lg text-body-sm flex items-start gap-xs"
@@ -19,7 +18,6 @@
             <span>An email has been sent. Please check your terminal/console to open your test inbox and view the email.</span>
           </div>
 
-          <!-- Affichage des erreurs de l'API -->
           <div 
             v-if="apiErrorMessage" 
             class="mb-md p-sm bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-body-sm flex items-center gap-xs"
@@ -83,7 +81,6 @@
       </Transition>
     </div>
 
-    <!-- Background Decoration -->
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
       <div class="absolute top-[10%] right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-[80px]"></div>
       <div class="absolute bottom-[10%] left-[5%] w-72 h-72 bg-secondary-container/5 rounded-full blur-[60px]"></div>

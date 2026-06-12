@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-center p-margin-mobile md:p-xl font-body-md text-on-surface">
     <div class="w-full max-w-[30rem]">
-
       <Transition
         name="pop-bottom"
         mode="out-in"
@@ -12,7 +11,7 @@
         >
           <header class="mb-lg">
             <h2 class="font-h2 text-h2 text-on-surface">Créer un compte</h2>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Joindre la communauté administrative de EDCE/p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Joindre la communauté administrative de EDCE</p>
           </header>
 
           <div 
@@ -24,7 +23,7 @@
           </div>
 
           <form class="space-y-md" @submit.prevent="handleSignup">
-            <div class="grid grid-cols-2 gap-md">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <div class="space-y-xs">
                 <label class="font-label-md text-label-md text-on-surface">Nom de famille</label>
                 <input
@@ -51,19 +50,21 @@
 
             <div class="space-y-xs">
               <label class="font-label-md text-label-md text-on-surface">Sexe</label>
-              <select
-                v-model="signupForm.sexe"
-                class="w-full px-md py-sm rounded-lg border border-outline-variant bg-surface text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer appearance-none"
-                required
-                :disabled="isLoading"
-              >
-                <option value="" disabled selected>Select your gender</option>
-                <option value="Masculin">Masculin</option>
-                <option value="Feminin">Féminin</option>
-              </select>
+              <div class="relative">
+                <select
+                  v-model="signupForm.sexe"
+                  class="w-full px-md py-sm rounded-lg border border-outline-variant bg-surface text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer appearance-none"
+                  required
+                  :disabled="isLoading"
+                >
+                  <option value="" disabled selected>Select your gender</option>
+                  <option value="Masculin">Masculin</option>
+                  <option value="Feminin">Féminin</option>
+                </select>
+              </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-md">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <div class="space-y-xs">
                 <label class="font-label-md text-label-md text-on-surface">Telephone (Optional)</label>
                 <input
@@ -183,11 +184,11 @@
               <input
                 id="terms"
                 v-model="signupForm.acceptTerms"
-                class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
+                class="mt-1 w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer shrink-0"
                 type="checkbox"
                 :disabled="isLoading"
               />
-              <label class="font-body-sm text-body-sm text-on-surface-variant cursor-pointer" for="terms">
+              <label class="font-body-sm text-body-sm text-on-surface-variant cursor-pointer select-none" for="terms">
                 J'accepte les <a class="text-primary hover:underline" href="#">termes de services</a> et de
                 <a class="text-primary hover:underline" href="#">politique de confidentialité</a>
               </label>
@@ -206,7 +207,7 @@
             </button>
 
             <p class="text-center font-body-sm text-body-sm text-on-surface-variant mt-md">
-              Déaja  un compte?
+              Déjà un compte?
               <NuxtLink to="/login" class="text-primary font-bold hover:underline">
                 Login
               </NuxtLink>
@@ -222,7 +223,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from '~/stores/auth'

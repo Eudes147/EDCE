@@ -6,7 +6,7 @@
         <p class="font-body text-body text-on-surface-variant mt-2">Consultez vos affectations officielles pour le mois en cours.</p>
       </div>
       <div v-if="currentSchedule?.monthKey" class="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
-        <Icon name="calendar_month" class="text-base" />
+        <Icon name="calendar_month" color="text-base text-primary" />
         <span>Période : {{ formatMonthKey(currentSchedule.monthKey) }}</span>
       </div>
     </div>
@@ -17,7 +17,7 @@
     </div>
 
     <div v-else-if="scheduleRows.length === 0" class="text-center py-16 bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl shadow-sm space-y-3">
-      <Icon name="event_busy" class="text-4xl text-outline" />
+      <Icon name="event_busy" color="text-4xl text-outline" />
       <h3 class="text-base font-bold text-on-surface">Aucun planning publié</h3>
       <p class="text-sm text-on-surface-variant max-w-md mx-auto">L'emploi du temps de ce mois n'a pas encore été validé par l'équipe administrative.</p>
     </div>

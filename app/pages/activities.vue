@@ -1,74 +1,74 @@
 <template>
-  <div class="min-h-screen p-6 overflow-auto">
-    <div class="mb-8 flex items-center justify-between">
+  <div class="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 md:space-y-8">
+    <div class="flex justify-between items-center">
       <div>
-        <h1 class="font-h1 text-on-surface mb-2 text-2xl font-bold">Activity Management</h1>
-        <p class="font-body text-on-surface-variant">Créez et gérez ici toutes les activités effectuées lors des événements</p>
+        <h1 class="font-h1 text-xl md:text-h1 font-bold text-on-surface mb-1">Activity Management</h1>
+        <p class="font-body text-xs md:text-sm text-on-surface-variant">Créez et gérez ici toutes les activités effectuées lors des événements.</p>
       </div>
     </div>
 
-    <div class="mb-6 flex gap-4">
+    <div class="flex gap-4">
       <button 
         @click="openCreateModal" 
-        class="px-6 py-2 bg-primary text-white rounded-lg font-body text-body hover:shadow-md transition-all flex items-center gap-2"
+        class="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Ajouter Activité
+        <Icon name="add" color="text-white" />
+        Ajouter une activité
       </button>
     </div>
 
-    <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-outline-variant/20">
+    <div class="overflow-x-auto bg-white rounded-xl border border-outline-variant shadow-sm">
       <table class="w-full text-left border-collapse">
-        <thead class="bg-surface-container-low border-b border-outline-variant/30">
+        <thead class="bg-surface-container-low/50 border-b border-outline-variant/40">
           <tr>
-            <th class="px-6 py-4 font-caption text-caption text-outline uppercase tracking-wider w-24">ID</th>
-            <th class="px-6 py-4 font-caption text-caption text-outline uppercase tracking-wider">Titre de l'activité</th>
-            <th class="px-6 py-4 font-caption text-caption text-outline uppercase tracking-wider text-right">Actions</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 w-24">ID</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Titre de l'activité</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 text-right w-44">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-outline-variant/20">
+        <tbody class="divide-y divide-outline-variant/30">
           <tr 
             v-for="(activity, index) in paginatedActivities" 
             :key="activity.id" 
-            class="hover:bg-surface-container-low transition-colors group"
+            class="hover:bg-surface-container-low/40 transition-colors group"
           >
             <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full flex justify-center items-center bg-primary/10 text-primary text-sm font-bold">
+              <div class="w-8 h-8 rounded-full flex justify-center items-center bg-primary/10 text-primary text-xs font-bold">
                 {{ globalIndex(index) }}
               </div>
             </td>
-            <td class="px-6 py-4 text-body font-medium text-doomu-text">{{ activity.title }}</td>
-            <td class="px-6 py-4 text-right space-x-2">
-              <button 
-                @click="openViewModal(activity)" 
-                class="p-2 text-outline hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" 
-                title="Voir"
-              >
-                <Icon name="visibility" class="text-[20px]" />
-              </button>
-              
-              <button 
-                @click="openEditModal(activity)" 
-                class="p-2 text-outline hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" 
-                title="Modifier"
-              >
-                <Icon name="edit" class="text-[20px]" />
-              </button>
-              
-              <button 
-                @click="openDeleteModal(activity)" 
-                class="p-2 text-outline hover:text-error hover:bg-error/10 rounded-lg transition-colors" 
-                title="Supprimer"
-              >
-                <Icon name="delete" class="text-[20px]" />
-              </button>
+            <td class="px-6 py-4 text-sm font-semibold text-on-surface">{{ activity.title }}</td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button 
+                  @click="openViewModal(activity)" 
+                  class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-md transition-colors" 
+                  title="Voir"
+                >
+                  <Icon name="visibility" color="text-on-surface-variant hover:text-primary" />
+                </button>
+                
+                <button 
+                  @click="openEditModal(activity)" 
+                  class="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/5 rounded-md transition-colors" 
+                  title="Modifier"
+                >
+                  <Icon name="edit" color="text-on-surface-variant hover:text-secondary" />
+                </button>
+                
+                <button 
+                  @click="openDeleteModal(activity)" 
+                  class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-md transition-colors" 
+                  title="Supprimer"
+                >
+                  <Icon name="delete" color="text-on-surface-variant hover:text-error" />
+                </button>
+              </div>
             </td>
           </tr>
           
           <tr v-if="listActivities.length === 0 && !isLoading">
-            <td colspan="3" class="px-6 py-8 text-center text-doomu-text-muted font-body">
+            <td colspan="3" class="px-6 py-8 text-center text-on-surface-variant italic text-sm">
               Aucune activité enregistrée pour le moment.
             </td>
           </tr>
@@ -77,21 +77,21 @@
 
       <div 
         v-if="totalPages > 1" 
-        class="p-4 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between gap-4 select-none"
+        class="p-4 bg-white border-t border-outline-variant/40 flex items-center justify-between gap-4 select-none"
       >
-        <p class="font-body text-xs text-on-surface-variant">
-          Affichage de <span class="font-semibold text-doomu-text">{{ startRow }}</span> à 
-          <span class="font-semibold text-doomu-text">{{ endRow }}</span> sur 
-          <span class="font-semibold text-primary">{{ listActivities.length }}</span> activités
+        <p class="text-xs text-on-surface-variant font-medium">
+          Affichage de <span class="font-bold text-on-surface">{{ startRow }}</span> à 
+          <span class="font-bold text-on-surface">{{ endRow }}</span> sur 
+          <span class="font-bold text-primary">{{ listActivities.length }}</span> activités
         </p>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <button 
             @click="prevPage" 
             :disabled="currentPage === 1"
-            class="p-2 border border-outline-variant/40 rounded-lg text-outline hover:bg-primary/5 hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-outline transition-all"
+            class="p-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            <Icon name="chevron_left" class="text-[20px]" />
+            <Icon name="chevron_left" color="text-on-surface-variant" />
           </button>
 
           <button 
@@ -99,10 +99,10 @@
             :key="page"
             @click="currentPage = page"
             :class="[
-              'w-8 h-8 rounded-lg font-body text-xs font-semibold transition-all',
+              'w-8 h-8 rounded-lg text-xs font-semibold transition-all',
               currentPage === page 
                 ? 'bg-primary text-white shadow-sm' 
-                : 'border border-outline-variant/20 text-doomu-text hover:bg-primary/5 hover:text-primary'
+                : 'border border-outline-variant text-on-surface hover:bg-surface-container'
             ]"
           >
             {{ page }}
@@ -111,77 +111,85 @@
           <button 
             @click="nextPage" 
             :disabled="currentPage === totalPages"
-            class="p-2 border border-outline-variant/40 rounded-lg text-outline hover:bg-primary/5 hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-outline transition-all"
+            class="p-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            <Icon name="chevron_right" class="text-[20px]" />
+            <Icon name="chevron_right" color="text-on-surface-variant" />
           </button>
         </div>
       </div>
     </div>
 
     <Modal v-model="showViewModal" title="Détails de l'activité" size="md">
-      <div v-if="selectedActivity" class="space-y-4">
+      <div v-if="selectedActivity" class="space-y-4 py-1">
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <p class="text-sm text-doomu-text-muted">ID Unique</p>
-            <p class="font-medium text-doomu-text bg-doomu-bg/30 p-2 rounded border border-doomu-border text-xs font-mono select-all">
+            <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">ID Unique</p>
+            <p class="font-mono text-xs text-on-surface bg-surface-container p-2.5 rounded-lg border border-outline-variant mt-1.5 select-all">
               {{ selectedActivity.id }}
             </p>
           </div>
           <div>
-            <p class="text-sm text-doomu-text-muted">Titre de l'activité</p>
-            <p class="font-medium text-doomu-text text-lg">{{ selectedActivity.title }}</p>
+            <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Titre de l'activité</p>
+            <p class="font-bold text-on-surface text-lg mt-1">{{ selectedActivity.title }}</p>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">
+        <button class="px-4 py-2 bg-surface-container border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-high transition-colors text-sm font-semibold w-full" @click="showViewModal = false">
           Fermer
         </button>
       </template>
     </Modal>
 
     <Modal v-model="showFormModal" :title="isEditMode ? 'Modifier l\'activité' : 'Ajouter une nouvelle activité'" size="md">
-      <form @submit.prevent="submitForm" id="activityForm" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-doomu-text mb-1">Titre de l'activité <span class="text-error">*</span></label>
-          <input 
-            v-model="form.title" 
-            type="text" 
-            required
-            placeholder="Ex: Cours de poterie, Sortie Cinéma..."
-            class="w-full px-4 py-2 border border-outline-variant/50 rounded-lg focus:outline-none focus:border-primary transition-colors text-doomu-text"
-          />
-        </div>
-      </form>
+      <div class="py-1">
+        <form @submit.prevent="submitForm" id="activityForm" class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Titre de l'activité <span class="text-error">*</span></label>
+            <input 
+              v-model="form.title" 
+              type="text" 
+              required
+              placeholder="Ex: Cours de poterie, Sortie Cinéma..."
+              class="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-on-surface text-sm font-medium focus:outline-none"
+            />
+          </div>
+        </form>
+      </div>
       <template #footer>
-        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors" @click="showFormModal = false">
-          Annuler
-        </button>
-        <button type="submit" form="activityForm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors" :disabled="isLoading">
-          {{ isEditMode ? 'Sauvegarder les modifications' : 'Créer l\'activité' }}
-        </button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
+          <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium order-2 sm:order-1" @click="showFormModal = false">
+            Annuler
+          </button>
+          <button type="submit" form="activityForm" class="px-5 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity order-1 sm:order-2" :disabled="isLoading">
+            {{ isEditMode ? 'Sauvegarder' : 'Créer l\'activité' }}
+          </button>
+        </div>
       </template>
     </Modal>
 
     <Modal v-model="showDeleteModal" title="Confirmation de suppression" size="sm">
-      <div v-if="selectedActivity" class="space-y-3 text-center py-2">
-        <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-2">
-          <Icon name="delete" class="text-[24px]" />
+      <div v-if="selectedActivity" class="space-y-4 text-center py-2">
+        <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
+          <Icon name="delete" color="text-error" />
         </div>
-        <p class="text-body text-doomu-text font-medium">Êtes-vous sûr de vouloir supprimer cette activité ?</p>
-        <p class="text-sm text-error font-semibold bg-error/5 p-2 rounded border border-error/20">
+        <div class="space-y-1 px-2">
+          <p class="text-sm font-medium text-on-surface">Êtes-vous sûr de vouloir supprimer cette activité ?</p>
+          <p class="text-xs text-on-surface-variant italic">Cette action est irréversible et détruira toutes les planifications liées.</p>
+        </div>
+        <div class="text-sm font-bold text-error bg-error/5 p-3 rounded-xl border border-error/10">
           "{{ selectedActivity.title }}"
-        </p>
-        <p class="text-xs text-doomu-text-muted">Cette action est irréversible et supprimera toutes les planifications liées.</p>
+        </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg transition-colors w-full" @click="showDeleteModal = false">
-          Annuler
-        </button>
-        <button class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark transition-colors w-full" @click="confirmDelete" :disabled="isLoading">
-          Supprimer définitivement
-        </button>
+        <div class="flex gap-2 w-full">
+          <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface w-full hover:bg-surface-container transition-colors text-sm font-medium" @click="showDeleteModal = false">
+            Annuler
+          </button>
+          <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error/90 transition-opacity text-sm font-semibold" @click="confirmDelete" :disabled="isLoading">
+            Supprimer
+          </button>
+        </div>
       </template>
     </Modal>
   </div>

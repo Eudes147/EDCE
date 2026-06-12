@@ -14,8 +14,8 @@
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
     <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant ultra-minimal-shadow group hover:border-primary transition-colors">
       <div class="flex justify-between items-start mb-4">
-        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-          <Icon name="boy" />
+        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Icon name="boy" color="text-primary" />
         </div>
         <span class="text-caption font-caption text-on-surface-variant">{{ ((cardInfosRate.boyStats || 0) * 100).toFixed(2).toString().padStart(2, '0') }}%</span>
       </div>
@@ -25,8 +25,8 @@
 
     <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant ultra-minimal-shadow group hover:border-primary transition-colors">
       <div class="flex justify-between items-start mb-4">
-        <div class="w-10 h-10 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
-          <Icon name="girl" />
+        <div class="w-10 h-10 rounded-lg bg-tertiary/10 flex items-center justify-center">
+          <Icon name="girl" color="text-tertiary" />
         </div>
         <span class="text-caption font-caption text-on-surface-variant">{{ ((cardInfosRate.girlStats || 0) * 100).toFixed(2).toString().padStart(2, '0') }}%</span>
       </div>
@@ -36,8 +36,8 @@
 
     <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant ultra-minimal-shadow group hover:border-primary transition-colors">
       <div class="flex justify-between items-start mb-4">
-        <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-          <Icon name="assignment_turned_in" />
+        <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+          <Icon name="assignment_turned_in" color="text-secondary" />
         </div>
         <span class="text-caption font-caption text-secondary font-bold">Session {{ actualYear }}</span>
       </div>
@@ -49,7 +49,7 @@
   <section class="grid grid-cols-12 gap-6 p-4">
     <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant ultra-minimal-shadow">
       <h3 class="font-h3 text-h3 text-on-surface mb-6 flex items-center gap-2">
-        <Icon color="text-primary" name="pie_chart" />
+        <Icon name="pie_chart" color="text-primary" />
         Répartition par Sexe
       </h3>
       <div class="relative flex items-center justify-center py-8">
@@ -83,7 +83,7 @@
     <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant ultra-minimal-shadow overflow-hidden flex flex-col">
       <div class="flex justify-between items-center mb-6">
         <h3 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
-          <Icon color="text-primary" name="school" />
+          <Icon name="school" color="text-primary" />
           Enfants en Classe d'Examen
         </h3>
         <div class="relative md:w-32">
@@ -130,11 +130,11 @@
 
   <section class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 pb-8">
     <div class="bg-primary/5 p-6 rounded-xl border border-primary/20 flex items-center gap-6 relative overflow-hidden group">
-      <div class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform text-[96px]">
-        <Icon name="auto_stories" />
+      <div class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform">
+        <Icon name="auto_stories" color="text-[96px]" />
       </div>
       <div class="w-16 h-16 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-        <Icon name="auto_stories" />
+        <Icon name="auto_stories" color="text-on-primary" />
       </div>
       <div>
         <h4 class="font-h3 text-h3 text-primary mb-1">Participants Génie Biblique (Arbre de Noël)</h4>
@@ -145,11 +145,11 @@
     </div>
 
     <div class="bg-tertiary/5 p-6 rounded-xl border border-tertiary/20 flex items-center gap-6 relative overflow-hidden group">
-      <div class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform text-[96px]">
-        <Icon name="celebration" />
+      <div class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform">
+        <Icon name="celebration" color="text-[96px]" />
       </div>
       <div class="w-16 h-16 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-lg shadow-tertiary/20 shrink-0">
-        <Icon name="celebration" />
+        <Icon name="celebration" color="text-on-tertiary" />
       </div>
       <div>
         <h4 class="font-h3 text-h3 text-tertiary mb-1">Participants des Génie Biblique (Soirée des enfants)</h4>

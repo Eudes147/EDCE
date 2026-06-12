@@ -1,8 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-center p-margin-mobile md:p-xl font-body-md text-on-surface">
-    <!-- Container for all views - Managed by Vue reactivity -->
     <div class="w-full max-w-[480px]">
-      <!-- LOGIN VIEW -->
       <Transition
         name="auth-transition"
         mode="out-in"
@@ -16,7 +14,6 @@
             <p class="font-body-md text-on-surface-variant">Sunday School Management Platform</p>
           </header>
 
-          <!-- Bloc d'affichage des erreurs API -->
           <div 
             v-if="errorMessage" 
             class="mb-md p-sm bg-error/10 border border-error/20 text-error rounded-lg text-body-sm flex items-center gap-xs"
@@ -38,6 +35,7 @@
                 :disabled="isLoading"
               />
             </div>
+            
             <div class="space-y-xs relative">
               <div class="flex justify-between items-center">
                 <label class="font-label-md text-label-md text-on-surface" for="login-password">Password</label>
@@ -94,14 +92,17 @@
                 </button>
               </div>
             </div>
+
             <div class="flex items-center gap-sm">
               <input
                 id="remember"
                 v-model="loginForm.remember"
-                class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"
+                class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary shrink-0 cursor-pointer"
                 type="checkbox"
               />
-              <label class="font-body-sm text-body-sm text-on-surface-variant" for="remember">Remember me for 30 days</label>
+              <label class="font-body-sm text-body-sm text-on-surface-variant select-none cursor-pointer" for="remember">
+                Remember me for 30 days
+              </label>
             </div>
             
             <button
@@ -129,14 +130,12 @@
       </Transition>
     </div>
 
-    <!-- Background Decoration -->
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
       <div class="absolute top-[10%] right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-[80px]"></div>
       <div class="absolute bottom-[10%] left-[5%] w-72 h-72 bg-secondary-container/5 rounded-full blur-[60px]"></div>
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useAuthStore } from '~/stores/auth'

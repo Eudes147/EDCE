@@ -7,19 +7,19 @@
 
     <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[600px]">
       
-      <div class="flex border-b border-outline-variant px-6 bg-surface-bright">
+      <div class="flex border-b border-outline-variant px-6 bg-surface-bright overflow-x-auto scrollbar-none">
         <button 
           v-for="tab in tabs" 
           :key="tab.id"
           @click="activeTab = tab.id"
           :class="[
-            'px-6 py-4 font-body text-body flex items-center gap-2 transition-all border-b-2 relative active:scale-95',
+            'px-6 py-4 font-body text-body flex items-center gap-2 transition-all border-b-2 relative active:scale-95 shrink-0',
             activeTab === tab.id 
               ? 'text-primary border-primary font-bold' 
               : 'text-on-surface-variant border-transparent hover:text-primary'
           ]"
         >
-          <Icon :name="tab.icon" class="text-[20px]" />
+          <Icon :name="tab.icon" color="text-[20px]" />
           {{ tab.label }}
         </button>
       </div>
@@ -29,7 +29,7 @@
         <div>
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
-              <Icon name="school" class="text-primary" />
+              <Icon name="school" color="text-primary" />
               Enseignants (Teachers)
               <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">{{ teachersList.length }}</span>
             </h3>
@@ -44,40 +44,42 @@
           </div>
 
           <div v-else class="overflow-hidden border border-outline-variant rounded-xl bg-white">
-            <table class="w-full text-left border-collapse">
-              <thead class="bg-surface-container-low font-body text-body font-bold text-on-surface-variant border-b border-outline-variant">
-                <tr>
-                  <th class="px-6 py-4">Utilisateur</th>
-                  <th class="px-6 py-4">Email / Téléphone</th>
-                  <th class="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-outline-variant/60 font-body text-body">
-                <tr v-for="teacher in teachersList" :key="teacher.id" class="hover:bg-surface-container-lowest transition-colors">
-                  <td class="px-6 py-4 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold uppercase">
-                      {{ teacher.last_name?.[0] }}{{ teacher.first_name?.[0] }}
-                    </div>
-                    <div>
-                      <p class="font-bold text-on-surface">{{ teacher.last_name }} {{ teacher.first_name }}</p>
-                      <span class="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium uppercase tracking-wider">Teacher</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <p class="text-sm text-on-surface">{{ teacher.email }}</p>
-                    <p class="text-caption text-on-surface-variant">{{ teacher.tel || 'Aucun numéro' }}</p>
-                  </td>
-                  <td class="px-6 py-4 text-right">
-                    <button 
-                      @click="handleRoleSwitch(teacher, 'moderator')" 
-                      class="text-primary hover:underline font-bold text-sm bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/10 transition-colors"
-                    >
-                      Promouvoir Modérateur
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead class="bg-surface-container-low font-body text-body font-bold text-on-surface-variant border-b border-outline-variant">
+                  <tr>
+                    <th class="px-6 py-4">Utilisateur</th>
+                    <th class="px-6 py-4">Email / Téléphone</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/60 font-body text-body">
+                  <tr v-for="teacher in teachersList" :key="teacher.id" class="hover:bg-surface-container-lowest transition-colors">
+                    <td class="px-6 py-4 flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold uppercase shrink-0">
+                        {{ teacher.last_name?.[0] }}{{ teacher.first_name?.[0] }}
+                      </div>
+                      <div>
+                        <p class="font-bold text-on-surface">{{ teacher.last_name }} {{ teacher.first_name }}</p>
+                        <span class="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium uppercase tracking-wider">Teacher</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <p class="text-sm text-on-surface">{{ teacher.email }}</p>
+                      <p class="text-caption text-on-surface-variant">{{ teacher.tel || 'Aucun numéro' }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button 
+                        @click="handleRoleSwitch(teacher, 'moderator')" 
+                        class="text-primary hover:underline font-bold text-sm bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/10 transition-colors whitespace-nowrap"
+                      >
+                        Promouvoir Modérateur
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -86,7 +88,7 @@
         <div>
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
-              <Icon name="security" class="text-tertiary" />
+              <Icon name="security" color="text-tertiary" />
               Modérateurs (Moderators)
               <span class="text-xs bg-tertiary/10 text-tertiary px-2 py-0.5 rounded-full font-bold">{{ moderatorsList.length }}</span>
             </h3>
@@ -97,40 +99,42 @@
           </div>
 
           <div v-else-if="moderatorsList.length > 0" class="overflow-hidden border border-outline-variant rounded-xl bg-white">
-            <table class="w-full text-left border-collapse">
-              <thead class="bg-surface-container-low font-body text-body font-bold text-on-surface-variant border-b border-outline-variant">
-                <tr>
-                  <th class="px-6 py-4">Utilisateur</th>
-                  <th class="px-6 py-4">Email / Téléphone</th>
-                  <th class="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-outline-variant/60 font-body text-body">
-                <tr v-for="mod in moderatorsList" :key="mod.id" class="hover:bg-surface-container-lowest transition-colors">
-                  <td class="px-6 py-4 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary font-bold uppercase">
-                      {{ mod.last_name?.[0] }}{{ mod.first_name?.[0] }}
-                    </div>
-                    <div>
-                      <p class="font-bold text-on-surface">{{ mod.last_name }} {{ mod.first_name }}</p>
-                      <span class="text-xs px-2 py-0.5 rounded bg-tertiary/10 text-tertiary font-medium uppercase tracking-wider">Modérateur</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <p class="text-sm text-on-surface">{{ mod.email }}</p>
-                    <p class="text-caption text-on-surface-variant">{{ mod.tel || 'Aucun numéro' }}</p>
-                  </td>
-                  <td class="px-6 py-4 text-right">
-                    <button 
-                      @click="handleRoleSwitch(mod, 'teacher')" 
-                      class="text-error hover:underline font-bold text-sm bg-error/5 hover:bg-error/10 px-3 py-1.5 rounded-lg border border-error/10 transition-colors"
-                    >
-                      Rétrograder Teacher
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead class="bg-surface-container-low font-body text-body font-bold text-on-surface-variant border-b border-outline-variant">
+                  <tr>
+                    <th class="px-6 py-4">Utilisateur</th>
+                    <th class="px-6 py-4">Email / Téléphone</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/60 font-body text-body">
+                  <tr v-for="mod in moderatorsList" :key="mod.id" class="hover:bg-surface-container-lowest transition-colors">
+                    <td class="px-6 py-4 flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary font-bold uppercase shrink-0">
+                        {{ mod.last_name?.[0] }}{{ mod.first_name?.[0] }}
+                      </div>
+                      <div>
+                        <p class="font-bold text-on-surface">{{ mod.last_name }} {{ mod.first_name }}</p>
+                        <span class="text-xs px-2 py-0.5 rounded bg-tertiary/10 text-tertiary font-medium uppercase tracking-wider">Modérateur</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <p class="text-sm text-on-surface">{{ mod.email }}</p>
+                      <p class="text-caption text-on-surface-variant">{{ mod.tel || 'Aucun numéro' }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button 
+                        @click="handleRoleSwitch(mod, 'teacher')" 
+                        class="text-error hover:underline font-bold text-sm bg-error/5 hover:bg-error/10 px-3 py-1.5 rounded-lg border border-error/10 transition-colors whitespace-nowrap"
+                      >
+                        Rétrograder Teacher
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -146,15 +150,15 @@
           <div class="space-y-4">
             <label v-for="(perm, index) in permissionsList" :key="index" class="flex items-center justify-between p-5 rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-all group bg-white">
               <div class="flex items-center gap-4">
-                <div :class="['w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform', perm.bg]">
-                  <Icon :name="perm.icon" :class="perm.iconColor" />
+                <div :class="['w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shrink-0', perm.bg]">
+                  <Icon :name="perm.icon" :color="perm.iconColor" />
                 </div>
                 <div>
                   <p class="font-bold font-body text-on-surface">{{ perm.title }}</p>
                   <p class="text-small text-on-surface-variant">{{ perm.description }}</p>
                 </div>
               </div>
-              <input class="w-6 h-6 rounded-md text-primary focus:ring-primary border-outline-variant cursor-pointer" type="checkbox" v-model="perm.value" />
+              <input class="w-6 h-6 rounded-md text-primary focus:ring-primary border-outline-variant cursor-pointer ml-4 shrink-0" type="checkbox" v-model="perm.value" />
             </label>
           </div>
 
@@ -167,30 +171,30 @@
 
       <div v-if="activeTab === 'notifications'" class="p-6 animate-fade-in">
         <div class="max-w-4xl mx-auto">
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h3 class="font-h3 text-h3">Journal des Notifications</h3>
               <p class="text-body text-on-surface-variant opacity-70">Historique des messages envoyés par le système.</p>
             </div>
-            <div class="flex gap-2 items-center">
-              <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-small font-bold">12 Non-lues</span>
-              <button class="text-primary text-small hover:underline font-medium">Marquer tout comme lu</button>
+            <div class="flex gap-2 items-center self-start sm:self-auto">
+              <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-small font-bold whitespace-nowrap">12 Non-lues</span>
+              <button class="text-primary text-small hover:underline font-medium whitespace-nowrap">Marquer tout comme lu</button>
             </div>
           </div>
 
           <div class="space-y-3">
             <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-high border-l-4 border-primary transition-all hover:bg-surface-container-highest group">
               <div class="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <Icon name="error" />
+                <Icon name="error" color="text-primary" />
               </div>
-              <div class="flex-1">
-                <div class="flex justify-between">
-                  <p class="font-bold font-body text-on-surface">Alerte Absence Critique</p>
-                  <span class="text-caption text-on-surface-variant">À l'instant</span>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start gap-2">
+                  <p class="font-bold font-body text-on-surface truncate">Alerte Absence Critique</p>
+                  <span class="text-caption text-on-surface-variant whitespace-nowrap">À l'instant</span>
                 </div>
-                <p class="text-body text-on-surface-variant mt-1">L'élève Lucas Bernard a manqué 3 séances consécutives dans la classe de CM1-B.</p>
+                <p class="text-body text-on-surface-variant mt-1 break-words">L'élève Lucas Bernard a manqué 3 séances consécutives dans la classe de CM1-B.</p>
               </div>
-              <div class="w-2 h-2 rounded-full bg-primary mt-2"></div>
+              <div class="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></div>
             </div>
           </div>
         </div>

@@ -39,3 +39,14 @@
 @font-face { font-family: 'Sora'; src: url('/fonts/Sora/static/Sora-ExtraBold.ttf') format('truetype'); font-weight: 800; font-style: italic; }
 @font-face { font-family: 'Sora'; src: url('/fonts/Sora/static/Sora-Black.ttf')     format('truetype'); font-weight: 900; }
 @font-face { font-family: 'Sora'; src: url('/fonts/Sora/static/Sora-Black.ttf')     format('truetype'); font-weight: 900; font-style: italic; }
+
+.material-icons, 
+[class*="material-icons"] {
+  font-display: block; /* Force le navigateur à masquer le texte en attendant la police */
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+}

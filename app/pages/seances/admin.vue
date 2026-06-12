@@ -1,25 +1,26 @@
 <template>
-  <div class="p-6 max-w-7xl mx-auto w-full space-y-8">
+  <div class="p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6 md:space-y-8">
+    
     <div class="flex justify-between items-end">
       <div>
-        <h2 class="font-h1 text-h1 text-on-background text-2xl font-bold">Registre des Séances</h2>
-        <p class="font-body text-body text-on-surface-variant mt-1">
+        <h2 class="font-h1 text-xl md:text-h1 font-bold text-on-background">Registre des Séances</h2>
+        <p class="font-body text-xs md:text-sm text-on-surface-variant mt-1">
           Visualisez, modifiez et supprimez les séances d'enseignement de l'année {{ actualYear }}.
         </p>
       </div>
     </div>
 
-    <section class="section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20">
-      <div class="p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h3 class="font-h3 text-h3 flex items-center gap-2 font-semibold">
-          <Icon name="school" class="text-primary" />
+    <section class="overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/60">
+      <div class="p-4 md:p-6 border-b border-outline-variant/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h3 class="font-h3 text-base md:text-h3 flex items-center gap-2 font-semibold text-on-surface">
+          <Icon name="school" class="text-primary" color="1.25rem" />
           Liste des Séances créées cette année
         </h3>
         
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 self-end md:self-auto w-full md:w-auto justify-end">
           <select 
             v-model="monthSelected" 
-            class="bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none text-doomu-text"
+            class="bg-surface-container-low border border-outline-variant rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none text-on-surface cursor-pointer min-w-[120px]"
           >
             <option v-for="month in months" :key="month" :value="month">
               {{ month.charAt(0).toUpperCase() + month.slice(1) }}
@@ -28,7 +29,7 @@
 
           <select 
             v-model="classeSelected" 
-            class="bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2 focus:ring-primary focus:outline-none text-doomu-text"
+            class="bg-surface-container-low border border-outline-variant rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none text-on-surface cursor-pointer min-w-[120px]"
           >
             <option v-for="child_classe in classes" :key="child_classe" :value="child_classe">
               {{ child_classe }}
@@ -38,66 +39,68 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left">
-          <thead class="bg-surface-container-low border-b border-outline-variant/30">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-surface-container-low border-b border-outline-variant/40">
             <tr>
-              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Titre</th>
-              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Type</th>
-              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline">Classe</th>
-              <th class="px-6 py-4 font-caption text-caption uppercase tracking-wider text-outline text-right">Actions</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Titre</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Type</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Classe</th>
+              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-48">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant/20">
+          <tbody class="divide-y divide-outline-variant/40">
             <tr 
               v-for="seance in getSeancebyMonthAndClasse" 
               :key="seance.id" 
-              class="hover:bg-surface-container-low transition-colors"
+              class="hover:bg-surface-container-low/40 transition-colors group"
             >
-              <td class="px-6 py-4 flex items-center gap-3">
-                <div class="bg-primary/10 text-primary px-3 py-1.5 rounded-lg font-medium text-small">
+              <td class="px-6 py-4">
+                <div class="inline-block bg-primary/5 text-primary px-3 py-1.5 rounded-lg font-semibold text-xs md:text-sm border border-primary/10">
                   {{ seance.title }}
                 </div>
               </td>
-              <td class="px-6 py-4 text-body text-doomu-text">
-                <span class="px-2 py-1 bg-surface-variant rounded text-xs font-mono tracking-wide">
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 bg-surface-container rounded text-xs font-mono tracking-wide text-on-surface-variant font-medium">
                   {{ seance.type }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-body text-doomu-text">{{ seance.classe }}</td>
+              <td class="px-6 py-4 font-body text-xs md:text-sm text-on-surface font-medium">{{ seance.classe }}</td>
 
-              <td class="px-6 py-4 text-right space-x-1">
-                <button 
-                  @click="view(seance)" 
-                  class="p-2 text-outline hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" 
-                  title="Voir les détails"
-                >
-                  <Icon name="visibility" class="text-[20px]" />
-                </button>
-                <button 
-                  @click="edit(seance)" 
-                  class="p-2 text-outline hover:text-primary hover:bg-primary/5 rounded-lg transition-colors" 
-                  title="Modifier"
-                >
-                  <Icon name="edit" class="text-[20px]"/>
-                </button>
-                <button 
-                  @click="supprimer(seance)" 
-                  class="p-2 text-outline hover:text-error hover:bg-error/5 rounded-lg transition-colors" 
-                  title="Supprimer"
-                >
-                  <Icon name="delete" class="text-[20px]"/>
-                </button>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button 
+                    @click="view(seance)" 
+                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" 
+                    title="Voir les détails"
+                  >
+                    <Icon name="visibility" color="1.2rem" />
+                  </button>
+                  <button 
+                    @click="edit(seance)" 
+                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" 
+                    title="Modifier"
+                  >
+                    <Icon name="edit" color="1.2rem" />
+                  </button>
+                  <button 
+                    @click="supprimer(seance)" 
+                    class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-colors" 
+                    title="Supprimer"
+                  >
+                    <Icon name="delete" color="1.2rem" />
+                  </button>
+                </div>
               </td>
             </tr>
 
             <tr v-if="isLoading">
-              <td colspan="4" class="px-6 py-10 text-center text-doomu-text-muted font-body">
-                Chargement des séances...
+              <td colspan="4" class="px-6 py-10 text-center text-on-surface-variant text-sm font-medium">
+                <span class="inline-block animate-spin mr-2">🔄</span> Chargement des séances...
               </td>
             </tr>
             <tr v-else-if="!getSeancebyMonthAndClasse || getSeancebyMonthAndClasse.length === 0">
-              <td colspan="4" class="px-6 py-10 text-center text-doomu-text-muted font-body">
-                Aucune séance trouvée pour la classe <span class="font-semibold text-primary">{{ classeSelected }}</span> en {{ monthSelected }}.
+              <td colspan="4" class="px-6 py-10 text-center text-on-surface-variant italic text-sm">
+                Aucune séance trouvée pour la classe <span class="font-semibold text-primary not-italic">{{ classeSelected }}</span> en {{ monthSelected }}.
               </td>
             </tr>
           </tbody>
@@ -105,83 +108,81 @@
       </div>
     </section>
 
-    <!-- 🔍 MODALE : DÉTAILS DE LA SÉANCE -->
     <Modal v-model="showViewModal" title="Détails de la séance" size="md">
-      <div v-if="seanceModal" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Identifiant</p>
-            <p class="font-mono text-xs text-doomu-text bg-doomu-bg p-1 rounded mt-0.5 break-all">{{ seanceModal.id }}</p>
+      <div v-if="seanceModal" class="space-y-4 py-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40">
+          <div class="sm:col-span-2">
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Thème / Titre</p>
+            <p class="font-bold text-on-surface text-base mt-0.5">{{ seanceModal.title }}</p>
           </div>
           <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Type de rassemblement</p>
-            <p class="font-medium text-doomu-text mt-0.5">{{ seanceModal.type }}</p>
-          </div>
-          <div class="col-span-2">
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Thème / Titre</p>
-            <p class="font-semibold text-doomu-text text-base mt-0.5">{{ seanceModal.title }}</p>
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Type de rassemblement</p>
+            <p class="font-semibold text-primary text-sm mt-0.5">{{ seanceModal.type }}</p>
           </div>
           <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Classe assignée</p>
-            <p class="font-medium text-doomu-text mt-0.5">{{ seanceModal.classe }}</p>
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Classe assignée</p>
+            <p class="font-semibold text-on-surface text-sm mt-0.5">{{ seanceModal.classe }}</p>
           </div>
           <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Date de tenue</p>
-            <p class="font-medium text-doomu-text mt-0.5">{{ formatDate(seanceModal.created_at) }}</p>
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Date de tenue</p>
+            <p class="font-medium text-on-surface text-sm mt-0.5">{{ formatDate(seanceModal.created_at) }}</p>
           </div>
           <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Créé(e) par</p>
-            <p class="font-medium text-primary mt-0.5">
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Créé(e) par</p>
+            <p class="font-semibold text-on-surface text-sm mt-0.5">
               {{ getAuthorSupervisorbySeance(seanceModal)?.authorName || 'Moniteur non renseigné' }}
             </p>
           </div>
-          <div>
-            <p class="text-xs text-doomu-text-muted uppercase tracking-wider">Supervisé par</p>
-            <p class="font-medium text-doomu-text mt-0.5">
+          <div class="sm:col-span-2">
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Supervisé par</p>
+            <p class="font-medium text-on-surface-variant text-sm mt-0.5">
               {{ getAuthorSupervisorbySeance(seanceModal)?.supervisorName || 'Aucun superviseur' }}
             </p>
+          </div>
+          <div class="sm:col-span-2 border-t border-outline-variant/40 pt-3 mt-1">
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Identifiant Technique</p>
+            <p class="font-mono text-xs text-primary bg-primary/5 border border-primary/10 px-2 py-1 rounded mt-1 break-all font-semibold">{{ seanceModal.id }}</p>
           </div>
         </div>
       </div>
       <template #footer>
-        <div class="flex justify-between items-center w-full">
+        <div class="flex flex-col sm:flex-row justify-between items-center w-full gap-2">
           <button 
             v-if="seanceModal"
-            class="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md hover:bg-secondary-dark transition-colors shadow-sm"
+            class="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-semibold hover:opacity-90 transition-opacity shadow-sm text-sm w-full sm:w-auto"
             @click="openParticipantsFromView"
           >
-            <Icon name="groups" class="text-[18px]" />
+            <Icon name="groups" color="1.1rem" />
             Voir les participants
           </button>
           
-          <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors" @click="showViewModal = false">Fermer</button>
+          <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface transition-colors hover:bg-surface-container text-sm font-medium w-full sm:w-auto sm:ml-auto" @click="showViewModal = false">Fermer</button>
         </div>
       </template>
     </Modal>
 
-    <!-- 📝 MODALE : MODIFIER LA SÉANCE -->
     <Modal v-model="showEditModal" title="Modifier la séance" size="md">
-      <div v-if="seanceModal" class="space-y-4">
+      <div v-if="seanceModal" class="space-y-4 py-1">
         <form @submit.prevent="handleUpdate" id="editSeanceForm" class="space-y-4">
           <div>
-            <label class="block font-caption text-caption text-outline mb-1.5">Titre de la Séance</label>
+            <label class="block font-caption text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Titre de la Séance</label>
             <input 
               v-model="seanceModal.title" 
-              class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none focus:border-primary" 
+              class="w-full bg-white border border-outline-variant rounded-lg text-sm px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary font-medium" 
               type="text" 
               required 
             />
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block font-caption text-caption text-outline mb-1.5">Type</label>
-              <select v-model="seanceModal.type" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
+              <label class="block font-caption text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Type</label>
+              <select v-model="seanceModal.type" class="w-full bg-white border border-outline-variant rounded-lg text-sm px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary font-medium cursor-pointer">
                 <option v-for="typeS in typeSeances" :key="typeS" :value="typeS">{{ typeS }}</option>
               </select>
             </div>
             <div>
-              <label class="block font-caption text-caption text-outline mb-1.5">Classe</label>
-              <select v-model="seanceModal.classe" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-small px-4 py-2.5 text-doomu-text focus:outline-none">
+              <label class="block font-caption text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Classe</label>
+              <select v-model="seanceModal.classe" class="w-full bg-white border border-outline-variant rounded-lg text-sm px-4 py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary font-medium cursor-pointer">
                 <option v-for="c in classes" :key="c" :value="c">{{ c }}</option>
               </select>
             </div>
@@ -189,74 +190,75 @@
         </form>
       </div>
       <template #footer>
-        <button type="button" class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text hover:bg-doomu-bg" @click="showEditModal = false">Annuler</button>
-        <button type="submit" form="editSeanceForm" class="px-6 py-2 bg-primary text-white rounded-lg shadow-sm" :disabled="isLoading">Enregistrer</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
+          <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium order-2 sm:order-1" @click="showEditModal = false">Annuler</button>
+          <button type="submit" form="editSeanceForm" class="px-6 py-2 bg-primary text-white rounded-lg shadow-sm font-semibold text-sm hover:opacity-90 transition-opacity order-1 sm:order-2" :disabled="isLoading">Enregistrer</button>
+        </div>
       </template>
     </Modal>
 
-    <!-- ❌ MODALE : SUPPRIMER LA SÉANCE -->
     <Modal v-model="showDeleteModal" title="Supprimer la séance" size="sm">
       <div v-if="seanceModal" class="space-y-3 text-center py-2">
         <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
-          <Icon name="delete" class="text-[24px]" />
+          <Icon name="delete" color="1.5rem" />
         </div>
-        <p class="text-body font-medium text-doomu-text">Êtes-vous sûr de vouloir supprimer définitivement cette séance ? Tous les émargements associés seront perdus.</p>
-        <p class="text-sm font-bold text-error bg-error/5 p-2 rounded border border-error/20 break-words">
+        <p class="text-sm md:text-base font-medium text-on-surface">Êtes-vous sûr de vouloir supprimer définitivement cette séance ? Tous les émargements associés seront perdus.</p>
+        <p class="text-xs md:text-sm font-bold text-error bg-error/5 p-2 rounded border border-error/20 break-words">
           {{ seanceModal.title }}
         </p>
       </div>
       <template #footer>
-        <button class="px-4 py-2 border border-doomu-border rounded-lg text-doomu-text w-full hover:bg-doomu-bg" @click="showDeleteModal = false">Annuler</button>
-        <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error-dark" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+        <div class="flex flex-col sm:flex-row gap-2 w-full">
+          <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface w-full hover:bg-surface-container-low transition-colors text-sm font-medium order-2 sm:order-1" @click="showDeleteModal = false">Annuler</button>
+          <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:opacity-90 transition-opacity text-sm font-medium order-1 sm:order-2" @click="confirmDelete" :disabled="isLoading">Supprimer</button>
+        </div>
       </template>
     </Modal>
 
-    <!-- 👥 MODALE : LISTE DES PARTICIPANTS INSÉRÉE ICI -->
     <Modal v-model="showParticipantsModal" title="Liste des Participants" size="lg">
-      <div v-if="seanceModal" class="space-y-5">
-        <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 flex flex-col gap-1">
-          <span class="text-xs text-doomu-text-muted uppercase font-mono">Séance sélectionnée</span>
-          <h4 class="font-semibold text-base text-doomu-text">{{ seanceModal.title }}</h4>
-          <p class="text-small text-on-surface-variant flex items-center gap-2">
-            <span class="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded font-medium">{{ seanceModal.classe }}</span>
-            • {{ formatDate(seanceModal.created_at) }}
+      <div v-if="seanceModal" class="space-y-5 py-1">
+        <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/40 flex flex-col gap-1">
+          <span class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Séance sélectionnée</span>
+          <h4 class="font-bold text-base text-on-surface">{{ seanceModal.title }}</h4>
+          <p class="text-xs md:text-sm text-on-surface-variant flex items-center gap-2 mt-0.5">
+            <span class="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded font-semibold">{{ seanceModal.classe }}</span>
+            <span class="text-on-surface-variant/50">•</span> 
+            <span class="font-medium">{{ formatDate(seanceModal.created_at) }}</span>
           </p>
         </div>
 
         <div class="space-y-3">
-          <div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
-            <span class="font-medium text-small text-doomu-text">Élèves présents</span>
+          <div class="flex justify-between items-center border-b border-outline-variant/40 pb-2">
+            <span class="font-bold text-xs uppercase tracking-wide text-on-surface-variant">Élèves présents</span>
             <span class="px-2.5 py-0.5 bg-secondary/10 text-secondary text-xs rounded-full font-bold">
               {{ currentSeanceParticipants.length }} inscrit(s)
             </span>
           </div>
 
-          <!-- Liste des enfants trouvés -->
           <div v-if="currentSeanceParticipants.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
             <div 
               v-for="child in currentSeanceParticipants" 
               :key="child.id"
-              class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl border border-outline-variant/10 hover:border-outline-variant/40 transition-all"
+              class="flex items-center gap-3 p-3 bg-surface-container-low/40 rounded-xl border border-outline-variant/40 hover:border-outline-variant transition-all"
             >
-              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
+              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
                 {{ child.name.substring(0, 2) }}
               </div>
-              <div class="flex flex-col">
-                <span class="font-body text-small text-doomu-text font-medium">{{ child.name }}</span>
-                <span v-if="child.nivScolaire" class="text-[11px] text-doomu-text-muted">{{ child.nivScolaire }}</span>
+              <div class="flex flex-col min-w-0">
+                <span class="font-body text-sm text-on-surface font-semibold truncate">{{ child.name }}</span>
+                <span v-if="child.nivScolaire" class="text-xs text-on-surface-variant font-medium">{{ child.nivScolaire }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Si aucun enfant n'a été coché présent -->
-          <div v-else class="text-center py-8 text-doomu-text-muted">
-            <Icon name="face" class="text-[40px] text-outline mb-2 mx-auto" />
-            <p class="font-body text-small italic">Aucun enfant n'a été émargé présent pour cette séance.</p>
+          <div v-else class="text-center py-10 border border-dashed border-outline-variant rounded-xl bg-surface-container-low/30">
+            <Icon name="face" color="2rem" class="text-on-surface-variant/40 mb-2 mx-auto" />
+            <p class="font-body text-sm italic text-on-surface-variant">Aucun enfant n'a été émargé présent pour cette séance.</p>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="px-4 py-2 bg-doomu-bg hover:bg-doomu-border rounded-lg text-doomu-text transition-colors ml-auto" @click="showParticipantsModal = false">Fermer</button>
+        <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface transition-colors hover:bg-surface-container text-sm font-medium ml-auto" @click="showParticipantsModal = false">Fermer</button>
       </template>
     </Modal>
   </div>

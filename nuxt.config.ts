@@ -14,6 +14,18 @@ export default defineNuxtConfig({
       '~/assets/css/main.css',  
       '~/assets/css/tailwind.css',  
   ],
+
+  // Configuration du module google-fonts pour des polices locales / téléchargées
+  googleFonts: {
+    families: {
+      Outfit: [300, 400, 500, 600, 700],
+      Sora: [300, 400, 500, 600, 700]
+    },
+    download: true, // Télécharge et enregistre automatiquement les polices dans .nuxt/ pour le build
+    inject: true,
+    outputDir: 'assets/fonts', // Dossier de build propre
+  },
+
   icon: {
     serverBundle:{
       collections: ['material-symbols','material-symbols-light',],
@@ -52,5 +64,4 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
-
 })

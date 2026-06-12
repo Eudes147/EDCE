@@ -48,60 +48,61 @@
               <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-[20%] min-w-[120px] lg:w-48">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant/40">
+          <tbody class="divide-y divide-outline-variant/30">
             <tr 
               v-for="seance in getSeancebyMonthAndClasse" 
               :key="seance.id" 
-              class="hover:bg-surface-container-low/40 transition-colors group"
-            >
-              <td class="px-4 py-4 md:px-6">
-                <div class="inline-block bg-primary/5 text-primary px-2.5 py-1.5 rounded-lg font-semibold text-xs md:text-sm border border-primary/10 whitespace-normal break-words max-w-full leading-normal">
+              class="hover:bg-surface-container-low/50 transition-colors group">
+              <td class="px-5 py-5 md:px-6 align-middle">
+                <div class="inline-block bg-primary/5 text-primary px-3 py-2 rounded-lg font-semibold text-xs md:text-sm border border-primary/10 leading-snug">
                   {{ seance.title }}
                 </div>
               </td>
-              <td class="px-4 py-4 md:px-6">
-                <span class="inline-block px-2 py-0.5 bg-surface-container rounded text-[10px] md:text-xs font-mono tracking-wide text-on-surface-variant font-medium uppercase">
+
+              <td class="px-5 py-5 md:px-6 align-middle">
+                <span class="inline-block px-3 py-1 bg-surface-container rounded-md text-[10px] md:text-xs font-mono tracking-wide text-on-surface-variant font-medium uppercase border border-outline-variant/20">
                   {{ seance.type }}
                 </span>
               </td>
-              <td class="px-4 py-4 md:px-6 font-body text-xs md:text-sm text-on-surface font-medium whitespace-nowrap">
+
+              <td class="px-5 py-5 md:px-6 font-body text-xs md:text-sm text-on-surface font-medium whitespace-nowrap align-middle">
                 {{ seance.classe }}
               </td>
 
-              <td class="px-4 py-4 md:px-6 text-right">
-                <div class="flex items-center justify-end gap-0.5 sm:gap-1">
+              <td class="px-5 py-5 md:px-6 text-right align-middle">
+                <div class="flex items-center justify-end gap-2 sm:gap-3">
                   <button 
                     @click="view(seance)" 
-                    class="p-1.5 sm:p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" 
+                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
                     title="Voir les détails"
                   >
-                    <Icon name="visibility" size="1.15rem" />
+                    <Icon name="visibility" size="1.25rem" />
                   </button>
                   <button 
                     @click="edit(seance)" 
-                    class="p-1.5 sm:p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" 
+                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
                     title="Modifier"
                   >
-                    <Icon name="edit" size="1.15rem" />
+                    <Icon name="edit" size="1.25rem" />
                   </button>
                   <button 
                     @click="supprimer(seance)" 
-                    class="p-1.5 sm:p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-colors" 
+                    class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" 
                     title="Supprimer"
                   >
-                    <Icon name="delete" size="1.15rem" />
+                    <Icon name="delete" size="1.25rem" />
                   </button>
                 </div>
               </td>
             </tr>
 
             <tr v-if="isLoading">
-              <td colspan="4" class="px-6 py-10 text-center text-on-surface-variant text-xs md:text-sm font-medium">
-                <span class="inline-block animate-spin mr-2">🔄</span> Chargement des séances...
+              <td colspan="4" class="px-6 py-12 text-center text-on-surface-variant text-xs md:text-sm font-medium">
+                <span class="inline-block animate-spin mr-2">🔄</span> Chargement...
               </td>
             </tr>
             <tr v-else-if="!getSeancebyMonthAndClasse || getSeancebyMonthAndClasse.length === 0">
-              <td colspan="4" class="px-4 py-12 text-center text-on-surface-variant italic text-xs md:text-sm">
+              <td colspan="4" class="px-6 py-16 text-center text-on-surface-variant italic text-xs md:text-sm">
                 Aucune séance trouvée pour la classe <span class="font-semibold text-primary not-italic">{{ classeSelected }}</span> en {{ monthSelected }}.
               </td>
             </tr>

@@ -120,7 +120,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 space-y-2 md:space-y-4">
   
   <!-- Bloc Attribution de Notes -->
-  <div class="lg:col-span-2 section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20 flex flex-col justify-between space-y-2 md:space-y-4">
+  <div class="lg:col-span-2 section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20 flex flex-col justify-between space-y-2 md:space-y-4 my-2 md:my-4">
     <div>
       <div class="p-4 border-b border-outline-variant/30 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
         <h3 class="font-h3 text-sm sm:text-base flex items-center gap-2 font-semibold">
@@ -243,7 +243,7 @@
   <div 
     v-for="activityName in ['Arbre de noël', 'Soirée récréative des enfants']" 
     :key="activityName"
-    class="bg-white border border-outline-variant/40 rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all group"
+    class="bg-white border border-outline-variant/40 rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all group my-2 md:my-4"
   >
     <div v-for="(children, activityTitle) in getLimitedActivitiesWithChildren(activityName)" :key="activityTitle" class="space-y-4">
       

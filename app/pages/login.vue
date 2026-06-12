@@ -11,7 +11,7 @@
         >
           <header class="mb-lg text-center">
             <h1 class="font-h2 text-h2 text-primary mb-xs">EDCE</h1>
-            <p class="font-body-md text-on-surface-variant">Sunday School Management Platform</p>
+            <p class="font-body-md text-on-surface-variant">Sunday School Management <span class="text-secondary-container">Platform</span>.</p>
           </header>
 
           <div 
@@ -24,7 +24,7 @@
 
           <form class="space-y-md" @submit.prevent="handleLogin">
             <div class="space-y-xs">
-              <label class="font-label-md text-label-md text-on-surface" for="login-email">Email Address</label>
+              <label class="font-label-md text-label-md text-on-surface" for="login-email">Adresse Email</label>
               <input
                 id="login-email"
                 v-model="loginForm.email"
@@ -38,12 +38,12 @@
             
             <div class="space-y-xs relative">
               <div class="flex justify-between items-center">
-                <label class="font-label-md text-label-md text-on-surface" for="login-password">Password</label>
+                <label class="font-label-md text-label-md text-on-surface" for="login-password">Mot de Passe</label>
                 <NuxtLink to="/forgot-password"
                   class="text-primary font-label-sm text-label-sm hover:underline"
                   type="button"
                 >
-                  Forgot password?
+                  Mot de passe oublié?
                 </NuxtLink>
               </div>
               <div class="relative">
@@ -101,7 +101,7 @@
                 type="checkbox"
               />
               <label class="font-body-sm text-body-sm text-on-surface-variant select-none cursor-pointer" for="remember">
-                Remember me for 30 days
+                Se souvenir de moi
               </label>
             </div>
             
@@ -118,11 +118,11 @@
             </button>
 
             <p class="text-center font-body-sm text-body-sm text-on-surface-variant mt-md">
-              Don't have an account?
+              Je n'ai pas de compte
               <NuxtLink to="/register"
                 class="text-primary font-bold hover:underline"
               >
-                Signup
+                Créer un compte
               </NuxtLink>
             </p>
           </form>

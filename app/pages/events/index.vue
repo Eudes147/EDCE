@@ -13,7 +13,7 @@
           <option v-for="y in dynamicYears" :key="y" :value="y">{{ y }}</option>
         </select>
         
-        <button class="px-4 py-2 text-xs md:text-sm font-semibold border border-outline-variant rounded-xl flex items-center gap-2 bg-white hover:bg-surface-container-low transition-colors text-on-surface" @click.close="()=>{toast.info('Fonctionnalité à venir')}">
+        <button class="px-4 py-2 text-xs md:text-sm font-semibold border border-outline-variant rounded-xl flex items-center gap-2 bg-white hover:bg-surface-container-low transition-colors text-on-surface" @click="toast.info('Fonctionnalité à venir')">
           <Icon name="download" size="1.1rem" />
           <span class="hidden xs:inline">Exporter</span>
         </button>

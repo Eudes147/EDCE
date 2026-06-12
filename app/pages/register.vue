@@ -57,7 +57,7 @@
                   required
                   :disabled="isLoading"
                 >
-                  <option value="" disabled selected>Select your gender</option>
+                  <option value="" disabled selected>Sexe</option>
                   <option value="Masculin">Masculin</option>
                   <option value="Feminin">Féminin</option>
                 </select>
@@ -209,7 +209,7 @@
             <p class="text-center font-body-sm text-body-sm text-on-surface-variant mt-md">
               Déjà un compte?
               <NuxtLink to="/login" class="text-primary font-bold hover:underline">
-                Login
+                Se Connecter
               </NuxtLink>
             </p>
           </form>

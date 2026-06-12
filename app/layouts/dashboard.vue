@@ -109,7 +109,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const linksDashboard = computed(() => [
-  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard', display: true },
+  { to: '/dashboard', icon: 'dashboard', label: 'Dashboard', display: authStore.isAdmin },
   { to: '/seances/admin', icon: 'calendar_today', label: 'Séances', display: authStore.isAdmin },
   { to: '/seances/teacher', icon: 'calendar_today', label: 'Séances', display: !authStore.isAdmin },
   { to: '/classes', icon: 'groups', label: 'Classes', display: authStore.isAdmin },
@@ -117,7 +117,7 @@ const linksDashboard = computed(() => [
   { to: '/tests', icon: 'assignment', label: 'Tests', display: true },
   { to: '/teachers', icon: 'school', label: 'Moniteurs', display: authStore.isAdmin },
   { to: '/events', icon: 'event', label: 'Evènements', display: authStore.isAdmin },
-  { to: '/activities', icon: 'history', label: 'Activités', display: authStore.isAdmin },
+  { to: '/activities', icon: 'history', label: 'Activités', display: true },
   { to: '/settings', icon: 'settings', label: 'Paramètres', display: authStore.isAdmin },
   { to: '/schedule', icon: 'event_busy', label: 'Planning', display: !authStore.isAdmin },
 ])

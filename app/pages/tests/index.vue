@@ -1,268 +1,181 @@
 <template>
-  <header class="flex justify-between items-center w-full px-margin-desktop py-sm h-16 bg-background border-b border-outline-variant sticky top-0 z-20">
-    <div class="flex items-center gap-4">
-      <h2 class="font-h3 text-h3 text-on-surface font-bold">Gestion des Tests</h2>
-    </div>
-    <div class="flex items-center gap-sm">
-      <div class="relative">
-        <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          <Icon name="search" color="text-on-surface-variant/70" />
+  <div class="flex-1 w-full bg-background overflow-x-hidden p-2.5 sm:p-4 md:p-6 space-y-4 md:space-y-6 pb-24 md:pb-6">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-outline-variant/30 pb-3">
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <div>
+          <h2 class="font-h2 text-lg sm:text-xl md:text-2xl font-bold text-primary">Gestion des Tests</h2>
+          <p class="font-body-sm text-[11px] sm:text-xs md:text-sm text-on-surface-variant">Créez, modifiez et téléchargez les épreuves scolaires.</p>
         </div>
-        <input 
-          v-model="searchTest" 
-          class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 w-64 transition-all text-sm text-on-surface" 
-          placeholder="Rechercher un test..." 
-          type="text"
+        
+        <button 
+          @click="showMobileSearch = !showMobileSearch" 
+          class="sm:hidden p-2 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface-variant transition-colors"
         >
+          <Icon :name="showMobileSearch ? 'close' : 'search'" size="1.15rem" />
+        </button>
       </div>
-      <button class="p-2 rounded-full hover:bg-surface-container transition-colors relative">
-        <Icon name="notifications" color="text-on-surface-variant" />
-        <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-      </button>
-      <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-surface-container-low"></div>
+      
+      <div 
+        class="w-full sm:w-64 transition-all duration-300"
+        :class="[showMobileSearch ? 'block' : 'hidden sm:block']"
+      >
+        <div class="relative">
+          <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-on-surface-variant/60">
+            <Icon name="search" size="1.1rem" />
+          </div>
+          <input 
+            v-model="searchTest" 
+            class="w-full pl-9 pr-4 py-2 bg-white border border-outline-variant rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-xs sm:text-sm text-on-surface placeholder:text-on-surface-variant/40" 
+            placeholder="Rechercher un test..." 
+            type="text"
+          >
+        </div>
+      </div>
     </div>
-  </header>
 
-  <div class="p-margin-desktop space-y-lg">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md">
-      <div class="flex flex-wrap gap-sm">
-        <select v-model="classe" class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary text-on-surface focus:outline-none">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div class="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
+        <select v-model="classe" class="w-full sm:w-auto px-2.5 py-2 bg-white border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/10 text-on-surface focus:outline-none cursor-pointer">
           <option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">{{ child_classe }}</option>
         </select>
-        <select v-model="monthSelected" class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary text-on-surface focus:outline-none">
+        <select v-model="monthSelected" class="w-full sm:w-auto px-2.5 py-2 bg-white border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/10 text-on-surface focus:outline-none cursor-pointer">
           <option v-for="(month, index) in months" :key="index" :value="month">{{ month.charAt(0).toUpperCase() + month.slice(1) }}</option>
         </select>
       </div>
+      
       <button 
         @click="openCreateModal"
-        class="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg hover:opacity-90 shadow-sm transition-all active:scale-95 text-sm font-semibold"
+        class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:opacity-90 shadow-sm transition-all active:scale-98 text-xs font-semibold w-full sm:w-auto"
       >
-        <Icon name="add" color="text-white" />
+        <Icon name="add" size="1.1rem" />
         Ajouter un test
       </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-      <div class="bg-white border border-outline-variant p-md rounded-xl hover:shadow-sm transition-shadow">
-        <div class="flex items-center justify-between mb-sm">
-          <span class="p-2 bg-primary/10 rounded-lg"><Icon name="description" color="text-primary" /></span>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full">
+      <div class="glass-card p-3 flex items-center gap-3 ultra-shadow transition-all hover:border-primary">
+        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Icon name="description" size="1.15rem" />
         </div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Total des Tests</p>
-        <h3 class="text-2xl font-bold text-on-surface mt-1">{{ glassCard.total }}</h3>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Total des Tests</p>
+          <h3 class="text-base sm:text-lg md:text-xl font-bold text-on-surface mt-0.5">{{ glassCard.total }}</h3>
+        </div>
       </div>
-      <div class="bg-white border border-outline-variant p-md rounded-xl hover:shadow-sm transition-shadow">
-        <div class="flex items-center justify-between mb-sm">
-          <span class="p-2 bg-secondary/10 rounded-lg"><Icon name="pending" color="text-secondary" /></span>
+
+      <div class="glass-card p-3 flex items-center gap-3 ultra-shadow transition-all hover:border-primary">
+        <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+          <Icon name="pending" size="1.15rem" />
         </div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Test d'Évaluation</p>
-        <h3 class="text-2xl font-bold text-on-surface mt-1">{{ glassCard.evaluation }}</h3>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Test d'Évaluation</p>
+          <h3 class="text-base sm:text-lg md:text-xl font-bold text-on-surface mt-0.5">{{ glassCard.evaluation }}</h3>
+        </div>
       </div>
-      <div class="bg-white border border-outline-variant p-md rounded-xl hover:shadow-sm transition-shadow">
-        <div class="flex items-center justify-between mb-sm">
-          <span class="p-2 bg-tertiary/10 rounded-lg"><Icon name="history_edu" color="text-tertiary" /></span>
+
+      <div class="glass-card p-3 flex items-center gap-3 ultra-shadow transition-all hover:border-primary">
+        <div class="w-8 h-8 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center shrink-0">
+          <Icon name="history_edu" size="1.15rem" />
         </div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Test de Sunday School</p>
-        <h3 class="text-2xl font-bold text-on-surface mt-1">{{ glassCard.sunday_school }}</h3>
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Test de Sunday School</p>
+          <h3 class="text-base sm:text-lg md:text-xl font-bold text-on-surface mt-0.5">{{ glassCard.sunday_school }}</h3>
+        </div>
       </div>
     </div>
 
-    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+    <div class="glass-card overflow-hidden ultra-shadow w-full">
+      <div class="overflow-x-auto w-full custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[650px] table-auto">
           <thead>
-            <tr class="bg-surface-container-low/50 text-on-surface-variant border-b border-outline-variant">
-              <th class="px-md py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Nom du Test</th>
-              <th class="px-md py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Classe</th>
-              <th class="px-md py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Créé par</th>
-              <th class="px-md py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Date</th>
-              <th class="px-md py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 text-right w-44">Actions</th>
+            <tr class="bg-surface-container-low/60 text-on-surface-variant border-b border-outline-variant/40">
+              <th class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Nom du Test</th>
+              <th class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Classe</th>
+              <th class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Créé par</th>
+              <th class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Date</th>
+              <th class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 text-right w-36">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant/40">
+          <tbody class="divide-y divide-outline-variant/30 text-xs sm:text-sm">
             <tr v-for="test in filteredAndPaginatedTests" :key="test.id" class="hover:bg-surface-container-low/30 transition-colors group">
-              <td class="px-md py-4">
-                <div class="flex items-center gap-3">
-                  <div :class="test.typeTest === 'EVALUATION' ? 'p-2 bg-primary/5 rounded-lg border border-primary/10' : 'p-2 bg-secondary/5 rounded-lg border border-secondary/10'">
-                    <Icon :name="test?.typeTest === 'EVALUATION' ? 'picture_as_pdf' : 'assignment'" :color="test?.typeTest === 'EVALUATION' ? 'text-primary' : 'text-secondary'" />
+              <td class="px-4 py-2.5">
+                <div class="flex items-center gap-2.5">
+                  <div :class="test.typeTest === 'EVALUATION' ? 'p-1.5 bg-primary/5 rounded-lg border border-primary/10 shrink-0' : 'p-1.5 bg-secondary/5 rounded-lg border border-secondary/10 shrink-0'">
+                    <Icon :name="test?.typeTest === 'EVALUATION' ? 'picture_as_pdf' : 'assignment'" size="1.1rem" :color="test?.typeTest === 'EVALUATION' ? 'text-primary' : 'text-secondary'" />
                   </div>
-                  <div>
-                    <span class="block text-sm font-semibold text-on-surface">{{ test.titleTest }}</span>
+                  <div class="truncate max-w-[180px]">
+                    <span class="block text-xs sm:text-sm font-semibold text-on-surface truncate">{{ test.titleTest }}</span>
                     <span :class="[
-                      'inline-block text-[10px] font-bold px-2 py-0.5 mt-0.5 rounded-full uppercase border',
+                      'inline-block text-[8px] font-bold px-1.5 py-0.2 mt-0.5 rounded uppercase border',
                       test.typeTest === 'EVALUATION' ? 'bg-primary/5 text-primary border-primary/10' : 'bg-secondary/5 text-secondary border-secondary/10'
                     ]">{{ test.typeTest }}</span>
                   </div>
                 </div>
               </td>
-              <td class="px-md py-4 text-sm font-medium text-on-surface-variant">{{ test.classe }}</td>
-              <td class="px-md py-4">
+              <td class="px-4 py-2.5 text-xs font-medium text-on-surface-variant">{{ test.classe }}</td>
+              <td class="px-4 py-2.5">
                 <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-surface-container text-[10px] font-bold uppercase text-on-surface border border-outline-variant flex items-center justify-center">
+                  <div class="w-5 h-5 rounded-full bg-surface-container text-[9px] font-bold uppercase text-on-surface border border-outline-variant flex items-center justify-center shrink-0">
                     {{ getTeacherById(test.authorId)?.first_name?.charAt(0) || '?' }}
                   </div>
-                  <span class="text-sm font-medium text-on-surface">
-                    {{ getTeacherById(test.authorId) ? (getTeacherById(test.authorId)?.first_name + ' ' + getTeacherById(test.authorId)?.last_name) : '-- --' }}
+                  <span class="text-xs font-medium text-on-surface truncate max-w-[100px]">
+                    {{ getTeacherById(test.authorId) ? (getTeacherById(test.authorId)?.first_name + ' ' + getTeacherById(test.authorId)?.last_name?.substring(0,1) + '.') : '--' }}
                   </span>
                 </div>
               </td>
-              <td class="px-md py-4 text-xs font-mono text-on-surface-variant tracking-wide">{{ formatDate(test.created_at) }}</td>
-              <td class="px-md py-4 text-right">
-                <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button @click="openViewModal(test)" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-md transition-colors" title="Voir"><Icon name="visibility" color="text-on-surface-variant" /></button>
-                  <button @click="openEditModal(test)" class="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/5 rounded-md transition-colors" title="Éditer"><Icon name="edit" color="text-on-surface-variant" /></button>
-                  <button class="p-1.5 text-on-surface-variant hover:text-tertiary hover:bg-tertiary/5 rounded-md transition-colors" title="Télécharger"><Icon name="download" color="text-on-surface-variant" /></button>
-                  <button @click="openDeleteModal(test)" class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-md transition-colors" title="Supprimer"><Icon name="delete" color="text-on-surface-variant" /></button>
+              <td class="px-4 py-2.5 text-xs font-mono text-on-surface-variant tracking-wide">{{ formatDate(test.created_at) }}</td>
+              <td class="px-4 py-2.5 text-right">
+                <div class="flex items-center justify-end gap-px sm:gap-0.5 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button @click="openViewModal(test)" class="p-1 text-on-surface-variant hover:text-primary rounded transition-colors" title="Voir"><Icon size="1.1rem" name="visibility" /></button>
+                  <button @click="openEditModal(test)" class="p-1 text-on-surface-variant hover:text-secondary rounded transition-colors" title="Éditer"><Icon size="1.1rem" name="edit" /></button>
+                  <button class="p-1 text-on-surface-variant hover:text-tertiary rounded transition-colors" title="Télécharger"><Icon size="1.1rem" name="download" /></button>
+                  <button @click="openDeleteModal(test)" class="p-1 text-error hover:bg-error/5 rounded transition-colors" title="Supprimer"><Icon size="1.1rem" name="delete" /></button>
                 </div>
               </td>
             </tr>
             <tr v-if="filteredAndPaginatedTests.length === 0">
-              <td colspan="5" class="text-center py-8 text-on-surface-variant italic text-sm">Aucun test trouvé pour cette configuration.</td>
+              <td colspan="5" class="text-center py-6 text-on-surface-variant italic text-xs">Aucun test trouvé pour cette configuration.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div v-if="totalFilteredCount > 0" class="flex items-center justify-between px-md py-4 bg-white border-t border-outline-variant/40">
-        <span class="text-xs text-on-surface-variant font-medium">
-          Affichage {{ Math.min(start + 1, totalFilteredCount) }}-{{ Math.min(end, totalFilteredCount) }} de {{ totalFilteredCount }} tests
+      <div v-if="totalFilteredCount > 0" class="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-4 py-2.5 bg-white border-t border-outline-variant/30">
+        <span class="text-[11px] text-on-surface-variant font-medium order-2 sm:order-1">
+          {{ Math.min(start + 1, totalFilteredCount) }}-{{ Math.min(end, totalFilteredCount) }} de {{ totalFilteredCount }}
         </span>
-        <div class="flex gap-1.5 items-center">
+        <div class="flex gap-1 items-center order-1 sm:order-2">
           <button 
-            class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-on-surface-variant"
+            class="p-1 border border-outline-variant/60 rounded-lg hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-on-surface-variant"
             :disabled="currentPage === 1"
             @click="goToPage(currentPage - 1)"
           >
-            <Icon name="chevron_left" color="text-on-surface-variant" />
+            <Icon name="chevron_left" size="1.1rem" />
           </button>
           
           <button 
             v-for="page in totalPages" 
             :key="page"
-            :class="['px-3 py-1 rounded text-xs font-semibold transition-all', currentPage === page ? 'bg-primary text-white shadow-sm' : 'bg-transparent border border-outline-variant text-on-surface hover:bg-surface-container']" 
+            :class="['px-2 py-0.5 rounded-md text-[11px] font-bold transition-all', currentPage === page ? 'bg-primary text-white shadow-sm' : 'bg-transparent border border-outline-variant/60 text-on-surface hover:bg-surface-container']" 
             @click="goToPage(page)"
           >
             {{ page }}
           </button>
 
           <button 
-            class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-on-surface-variant"
+            class="p-1 border border-outline-variant/60 rounded-lg hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-on-surface-variant"
             :disabled="currentPage === totalPages"
             @click="goToPage(currentPage + 1)"
           >
-            <Icon name="chevron_right" color="text-on-surface-variant" />
+            <Icon name="chevron_right" size="1.1rem" />
           </button>
         </div>
       </div>
     </div>
   </div>
-
-  <Modal v-model="activeTestModal" :title="isEditMode ? 'Modifier l\'épreuve' : 'Ajouter un nouveau test'" size="md">
-    <div class="py-1">
-      <form @submit.prevent="handleSubmitForm" id="testForm" class="space-y-4">
-        <div class="space-y-1.5">
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Titre du Test</label>
-          <input v-model="titleTest" required class="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-on-surface text-sm font-medium focus:outline-none" placeholder="ex: Évaluation Mai 2026" type="text">
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Classe concernée</label>
-          <div class="bg-white border border-outline-variant rounded-lg p-1.5">
-            <select v-model="classe" class="w-full bg-transparent border-none focus:ring-0 text-sm font-medium p-1 focus:outline-none text-on-surface">
-              <option v-for="child_classe in child_classes" :key="child_classe" :value="child_classe">{{ child_classe }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Type de test</label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors bg-white">
-              <input v-model="typeTest" class="w-4 h-4 text-primary focus:ring-primary" name="testType" type="radio" value="EVALUATION">
-              <span class="text-sm font-semibold text-on-surface">Évaluation</span>
-            </label>
-            <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors bg-white">
-              <input v-model="typeTest" class="w-4 h-4 text-primary focus:ring-primary" name="testType" type="radio" value="SUNDAY_SCHOOL">
-              <span class="text-sm font-semibold text-on-surface">Sunday School</span>
-            </label>
-            <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors bg-white">
-              <input v-model="typeTest" class="w-4 h-4 text-primary focus:ring-primary" name="testType" type="radio" value="CONCOURS">
-              <span class="text-sm font-semibold text-on-surface">Concours</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Lien du Test (Drive)</label>
-            <input v-model="sujetTest" required class="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-on-surface text-sm font-medium focus:outline-none" placeholder="Lien URL du sujet" type="text">
-          </div>
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide">Lien de la Correction</label>
-            <input v-model="correctionTest" required class="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-on-surface text-sm font-medium focus:outline-none" placeholder="Lien URL du corrigé" type="text">
-          </div>
-        </div>
-      </form>
-    </div>
-    <template #footer>
-      <div class="flex flex-col sm:flex-row gap-2 w-full justify-end">
-        <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium order-2 sm:order-1" @click="activeTestModal = false">Annuler</button>
-        <button type="submit" form="testForm" :disabled="isLoadingTests" class="px-6 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity order-1 sm:order-2">
-          {{ isLoadingTests ? 'Traitement...' : isEditMode ? 'Enregistrer' : 'Créer le test' }}
-        </button>
-      </div>
-    </template>
-  </Modal>
-
-  <Modal v-model="showViewModal" title="Détails du Test" size="md">
-    <div v-if="selectedTest" class="space-y-4 py-1">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Nom de l'épreuve</p>
-          <p class="font-semibold text-on-surface text-base mt-0.5">{{ selectedTest.titleTest }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Type</p>
-          <p class="font-semibold text-on-surface mt-0.5">{{ selectedTest.typeTest }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Classe</p>
-          <p class="font-semibold text-on-surface mt-0.5">{{ selectedTest.classe }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Date d'édition</p>
-          <p class="font-semibold text-on-surface mt-0.5">{{ formatDate(selectedTest.created_at) }}</p>
-        </div>
-        <div class="sm:col-span-2 border-t border-outline-variant/50 pt-3">
-          <p class="text-xs text-on-surface-variant font-bold uppercase tracking-wide">Auteur pédagogique</p>
-          <p class="font-bold text-primary mt-0.5 text-sm">
-            {{ getTeacherById(selectedTest.authorId) ? (getTeacherById(selectedTest.authorId)?.first_name + ' ' + getTeacherById(selectedTest.authorId)?.last_name) : 'Non renseigné' }}
-          </p>
-        </div>
-      </div>
-    </div>
-    <template #footer>
-      <button class="px-4 py-2 bg-surface-container border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-high transition-colors text-sm font-semibold w-full" @click="showViewModal = false">Fermer</button>
-    </template>
-  </Modal>
-
-  <Modal v-model="showDeleteModal" title="Supprimer l'épreuve" size="sm">
-    <div v-if="selectedTest" class="space-y-4 text-center py-2">
-      <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
-        <Icon name="delete" color="text-error" />
-      </div>
-      <p class="text-sm font-medium text-on-surface px-2">Supprimer définitivement ce test ? Cette action détruira toutes les notes des élèves liées à cette épreuve.</p>
-      <div class="text-sm font-bold text-error bg-error/5 p-3 rounded-xl border border-error/10">
-        {{ selectedTest.titleTest }} ({{ selectedTest.classe }})
-      </div>
-    </div>
-    <template #footer>
-      <div class="flex gap-2 w-full">
-        <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface w-full hover:bg-surface-container transition-colors text-sm font-medium" @click="showDeleteModal = false">Annuler</button>
-        <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:bg-error/90 transition-opacity text-sm font-semibold" @click="confirmDelete" :disabled="isLoadingTests">Supprimer</button>
-      </div>
-    </template>
-  </Modal>
 </template>
+
 
 <script setup lang="ts">
 import { definePageMeta } from '#imports'
@@ -280,6 +193,10 @@ definePageMeta({
   layout: 'dashboard',
 })
 
+// Ajout de la variable réactive pour contrôler l'état de la recherche mobile
+const showMobileSearch = ref(false)
+
+// [Garder absolument tout le reste de tes scripts, fonctions, hooks inchangés]
 // Configuration des composables et stores
 const toast = useToast()
 const authStore = useAuthStore()
@@ -450,3 +367,10 @@ const glassCard = computed(() => {
   }
 })
 </script>
+<style scoped>
+.ultra-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.glass-card { background: #FFFFFF; border: 1px solid #E8E4DE; border-radius: 16px; }
+.custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 10px; }
+</style>

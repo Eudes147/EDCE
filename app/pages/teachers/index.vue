@@ -1,34 +1,43 @@
 <template>
-  <div class="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 md:space-y-8">
-    <div class="flex justify-between items-end">
+  <div class="p-3 sm:p-4 md:p-6 max-w-[1400px] mx-auto space-y-4 md:space-y-8">
+    
+    <div class="flex justify-between items-end px-1">
       <div>
-        <h2 class="font-h1 text-xl md:text-h1 font-bold text-on-surface">Gestion des Enseignants</h2>
-        <p class="font-body text-xs md:text-sm text-on-surface-variant mt-1">Gérez vos équipes pédagogiques et leur planning mensuel.</p>
+        <h2 class="font-h1 text-lg sm:text-xl md:text-2xl font-bold text-on-surface">Gestion des Enseignants</h2>
+        <p class="font-body text-[11px] sm:text-xs md:text-sm text-on-surface-variant mt-1">Gérez vos équipes pédagogiques et leur planning mensuel.</p>
       </div>
     </div>
 
     <section class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-      <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
-        <div class="relative w-full max-w-xs">
-          <Icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70" color="1.2rem" />
+      
+      <div class="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-surface-container-low/30">
+        <div class="relative w-full sm:max-w-xs">
+          <Icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70" size="1.15rem" />
           <input 
             v-model="searchQuery"
-            class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface" 
+            class="w-full bg-white border border-outline-variant rounded-lg pl-9 pr-4 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface placeholder:text-on-surface-variant/50" 
             placeholder="Rechercher un enseignant..." 
             type="text"
           >
         </div>
+        
+        <button 
+          @click="openAddModal"
+          class="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm shadow-sm hover:opacity-90 active:scale-95 transition-all"
+        >
+          <Icon name="add" size="1.15rem" />
+          <span>Inscrire un enseignant</span>
+        </button>
       </div>
       
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse table-auto">
           <thead class="bg-surface-container-low/50 border-b border-outline-variant/40">
             <tr>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Nom</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Prénom</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Téléphone</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Statut Actif</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-32">Actions</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Enseignant</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 hidden sm:table-cell">Téléphone</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Statut</th>
+              <th class="px-4 py-3.5 md:px-6 font-caption text-[11px] md:text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-28">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/40">
@@ -37,41 +46,58 @@
               :key="teacher.id" 
               class="hover:bg-surface-container-low/40 transition-colors group"
             >
-              <td class="px-6 py-4 font-body text-sm text-on-surface font-semibold">{{ teacher.first_name.toUpperCase() }}</td>
-              <td class="px-6 py-4 font-body text-sm text-on-surface-variant font-medium">{{ teacher.last_name }}</td>
-              <td class="px-6 py-4 font-mono text-xs text-on-surface-variant tracking-wide">{{ teacher.tel || '-' }}</td>
-              <td class="px-6 py-4 text-sm">
+              <td class="px-4 py-3.5 md:px-6">
+                <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase flex-shrink-0 border border-primary/10">
+                    {{ teacher.first_name.substring(0, 1) }}{{ teacher.last_name.substring(0, 1) }}
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-body text-xs sm:text-sm text-on-surface font-semibold truncate">
+                      {{ teacher.first_name.toUpperCase() }} {{ teacher.last_name }}
+                    </span>
+                    <span class="font-mono text-[10px] text-on-surface-variant sm:hidden mt-0.5">{{ teacher.tel || '-' }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-4 py-3.5 md:px-6 font-mono text-xs text-on-surface-variant tracking-wide hidden sm:table-cell">
+                {{ teacher.tel || '-' }}
+              </td>
+
+              <td class="px-4 py-3.5 md:px-6 text-sm">
                 <span 
                   :class="[
-                    'px-2.5 py-1 rounded-full text-xs font-semibold',
-                    teacher.isAvailable ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
+                    'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border',
+                    teacher.isAvailable ? 'bg-success/5 border-success/20 text-success' : 'bg-error/5 border-error/20 text-error'
                   ]"
                 >
+                  <span :class="['w-1.5 h-1.5 rounded-full', teacher.isAvailable ? 'bg-success animate-pulse' : 'bg-error']"></span>
                   {{ teacher.isAvailable ? 'Disponible' : 'Indisponible' }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-1">
+
+              <td class="px-4 py-3.5 md:px-6 text-right">
+                <div class="flex items-center justify-end gap-0.5 sm:gap-1">
                   <button 
                     @click="openEditModal(teacher)" 
-                    class="p-1.5 rounded-md hover:bg-primary/5 text-on-surface-variant hover:text-primary transition-colors"
+                    class="p-1.5 rounded-lg hover:bg-primary/5 text-on-surface-variant hover:text-primary transition-colors"
                     title="Modifier les détails"
                   >
-                    <Icon name="edit" color="1.1rem" />
+                    <Icon name="edit" size="1.15rem" />
                   </button>
                   <button 
                     @click="toggleAvailability(teacher)" 
-                    class="p-1.5 rounded-md hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors"
+                    class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors"
                     :title="teacher.isAvailable ? 'Marquer indisponible' : 'Marquer disponible'"
                   >
-                    <Icon name="sync" color="1.1rem" />
+                    <Icon name="sync" size="1.15rem" />
                   </button>
                 </div>
               </td>
             </tr>
 
             <tr v-if="filteredTeachers.length === 0">
-              <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant italic text-sm">
+              <td colspan="4" class="px-6 py-10 text-center text-on-surface-variant italic text-xs sm:text-sm">
                 Aucun enseignant ne correspond à votre recherche.
               </td>
             </tr>
@@ -79,27 +105,27 @@
         </table>
       </div>
 
-      <div class="px-6 py-3 border-t border-outline-variant/40 flex justify-between items-center bg-surface-container-low/10">
-        <span class="text-xs text-on-surface-variant font-medium">
-          Affichage {{ startIndex + 1 }}-{{ Math.min(endIndex, filteredTeachers.length) }} sur {{ filteredTeachers.length }} enseignants
+      <div class="px-4 py-3 sm:px-6 border-t border-outline-variant/40 flex justify-between items-center bg-surface-container-low/10">
+        <span class="text-[11px] sm:text-xs text-on-surface-variant font-medium">
+          Affichage {{ filteredTeachers.length === 0 ? 0 : startIndex + 1 }}-{{ Math.min(endIndex, filteredTeachers.length) }} sur {{ filteredTeachers.length }}
         </span>
-        <div class="flex gap-1.5">
+        <div class="flex gap-1">
           <button 
             @click="prevPage"
             :disabled="currentPage === 1"
-            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <Icon name="chevron_left" color="1.1rem" />
+            <Icon name="chevron_left" size="1.1rem" />
           </button>
-          <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white font-semibold text-xs shadow-sm">
+          <button class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-primary text-white font-bold text-xs shadow-sm">
             {{ currentPage }}
           </button>
           <button 
             @click="nextPage"
             :disabled="currentPage >= totalPages"
-            class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <Icon name="chevron_right" color="1.1rem" />
+            <Icon name="chevron_right" size="1.1rem" />
           </button>
         </div>
       </div>
@@ -117,7 +143,7 @@
             :disabled="isPublishing"
             class="flex items-center justify-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            <Icon :name="isPublishing ? 'sync' : 'publish'" :class="[{ 'animate-spin': isPublishing }]" color="1.1rem" />
+            <Icon :name="isPublishing ? 'sync' : 'publish'" :class="[{ 'animate-spin': isPublishing }]" size="1.1rem" />
             <span>{{ isPublishing ? 'Publication...' : "Publier l'emploi du temps" }}</span>
           </button>
         </div>
@@ -159,7 +185,7 @@
               class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded"
             >
               <div class="bg-white p-1.5 rounded-full shadow-md border border-outline-variant/40 flex items-center justify-center text-primary">
-                <Icon name="add" color="1rem" />
+                <Icon name="add" size="1rem" />
               </div>
             </div>
           </div>
@@ -223,7 +249,7 @@
 
         <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Sélectionnez les moniteurs (disponibles uniquement) :</p>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
           <div 
             v-for="teacher in listTeachers.filter(t => t.isAvailable)" 
             :key="teacher.id"
@@ -234,7 +260,7 @@
             ]"
           >
             <span class="truncate">{{ teacher.first_name }} {{ teacher.last_name }}</span>
-            <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" color="1.1rem" class="text-primary flex-shrink-0 ml-2" />
+            <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" size="1.1rem" class="text-primary flex-shrink-0 ml-2" />
           </div>
         </div>
       </div>
@@ -246,6 +272,13 @@
     </Modal>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { height: 5px; width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 10px; }
+</style>
+
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'

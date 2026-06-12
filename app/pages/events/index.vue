@@ -1,109 +1,103 @@
 <template>
-  <!-- HEADER BAR -->
-  <header class="flex justify-between items-center w-full px-4 md:px-8 py-3 h-16 bg-background border-b border-outline-variant sticky top-0 z-20">
-    <div class="flex items-center gap-4">
-      <h2 class="font-h3 text-base md:text-h3 font-semibold text-on-surface">Gestion des Événements</h2>
-    </div>
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-surface-container"></div>
-    </div>
-  </header>
-
-  <main class="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-6 md:space-y-8">
+  <main class="w-full bg-background overflow-x-hidden p-4 md:p-6 space-y-6 pb-24 md:pb-6">
     
-    <!-- SECTION INTRODUCTION & FILTRES -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-4 md:p-6 rounded-xl border border-outline-variant/60 shadow-sm">
-      <div class="max-w-xl">
-        <h3 class="font-h2 text-lg md:text-h2 font-bold text-on-background mb-1">Calendrier & Activités Pédagogiques</h3>
-        <p class="font-body text-xs md:text-sm text-on-surface-variant">Configurez les événements annuels et associez-y des ateliers ou animations spécifiques pour vos élèves.</p>
+    <!-- 📋 SECTION INTRODUCTION & FILTRES REPENSSÉE -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-5">
+      <div>
+        <h2 class="font-h2 text-2xl md:text-3xl font-bold text-primary">Calendrier & Activités</h2>
+        <p class="font-body-sm text-xs md:text-sm text-on-surface-variant">Configurez les événements annuels et associez-y des ateliers spécifiques.</p>
       </div>
-      <div class="flex items-center gap-3 self-end md:self-auto w-full md:w-auto justify-end">
-        <label class="font-caption text-xs md:text-sm text-on-surface-variant whitespace-nowrap">Année Scolaire :</label>
-        <select v-model="year" class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-xs md:text-sm font-medium focus:ring-2 focus:ring-primary focus:outline-none text-on-surface cursor-pointer min-w-[120px]">
+      
+      <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+        <select v-model="year" class="w-full sm:w-auto px-3 py-2 bg-white border border-outline-variant rounded-xl text-xs md:text-sm font-medium focus:ring-2 focus:ring-primary/10 text-on-surface focus:outline-none cursor-pointer">
           <option v-for="y in dynamicYears" :key="y" :value="y">{{ y }}</option>
         </select>
         
-        <button class="px-3 py-2 text-xs md:text-sm font-medium border border-outline-variant rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors text-on-surface whitespace-nowrap">
-          <Icon name="download" color="1.1rem" />
-          Exporter
+        <button class="px-4 py-2 text-xs md:text-sm font-semibold border border-outline-variant rounded-xl flex items-center gap-2 bg-white hover:bg-surface-container-low transition-colors text-on-surface">
+          <Icon name="download" size="1.1rem" />
+          <span class="hidden xs:inline">Exporter</span>
         </button>
       </div>
     </div>
 
-    <!-- TABLEAU PRINCIPAL DES ÉVÉNEMENTS -->
-    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-surface-container-low text-on-surface-variant border-b border-outline-variant">
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Type d'Événement</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-center w-32">Année</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80">Activités Associées</th>
-              <th class="px-6 py-4 font-caption text-xs uppercase tracking-wider font-semibold text-on-surface-variant/80 text-right w-48">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-outline-variant/40">
-            <tr v-for="eventItem in structuredEvents" :key="eventItem.type" class="hover:bg-surface-container-low/40 transition-colors group">
-              
-              <!-- Colonne Type Événement -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div :class="['w-10 h-10 rounded-lg flex items-center justify-center border flex-shrink-0', eventItem.iconBg]">
-                    <Icon :name="eventItem.icon" :class="eventItem.iconColor" color="1.25rem" />
-                  </div>
-                  <div>
-                    <p class="font-body text-sm font-semibold text-on-surface">{{ eventItem.label }}</p>
-                    <p class="text-xs text-on-surface-variant">Événement périodique annuel</p>
-                  </div>
-                </div>
-              </td>
+    <!-- 🎴 GRILLE DES FICHES ÉVÉNEMENTS (Fini le calvaire visuel du tableau !) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div 
+        v-for="eventItem in structuredEvents" 
+        :key="eventItem.type" 
+        class="glass-card flex flex-col justify-between ultra-shadow border border-outline-variant/60 hover:border-primary/40 transition-all duration-300 group"
+      >
+        <!-- Haut de la carte : En-tête de l'événement -->
+        <div class="p-5 border-b border-outline-variant/30 bg-surface-container-low/30 rounded-t-2xl">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div :class="['w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 shadow-sm', eventItem.iconBg]">
+                <Icon :name="eventItem.icon" :class="eventItem.iconColor" size="1.4rem" />
+              </div>
+              <div>
+                <h3 class="font-h3 text-base md:text-lg font-bold text-on-surface group-hover:text-primary transition-colors">{{ eventItem.label }}</h3>
+                <p class="text-xs text-on-surface-variant mt-0.5">Session Annuelle <span class="font-mono font-bold text-primary bg-primary/5 px-1.5 py-0.2 rounded border border-primary/10 ml-1">{{ year }}</span></p>
+              </div>
+            </div>
 
-              <!-- Colonne Année -->
-              <td class="px-6 py-4 text-center">
-                <span class="px-2.5 py-1 bg-surface-container rounded-md font-medium text-on-surface text-xs md:text-sm">{{ year }}</span>
-              </td>
+            <!-- Compteur dynamique d'activités -->
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 bg-surface-container text-on-surface-variant rounded-full border border-outline-variant/40 shrink-0">
+              <Icon name="tag" size="0.9rem" />
+              {{ getAttachedActivities(eventItem.type).length }} {{ getAttachedActivities(eventItem.type).length > 1 ? 'ateliers' : 'atelier' }}
+            </span>
+          </div>
+        </div>
 
-              <!-- Colonne Activités (Badges dynamiques) -->
-              <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-1.5 items-center">
-                  <span 
-                    v-for="act in getAttachedActivities(eventItem.type)" 
-                    :key="act.id" 
-                    class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-primary/5 text-primary border border-primary/10 rounded-full"
-                  >
-                    {{ act.title }}
-                  </span>
-                  
-                  <span v-if="getAttachedActivities(eventItem.type).length === 0" class="text-xs italic text-on-surface-variant/70">
-                    Aucune activité associée à cet événement.
-                  </span>
-                </div>
-              </td>
+        <!-- Centre de la carte : Zone dédiée et ordonnée pour les Activités -->
+        <div class="p-5 flex-1 bg-white">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/80 mb-3">Ateliers et Animations planifiés</p>
+          
+          <!-- Conteneur avec Scroll interne si trop d'activités -->
+          <div class="max-h-[168px] overflow-y-auto custom-scrollbar pr-1 space-y-2">
+            <div 
+              v-for="act in getAttachedActivities(eventItem.type)" 
+              :key="act.id" 
+              class="flex items-center gap-2.5 px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-xl hover:bg-primary/5 hover:border-primary/20 transition-all"
+            >
+              <div class="w-2 h-2 rounded-full bg-primary/60 shrink-0"></div>
+              <span class="text-xs md:text-sm font-medium text-on-surface truncate">{{ act.title }}</span>
+            </div>
+            
+            <!-- État vide épuré -->
+            <div v-if="getAttachedActivities(eventItem.type).length === 0" class="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-outline-variant/60 rounded-xl bg-surface-container-low/20">
+              <Icon name="layers_clear" size="1.5rem" class="text-on-surface-variant/40 mb-1.5" />
+              <p class="text-xs italic text-on-surface-variant/70">Aucune activité associée à cet événement pour le moment.</p>
+            </div>
+          </div>
+        </div>
 
-              <!-- Colonne d'Actions Opérationnelles -->
-              <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button 
-                    @click="openManageModal(eventItem.type, eventItem.label)"
-                    class="bg-primary/5 text-primary px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-primary hover:text-white border border-primary/10 transition-all flex items-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Icon name="settings_suggest" color="1rem" />
-                    Gérer les Activités
-                  </button>
+        <!-- Bas de la carte : Barre d'actions unifiée et accessible (PC et Mobile) -->
+        <div class="p-4 bg-surface-container-low/40 border-t border-outline-variant/30 rounded-b-2xl flex items-center justify-between gap-2">
+          <button 
+            @click="openManageModal(eventItem.type, eventItem.label)"
+            class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-semibold shadow-sm hover:opacity-90 active:scale-98 transition-all"
+          >
+            <Icon name="settings_suggest" size="1.1rem" />
+            Gérer les activités
+          </button>
 
-                  <div class="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity border-l border-outline-variant pl-2">
-                    <button @click="openViewDetails(eventItem.type, eventItem.label)" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-md transition-colors" title="Visualiser">
-                      <Icon name="visibility" color="1.1rem" />
-                    </button>
-                    <button @click="openCleanConfirm(eventItem.type, eventItem.label)" class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-md transition-colors" title="Vider l'événement">
-                      <Icon name="delete_sweep" color="1.1rem" />
-                    </button>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <div class="flex items-center gap-1 border-l border-outline-variant/50 pl-2">
+            <button 
+              @click="openViewDetails(eventItem.type, eventItem.label)" 
+              class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-xl transition-colors" 
+              title="Aperçu global"
+            >
+              <Icon name="visibility" size="1.20rem" />
+            </button>
+            <button 
+              @click="openCleanConfirm(eventItem.type, eventItem.label)" 
+              class="p-2 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-xl transition-colors" 
+              title="Vider l'événement"
+            >
+              <Icon name="delete_sweep" size="1.20rem" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -119,7 +113,7 @@
         <span class="inline-block animate-spin">🔄</span> Traitement réseau en cours...
       </div>
 
-      <div v-else class="grid grid-cols-1 gap-2 max-h-[320px] overflow-y-auto pr-1">
+      <div v-else class="grid grid-cols-1 gap-2 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
         <label 
           v-for="activity in listActivities" 
           :key="activity.id"
@@ -149,7 +143,7 @@
       </div>
     </div>
     <template #footer>
-      <button class="px-5 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-sm w-full transition-opacity hover:opacity-90 text-sm" @click="activeManageModal = false">Terminer la configuration</button>
+      <button class="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl shadow-sm w-full transition-opacity hover:opacity-90 text-sm" @click="activeManageModal = false">Terminer la configuration</button>
     </template>
   </Modal>
 
@@ -164,7 +158,7 @@
 
       <div>
         <h5 class="font-caption text-xs font-bold text-on-surface-variant mb-2 uppercase tracking-wide">Liste finale des activités retenues :</h5>
-        <ul class="divide-y border border-outline-variant rounded-xl overflow-hidden bg-white">
+        <ul class="divide-y border border-outline-variant rounded-xl overflow-hidden bg-white custom-scrollbar">
           <li v-for="(act, idx) in getAttachedActivities(modalContext.type)" :key="act.id" class="p-3 text-sm text-on-surface flex items-center gap-2">
             <span class="w-5 h-5 bg-primary/10 text-primary text-xs rounded-full flex items-center justify-center font-bold flex-shrink-0">{{ idx + 1 }}</span>
             <span class="font-medium">{{ act.title }}</span>
@@ -176,7 +170,7 @@
       </div>
     </div>
     <template #footer>
-      <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface w-full hover:bg-surface-container transition-colors text-sm font-medium" @click="activeViewModal = false">Fermer la vue</button>
+      <button class="px-4 py-2 border border-outline-variant rounded-xl text-on-surface w-full hover:bg-surface-container transition-colors text-sm font-medium" @click="activeViewModal = false">Fermer la vue</button>
     </template>
   </Modal>
 
@@ -184,15 +178,15 @@
   <Modal v-model="activeCleanModal" title="Vider l'événement ?" size="sm">
     <div class="space-y-3 text-center py-2">
       <div class="w-12 h-12 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto">
-        <Icon name="delete_sweep" color="1.5rem" />
+        <Icon name="delete_sweep" size="1.5rem" />
       </div>
       <p class="text-sm md:text-base font-medium text-on-surface">Êtes-vous sûr de vouloir dissocier <strong>toutes</strong> les activités liées à l'événement suivant pour {{ year }} ?</p>
       <p class="text-xs md:text-sm font-bold text-error bg-error/5 p-2 rounded border border-error/20 max-w-full break-words">{{ modalContext.label }}</p>
     </div>
     <template #footer>
       <div class="flex flex-col sm:flex-row gap-2 w-full">
-        <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface w-full hover:bg-surface-container-low transition-colors text-sm font-medium order-2 sm:order-1" @click="activeCleanModal = false">Annuler</button>
-        <button class="px-4 py-2 bg-error text-white rounded-lg w-full hover:opacity-90 transition-opacity text-sm font-medium order-1 sm:order-2" @click="executePurgeEvent">Confirmer la désaffectation</button>
+        <button class="px-4 py-2 border border-outline-variant rounded-xl text-on-surface w-full hover:bg-surface-container-low transition-colors text-sm font-medium order-2 sm:order-1" @click="activeCleanModal = false">Annuler</button>
+        <button class="px-4 py-2 bg-error text-white rounded-xl w-full hover:opacity-90 transition-opacity text-sm font-medium order-1 sm:order-2" @click="executePurgeEvent">Confirmer la désaffectation</button>
       </div>
     </template>
   </Modal>
@@ -204,10 +198,18 @@
       title="Créer une nouvelle activité dans le catalogue global"
       class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
     >
-      <Icon name="add_task" color="1.5rem" class="group-hover:rotate-12 transition-transform" />
+      <Icon name="add_task" size="1.5rem" class="group-hover:rotate-12 transition-transform" />
     </button>
   </div>
 </template>
+
+<style scoped>
+.ultra-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.glass-card { background: #FFFFFF; border: 1px solid #E8E4DE; border-radius: 16px; }
+.custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 10px; }
+</style>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'

@@ -1,18 +1,18 @@
 <template>
-  <div class="min-h-screen p-6 bg-background">
+  <div class="min-h-screen p-3 sm:p-6 bg-background">
     <div class="max-w-4xl mx-auto">
 
-      <div class="mb-8 px-2">
-        <div class="flex items-center justify-between mb-6">
+      <div class="mb-6 md:mb-8 px-1">
+        <div class="flex items-center justify-between mb-4 relative">
           <div
             v-for="step in steps"
             :key="step.id"
-            class="flex flex-col items-center gap-2 group cursor-pointer flex-1"
+            class="flex flex-col items-center gap-1.5 group cursor-pointer flex-1 z-10"
             @click="goToStep(step.id)"
           >
             <div
               :class="[
-                'w-10 h-10 rounded-full flex items-center justify-center text-label-md font-bold transition-all duration-300 flex-shrink-0',
+                'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-label-md font-bold transition-all duration-300 flex-shrink-0',
                 currentStep > step.id 
                   ? 'bg-primary-container text-on-primary' 
                   : currentStep === step.id 
@@ -20,59 +20,59 @@
                     : 'bg-surface-variant text-on-surface-variant'
               ]"
             >
-              <Icon name="check" v-if="currentStep > step.id" class="text-[20px]" />
+              <Icon name="check" v-if="currentStep > step.id" class="text-[16px] sm:text-[20px]" />
               <span v-else>{{ step.id }}</span>
             </div>
             <span
               :class="[
-                'text-label-sm font-medium text-center whitespace-nowrap',
+                'text-[10px] sm:text-label-sm font-medium text-center max-w-[65px] sm:max-w-none truncate sm:whitespace-nowrap',
                 currentStep >= step.id ? 'text-primary' : 'text-on-surface-variant'
               ]"
             >
               {{ step.label }}
             </span>
           </div>
-        </div>
 
-        <div class="flex items-center justify-between px-6">
-          <div
-            v-for="step in steps.slice(0, -1)"
-            :key="`progress-${step.id}`"
-            class="flex-1 h-1 mx-2 bg-outline-variant relative overflow-hidden rounded-full"
-          >
+          <div class="absolute top-4 sm:top-5 left-0 right-0 h-[2px] bg-outline-variant/40 -z-0 flex justify-between px-[12%]">
             <div
-              class="h-full bg-primary-container transition-all duration-500"
-              :style="{ width: currentStep > step.id ? '100%' : '0%' }"
-            ></div>
+              v-for="step in steps.slice(0, -1)"
+              :key="`progress-${step.id}`"
+              class="flex-1 h-full mx-2 relative overflow-hidden"
+            >
+              <div
+                class="h-full bg-primary-container transition-all duration-500"
+                :style="{ width: currentStep > step.id ? '100%' : '0%' }"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="bg-white border border-outline-variant/20 rounded-xl shadow-sm overflow-hidden transition-all duration-500">
         
-        <div v-show="currentStep === 1" class="p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <header class="mb-6">
-            <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Informations de la séance</h2>
-            <p class="text-body-md text-on-surface-variant opacity-70">Définissez les détails logistiques de votre rencontre aujourd'hui.</p>
+        <div v-show="currentStep === 1" class="p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <header class="mb-5">
+            <h2 class="font-h2 text-on-surface mb-1 font-semibold text-lg sm:text-xl">Informations de la séance</h2>
+            <p class="text-xs sm:text-body-md text-on-surface-variant opacity-70">Définissez les détails logistiques de votre rencontre aujourd'hui.</p>
           </header>
 
           <div class="space-y-4">
-            <div class="flex flex-col gap-2">
-              <label class="text-label-md text-on-surface font-medium">Titre de la séance</label>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs sm:text-label-md text-on-surface font-medium">Titre de la séance</label>
               <input
                 v-model="form.title"
                 type="text"
                 placeholder="ex: Leçon sur la Parabole du Semeur"
-                class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
+                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs sm:text-body-md outline-none text-doomu-text"
               />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col gap-2">
-                <label class="text-label-md text-on-surface font-medium">Type de séance</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs sm:text-label-md text-on-surface font-medium">Type de séance</label>
                 <select
                   v-model="form.type"
-                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
+                  class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs sm:text-body-md outline-none text-doomu-text"
                 >
                   <option value="NORMAL">NORMAL</option>
                   <option value="SUNDAY_SCHOOL">SUNDAY SCHOOL</option>
@@ -80,11 +80,11 @@
                 </select>
               </div>
 
-              <div class="flex flex-col gap-2">
-                <label class="text-label-md text-on-surface font-medium">Classe</label>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs sm:text-label-md text-on-surface font-medium">Classe</label>
                 <select
                   v-model="form.classe"
-                  class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-md outline-none text-doomu-text"
+                  class="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-outline-variant/30 bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs sm:text-body-md outline-none text-doomu-text"
                 >
                   <option v-for="c in classes" :key="c" :value="c">{{ c }}</option>
                 </select>
@@ -93,151 +93,151 @@
           </div>
         </div>
 
-        <div v-show="currentStep === 2" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
-          <header class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div v-show="currentStep === 2" class="p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+          <header class="mb-5 flex flex-col md:flex-row md:items-end justify-between gap-3">
             <div>
-              <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Registre des présences</h2>
-              <p class="text-body-md text-on-surface-variant opacity-70">Cochez les enfants présents lors de cette séance.</p>
+              <h2 class="font-h2 text-on-surface mb-1 font-semibold text-lg sm:text-xl">Registre des présences</h2>
+              <p class="text-xs sm:text-body-md text-on-surface-variant opacity-70">Cochez les enfants présents lors de cette séance.</p>
             </div>
-            <div class="bg-surface-container-high px-4 py-2 rounded-full flex items-center gap-2 border border-outline-variant/20">
-              <Icon name="group" color="text-primary text-[18px]" />
-              <span class="text-label-md text-primary font-bold">{{ selectedCount }} / {{ children.length }} sélectionnés</span>
+            <div class="bg-surface-container-high px-3 py-1.5 rounded-full flex items-center gap-2 border border-outline-variant/20 self-start md:self-auto">
+              <Icon name="group" class="text-primary text-[16px] sm:text-[18px]" />
+              <span class="text-xs sm:text-label-md text-primary font-bold">{{ selectedCount }} / {{ children.length }} présent(s)</span>
             </div>
           </header>
 
-          <div class="mb-4 flex gap-4 items-center">
-            <div class="flex-1 bg-surface-container-low rounded-lg px-4 py-2 flex items-center gap-3 border border-outline-variant/20">
-              <Icon name="search" color="text-outline" />
+          <div class="mb-4 flex flex-col xs:flex-row gap-2 items-stretch xs:items-center">
+            <div class="flex-1 bg-surface-container-low rounded-lg px-3 py-2 flex items-center gap-2.5 border border-outline-variant/20">
+              <Icon name="search" color="text-outline" size="1.1rem" />
               <input
                 v-model="searchTerm"
                 type="text"
                 placeholder="Chercher un enfant..."
-                class="bg-transparent border-none focus:ring-0 text-body-sm w-full outline-none text-doomu-text"
+                class="bg-transparent border-none focus:ring-0 text-xs sm:text-body-sm w-full outline-none text-doomu-text"
               />
             </div>
             <button
               @click="toggleSelectAll"
-              class="whitespace-nowrap px-4 py-2 text-label-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20"
+              class="whitespace-nowrap px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors border border-primary/20 text-center"
             >
               Tout basculer
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[350px] overflow-y-auto pr-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-[320px] overflow-y-auto pr-1">
             <div
               v-for="child in filteredChildren"
               :key="child.id"
               @click="toggleChild(child.id)"
               :class="[
-                'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
+                'flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all duration-200',
                 child.selected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-outline-variant/20 hover:bg-surface-container-low'
               ]"
             >
-              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
                 {{ child.name.charAt(0) }}
               </div>
 
               <div class="flex-1 min-w-0">
-                <p class="text-label-md text-on-surface truncate font-medium text-doomu-text">{{ child.name }}</p>
-                <p class="text-[10px] text-outline uppercase tracking-wider">{{ child.nivScolaire || 'Élève' }}</p>
+                <p class="text-xs sm:text-label-md text-on-surface truncate font-medium text-doomu-text">{{ child.name }}</p>
+                <p class="text-[9px] sm:text-[10px] text-outline uppercase tracking-wider">{{ child.nivScolaire || 'Élève' }}</p>
               </div>
 
               <div
                 :class="[
-                  'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
+                  'w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
                   child.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
                 ]"
               >
-                <Icon v-if="child.selected" name="check" color="text-white text-[16px]" />
+                <Icon v-if="child.selected" name="check" class="text-white text-[12px] sm:text-[16px]" />
               </div>
             </div>
           </div>
         </div>
 
-        <div v-show="currentStep === 3" class="p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
-          <header class="mb-6">
-            <h2 class="font-h2 text-h2 text-on-surface mb-2 font-semibold text-xl">Récapitulatif & Validation</h2>
-            <p class="text-body-md text-on-surface-variant opacity-70">Choisissez un superviseur de séance puis validez le résumé.</p>
+        <div v-show="currentStep === 3" class="p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
+          <header class="mb-5">
+            <h2 class="font-h2 text-on-surface mb-1 font-semibold text-lg sm:text-xl">Récapitulatif & Validation</h2>
+            <p class="text-xs sm:text-body-md text-on-surface-variant opacity-70">Choisissez un superviseur de séance puis validez le résumé.</p>
           </header>
 
-          <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Thème choisi</p>
-                <p class="font-semibold text-doomu-text">{{ form.title || '--' }}</p>
+          <div class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="bg-surface-container-low p-3 sm:p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-[10px] sm:text-xs text-outline mb-0.5 uppercase tracking-wider font-medium">Thème choisi</p>
+                <p class="text-xs sm:text-sm font-semibold text-doomu-text truncate">{{ form.title || '--' }}</p>
               </div>
-              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Métriques Cibles</p>
-                <p class="text-sm text-doomu-text">
+              <div class="bg-surface-container-low p-3 sm:p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-[10px] sm:text-xs text-outline mb-0.5 uppercase tracking-wider font-medium">Métriques Cibles</p>
+                <p class="text-[11px] sm:text-sm text-doomu-text leading-tight">
                   Type: <span class="font-bold text-primary">{{ form.type }}</span> <br>
                   Classe: <span class="font-bold text-primary">{{ form.classe.toUpperCase() }}</span>
                 </p>
               </div>
-              <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
-                <p class="text-xs text-outline mb-1 uppercase tracking-wider font-medium">Appel Émarge</p>
-                <p class="text-xl font-bold text-secondary">{{ selectedCount }} Présents</p>
+              <div class="bg-surface-container-low p-3 sm:p-4 rounded-xl border border-outline-variant/20">
+                <p class="text-[10px] sm:text-xs text-outline mb-0.5 uppercase tracking-wider font-medium">Appel Émarge</p>
+                <p class="text-sm sm:text-xl font-bold text-secondary">{{ selectedCount }} Présents</p>
               </div>
             </div>
 
             <div>
-              <h3 class="text-label-md text-on-surface font-semibold mb-3 flex items-center gap-2">
-                <Icon name="person_pin" color="text-primary"/>
+              <h3 class="text-xs sm:text-label-md text-on-surface font-semibold mb-3 flex items-center gap-2">
+                <Icon name="person_pin" class="text-primary"/>
                 Désigner le Superviseur Obligatoire
               </h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-[220px] overflow-y-auto pr-2">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-[180px] overflow-y-auto pr-1">
                 <div
                   v-for="teacher in filteredTeachers"
                   :key="teacher.id"
                   @click="toggleSupervisorSelection(teacher.id)"
                   :class="[
-                    'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200',
+                    'flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all duration-200',
                     teacher.selected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-outline-variant/20 hover:bg-surface-container-low'
                   ]"
                 >
-                  <div class="w-9 h-9 rounded-full bg-secondary-container text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-secondary-container text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                     {{ teacher.first_name.charAt(0) }}
                   </div>
 
                   <div class="flex-1 min-w-0">
-                    <p class="text-label-sm text-on-surface truncate font-medium text-doomu-text">
+                    <p class="text-xs font-medium text-on-surface truncate text-doomu-text">
                       {{ teacher.first_name.toUpperCase() }} {{ teacher.last_name }}
                     </p>
                   </div>
 
                   <div
                     :class="[
-                      'w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
+                      'w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
                       teacher.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
                     ]"
                   >
-                    <Icon v-if="teacher.selected" name="check" color="text-white text-[14px]" />
+                    <Icon v-if="teacher.selected" name="check" class="text-white text-[10px]" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-start gap-3">
-              <Icon name="info" color="text-primary mt-0.5" />
-              <p class="text-xs text-on-surface-variant">
+            <div class="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-start gap-2.5">
+              <Icon name="info" class="text-primary mt-0.5 shrink-0" size="1.1rem" />
+              <p class="text-[11px] sm:text-xs text-on-surface-variant leading-normal">
                 Une fois créée, cette séance sera indexée instantanément dans l'historique et analysable par la direction administrative de l'EDCE.
               </p>
             </div>
           </div>
         </div>
 
-        <div class="px-6 md:px-8 py-4 bg-surface-container-low flex items-center justify-between border-t border-outline-variant/20">
+        <div class="px-4 sm:px-6 md:px-8 py-3.5 bg-surface-container-low flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-outline-variant/20">
           <button
             @click="handleCancel"
-            class="px-6 py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container transition-all"
+            class="px-4 py-2 rounded-lg text-xs sm:text-label-md text-on-surface-variant hover:bg-surface-container transition-all text-center order-3 sm:order-1"
           >
             Annuler
           </button>
           
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col xs:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2 sm:ml-auto w-full sm:w-auto">
             <button
               v-show="currentStep > 1"
               @click="prevStep"
-              class="px-6 py-2 rounded-lg text-label-md text-on-surface border border-outline-variant hover:bg-surface-container transition-all"
+              class="px-4 py-2 rounded-lg text-xs sm:text-label-md text-on-surface border border-outline-variant hover:bg-surface-container transition-all text-center w-full sm:w-auto"
             >
               Retour
             </button>
@@ -245,7 +245,7 @@
             <button
               v-show="currentStep < 3"
               @click="nextStep"
-              class="bg-primary text-white px-8 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all text-sm"
+              class="bg-primary text-white px-5 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs sm:text-sm text-center w-full sm:w-auto"
             >
               Continuer
             </button>
@@ -254,10 +254,10 @@
               v-show="currentStep === 3"
               @click="handleSubmit"
               :disabled="isSubmitting"
-              class="bg-primary text-white px-8 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+              class="bg-primary text-white px-5 py-2.5 rounded-lg font-medium shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-xs sm:text-sm w-full sm:w-auto"
             >
-              <Icon v-if="!isSubmitting" name="check_circle" color="text-[18px]" />
-              <Icon v-else name="sync" color="text-[18px] animate-spin" />
+              <Icon v-if="!isSubmitting" name="check_circle" class="text-[16px] sm:text-[18px]" />
+              <Icon v-else name="sync" class="text-[16px] sm:text-[18px] animate-spin" />
               {{ isSubmitting ? 'Création...' : 'Créer la séance' }}
             </button>
           </div>
@@ -267,17 +267,17 @@
 
     <transition name="fade">
       <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-8 max-w-sm w-full border border-outline-variant/20 shadow-xl text-center animate-in zoom-in-95 duration-300">
-          <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="check_circle" color="text-[40px] text-primary" />
+        <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full border border-outline-variant/20 shadow-xl text-center animate-in zoom-in-95 duration-300">
+          <div class="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icon name="check_circle" class="text-[32px] sm:text-[40px] text-primary" />
           </div>
-          <h3 class="text-h3 text-on-surface mb-2 font-bold text-lg">Séance Créée !</h3>
-          <p class="text-body-md text-on-surface-variant mb-6 text-sm">
+          <h3 class="text-h3 text-on-surface mb-2 font-bold text-base sm:text-lg">Séance Créée !</h3>
+          <p class="text-body-md text-on-surface-variant mb-6 text-xs sm:text-sm">
             Le registre d'émargement et la leçon ont été sauvegardés avec succès.
           </p>
           <button
             @click="finishProcess"
-            class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all text-sm"
+            class="w-full bg-primary text-white py-2.5 rounded-lg font-semibold hover:opacity-90 transition-all text-xs sm:text-sm"
           >
             Terminer
           </button>

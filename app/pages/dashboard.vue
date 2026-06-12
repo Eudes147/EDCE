@@ -4,339 +4,254 @@
   </div>
   <div v-else-if="error" class="p-lg text-error">{{ error.message }}</div>
   
-  <main v-else-if="stats" ref="desktopMain" class="hidden md:flex flex-1 flex-col min-w-0 h-full bg-background overflow-hidden">
-    <header class="flex justify-between items-center w-full px-margin-desktop py-sm h-16 bg-background border-b border-outline-variant">
-      <div class="flex items-center gap-4">
-        <h2 class="font-h2 text-h2 font-bold text-primary">Dashboard</h2>
+  <main v-else-if="stats" ref="desktopMain" class="flex-1 w-full bg-background overflow-x-hidden p-4 md:p-6 space-y-6 pb-24 md:pb-6">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-outline-variant/30 pb-4">
+      <div>
+        <h2 class="font-h2 text-2xl md:text-3xl font-bold text-primary">Dashboard</h2>
+        <p class="font-body-sm text-xs md:text-sm text-on-surface-variant">Bienvenue, Admin. Données globales réelles.</p>
       </div>
-      <div class="flex items-center gap-lg">
-        <div class="flex items-center gap-4">
-          <button class="text-on-surface-variant hover:text-primary transition-colors">
-            <Icon size="1.5rem" name="notifications" />
-          </button>
-          <button class="text-on-surface-variant hover:text-primary transition-colors">
-            <Icon size="1.5rem" name="help" />
-          </button>
-          <div class="h-8 w-8 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
-            <img class="w-full h-full object-cover" alt="Admin" src="" />
-          </div>
+      
+      <div class="w-full sm:w-64 relative">
+        <select v-model="filtreClasse" class="w-full pl-4 pr-10 py-2.5 bg-white border border-outline-variant rounded-xl appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body text-on-surface ultra-minimal-shadow cursor-pointer text-sm">
+          <option v-for="classe in classeEDCE" :key="classe" :value="classe">{{ classe }}</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-on-surface-variant">
+          <Icon name="arrow_drop_down" size="1.5rem" />
         </div>
       </div>
-    </header>
+    </div>
 
-    <div class="flex-1 overflow-y-auto p-margin-desktop space-y-lg">
-      <div class="relative flex flex-wrap gap-md">
-        <button @click="navigateTo('/teachers')" class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
-          <Icon size="1.5rem" name="add_circle" />
-          Voir la liste des moniteurs
-        </button>
-        <button @click="navigateTo('/tests')" class="flex items-center gap-2 px-6 py-3 bg-primary-container text-white rounded-lg font-label-md hover:scale-95 transition-transform ultra-shadow">
-          <Icon size="1.5rem" name="assignment" />
-          Voir les tests
-        </button>
-        <div class="absolute right-0 w-full md:w-64">
-          <select v-model="filtreClasse" class="w-full pl-4 pr-10 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-md appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-body text-on-surface ultra-minimal-shadow cursor-pointer">
-            <option v-for="classe in classeEDCE" :key="classe" :value="classe">{{ classe }}</option>
-          </select>
+    <div class="grid grid-cols-1 sm:flex sm:flex-wrap gap-3">
+      <button @click="navigateTo('/teachers')" class="flex items-center justify-center gap-2 px-5 py-3 bg-primary text-on-primary rounded-xl font-label-md hover:scale-98 transition-transform ultra-shadow text-sm font-medium">
+        <Icon size="1.25rem" name="add_circle" />
+        Voir la liste des moniteurs
+      </button>
+      <button @click="navigateTo('/tests')" class="flex items-center justify-center gap-2 px-5 py-3 bg-primary-container text-white rounded-xl font-label-md hover:scale-98 transition-transform ultra-shadow text-sm font-medium">
+        <Icon size="1.25rem" name="assignment" />
+        Voir les tests
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card p-4 flex flex-col justify-between ultra-shadow transition-all hover:border-primary">
+        <div>
+          <p class="text-xs font-medium text-on-surface-variant mb-1">Enfants ({{ filtreClasse }})</p>
+          <div class="flex items-baseline justify-between">
+            <h3 class="font-h1 text-2xl md:text-3xl font-bold text-primary">{{ (childStatistics?.count || 0).toString().padStart(2, '0') }}</h3>
+            <span class="text-[11px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">{{ ((childStatistics?.rate || 0) * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
+        <div class="mt-4 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+          <div class="h-full bg-primary transition-all duration-500" :style="`width: ${(childStatistics?.rate || 0) * 100}%`"></div>
         </div>
       </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Enfants totaux</p>
+      
+      <div class="glass-card p-4 flex flex-col justify-between ultra-shadow transition-all hover:border-primary">
+        <div>
+          <p class="text-xs font-medium text-on-surface-variant mb-1">Séances créées</p>
           <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">{{ (childStatistics?.count || 0).toString().padStart(2, '0') }}</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{ ((childStatistics?.rate || 0) * 100).toFixed(2) }}%</span>
-          </div>
-          <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary" :style="`width: ${(childStatistics?.rate || 0) * 100}%`"></div>
+            <h3 class="font-h1 text-2xl md:text-3xl font-bold text-primary">{{ getStatsSeance.count }}</h3>
+            <span class="text-[11px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">{{ (getStatsSeance.rate * 100).toFixed(1) }}%</span>
           </div>
         </div>
-        
-        <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Séances créées</p>
-          <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">{{ getStatsSeance.count }}</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{ (getStatsSeance.rate * 100).toFixed(2) }}%</span>
-          </div>
-          <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary" :style="`width: ${(getStatsSeance.rate * 100)}%`"></div>
-          </div>
-        </div>
-
-        <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Enseignants actifs</p>
-          <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">{{ (teacherStatistics?.teachersAvailable || 0).toString().padStart(2, '0') }}</h3>
-            <span class="text-xs font-bold text-secondary bg-secondary/10 px-2 py-1 rounded-full">{{ (percentTeachers * 100).toFixed(2) }}%</span>
-          </div>
-          <div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
-            <div class="h-full bg-primary" :style="`width: ${percentTeachers * 100}%`"></div>
-          </div>
-        </div>
-
-        <div class="glass-card p-md ultra-shadow transition-transform hover:-translate-y-1">
-          <p class="font-label-sm text-on-surface-variant mb-1">Total Activités</p>
-          <div class="flex items-baseline justify-between">
-            <h3 class="font-h1 text-h1 text-primary">{{ totalStatistics?.totalLengthActivities || 0 }}</h3>
-          </div>
+        <div class="mt-4 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+          <div class="h-full bg-primary transition-all duration-500" :style="`width: ${(getStatsSeance.rate * 100)}%`"></div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
-        <div class="glass-card p-lg pb-0 flex flex-col justify-center items-start">
-          <h4 class="font-h3 text-h3 mb-lg">Répartition par classe</h4>
-          <div class="flex items-end gap-4 h-48 px-2 w-full">
-            <div v-for="classe in classeEDCE" :key="classe" class="flex-1 flex flex-col items-center gap-2">
-              <div class="w-full bg-primary/20 rounded-t-md hover:bg-primary transition-colors" :style="`height: calc(10rem * ${childrenPerClassCount(classe)?.rate || 0})`"></div>
-              <span class="font-label-sm text-on-surface-variant">{{ classe }}</span>
+      <div class="glass-card p-4 flex flex-col justify-between ultra-shadow transition-all hover:border-primary">
+        <div>
+          <p class="text-xs font-medium text-on-surface-variant mb-1">Enseignants actifs</p>
+          <div class="flex items-baseline justify-between">
+            <h3 class="font-h1 text-2xl md:text-3xl font-bold text-primary">{{ (teacherStatistics?.teachersAvailable || 0).toString().padStart(2, '0') }}</h3>
+            <span class="text-[11px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">{{ (percentTeachers * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
+        <div class="mt-4 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+          <div class="h-full bg-primary transition-all duration-500" :style="`width: ${percentTeachers * 100}%`"></div>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 flex items-center gap-3 ultra-shadow transition-all hover:border-primary">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Icon size="1.5rem" name="history" />
+        </div>
+        <div>
+          <p class="text-xs font-medium text-on-surface-variant">Total Activités</p>
+          <h3 class="font-h1 text-2xl font-bold text-primary">{{ totalStatistics?.totalLengthActivities || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card p-4 md:p-6 flex flex-col justify-between">
+        <h4 class="font-h3 text-base md:text-lg font-bold mb-4 text-on-surface">Répartition par classe</h4>
+        <div class="flex items-end gap-3 h-48 px-2 w-full pt-4 border-b border-outline-variant/30">
+          <div v-for="classe in classeEDCE" :key="classe" class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+            <div class="w-full bg-primary/20 rounded-t-lg hover:bg-primary transition-colors cursor-pointer" :style="`height: calc(100% * ${childrenPerClassCount(classe)?.rate || 0})`"></div>
+            <span class="text-[10px] md:text-xs font-medium text-on-surface-variant truncate max-w-full">{{ classe }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div @click="showSuccessModal = true" class="glass-card p-4 md:p-6 cursor-pointer hover:shadow-md hover:border-primary transition-all duration-300">
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="font-h3 text-base md:text-lg font-bold text-on-surface">Succès aux examens</h4>
+          <span class="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+            <Icon name="visibility" size="1.1rem" /> Détails
+          </span>
+        </div>
+        <div class="space-y-3">
+          <div v-for="classe in classeEDCE" :key="classe">
+            <div class="flex justify-between text-xs font-medium mb-1">
+              <span>{{ classe }}</span>
+              <span class="text-primary font-bold">{{ percentSuccessbyClasse(classe).toFixed(1) }}%</span>
             </div>
-          </div>
-        </div>
-
-        <div @click="showSuccessModal = true" class="glass-card p-lg success-sunday cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300">
-          <div class="flex justify-between items-center mb-lg">
-            <h4 class="font-h3 text-h3">Succès aux examens (Sunday school)</h4>
-            <span class="text-xs text-primary font-medium underline flex items-center gap-1">
-              <Icon name="visibility" size="1.1rem" /> Détails de réussite
-            </span>
-          </div>
-          <div class="space-y-md">
-            <div v-for="classe in classeEDCE" :key="classe">
-              <div class="flex justify-between mb-2">
-                <span class="font-label-md">{{ classe }}</span>
-                <span class="font-label-md text-primary">{{ percentSuccessbyClasse(classe).toFixed(2) }}%</span>
-              </div>
-              <div class="h-2 bg-surface-container-high rounded-full">
-                <div class="h-full bg-secondary rounded-full" :style="`width: ${percentSuccessbyClasse(classe)}%`"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <section class="glass-card overflow-hidden">
-        <div class="px-lg py-md border-b border-outline-variant flex justify-between items-center">
-          <h4 class="font-h3 text-h3">Liste des enfants ({{ filtreClasse }})</h4>
-          <button class="text-primary font-label-md hover:underline">Voir tout</button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-surface-container-low">
-              <tr>
-                <th class="px-lg py-4 font-label-md text-on-surface-variant">Nom</th>
-                <th class="px-lg py-4 font-label-md text-on-surface-variant">Classe</th>
-                <th class="px-lg py-4 font-label-md text-on-surface-variant">Age</th>
-                <th class="px-lg py-4 font-label-md text-on-surface-variant">Téléphone</th>
-                <th class="px-lg py-4 font-label-md text-on-surface-variant text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant">
-              <tr v-for="child in childrenFiltered.slice(0, 10)" :key="child?.id || 'none'" class="hover:bg-surface-container-lowest transition-colors group">
-                <td class="px-lg py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                      {{ getFullName(child?.name).initials }}
-                    </div>
-                    <div>
-                      <p class="font-label-md text-on-surface">{{ getFullName(child?.name)?.name || '--' }}</p>
-                      <p class="text-[11px] text-on-surface-variant">Mail non défini</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-lg py-4 font-body-sm">{{ child?.classe }}</td>
-                <td class="px-lg py-4 font-body-sm">{{ getAgeByBirthDate(child?.birth_date || new Date()) }} ans</td>
-                <td class="px-lg py-4">
-                  <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">{{ child?.telParent || 'Non défini' }}</span>
-                </td>
-                <td class="px-lg py-4 text-right">
-                  <div class="flex justify-end gap-2">
-                    <button class="text-on-surface-variant hover:text-primary"><Icon size="1.5rem" name="visibility" /></button>
-                    <button class="text-on-surface-variant hover:text-primary"><Icon size="1.5rem" name="edit" /></button>
-                    <button class="text-error hover:text-error-container"><Icon size="1.5rem" name="delete" /></button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-gutter pb-xl">
-        <div class="xl:col-span-1 glass-card flex flex-col">
-          <div class="p-md border-b border-outline-variant">
-            <h4 class="font-label-md text-on-surface font-bold uppercase tracking-wider">Contacts Parents ({{ filtreClasse }})</h4>
-          </div>
-          <div class="p-4 space-y-4 overflow-y-auto max-h-[350px]">
-            <div v-for="parentInfo in filteredParentInfos" :key="parentInfo.tel" class="flex items-center justify-between group">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
-                  <Icon size="1.2rem" class="text-primary" name="call" />
-                </div>
-                <div>
-                  <p class="font-label-sm">{{ parentInfo.name }}</p>
-                  <p class="text-[10px] text-on-surface-variant">{{ parentInfo.tel }}</p>
-                </div>
-              </div>
-              <button class="p-2 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors">
-                <Icon size="1.2rem" name="chat" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div @click="showDeliberationModal = true" class="xl:col-span-2 glass-card deliberation cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300">
-          <div class="p-md border-b border-outline-variant flex justify-between items-center">
-            <h4 class="font-label-md text-on-surface font-bold uppercase tracking-wider">Délibération de fin d'année (Top 3)</h4>
-            <span class="text-xs text-primary font-medium underline flex items-center gap-1">
-              <Icon name="workspace_premium" size="1.1rem" /> Délibération Complète
-            </span>
-          </div>
-          <div class="p-lg">
-            <div v-for="(classementFinal, index) in classementsFinal.slice(0, 3)" :key="classementFinal.childId" class="space-y-md">
-              <div class="flex items-center gap-4 my-3">
-                <span :class="['w-6 font-h3', index === 0 ? 'text-secondary' : 'text-on-surface-variant']">{{ index + 1 }}</span>
-                <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-lg border border-outline-variant">
-                  <span class="font-label-md">{{ getNamebyId(classementFinal.childId) || 'Non défini' }}</span>
-                  <span class="font-bold text-primary">{{ classementFinal.moyGen }}</span>
-                </div>
-              </div>
+            <div class="h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full bg-secondary rounded-full transition-all duration-500" :style="`width: ${percentSuccessbyClasse(classe)}%`"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <Modal v-model="showSuccessModal" :title="`Statut des Examens (Sunday School) — Classe : ${filtreClasse}`" size="lg">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-1 max-h-[60vh] overflow-y-auto">
-        <div class="space-y-3">
-          <h5 class="flex items-center gap-2 font-bold text-green-700 bg-green-50 p-2 rounded-lg sticky top-0">
-            <Icon name="check_circle" class="text-green-600" />
-            Enfants Réussis ({{ successSundayList.passed.length }})
-          </h5>
-          <div v-if="successSundayList.passed.length === 0" class="text-sm text-on-surface-variant italic p-4 text-center">
-            Aucun élève n'a validé pour l'instant.
-          </div>
-          <div v-for="item in successSundayList.passed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-3 rounded-lg">
-            <span class="font-label-md text-on-surface">{{ item.name }}</span>
-            <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded font-bold text-sm">
-              {{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}
-            </span>
-          </div>
-        </div>
+    <section class="glass-card overflow-hidden">
+      <div class="px-4 py-3 md:px-6 border-b border-outline-variant flex justify-between items-center">
+        <h4 class="font-h3 text-base font-bold text-on-surface">Liste des enfants ({{ filtreClasse }})</h4>
+        <button class="text-primary font-medium text-xs hover:underline">Voir tout</button>
+      </div>
+      <div class="overflow-x-auto w-full custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+          <thead class="bg-surface-container-low text-xs text-on-surface-variant font-medium">
+            <tr>
+              <th class="px-4 py-3">Nom</th>
+              <th class="px-4 py-3">Classe</th>
+              <th class="px-4 py-3">Âge</th>
+              <th class="px-4 py-3">Téléphone Parent</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/30 text-sm">
+            <tr v-for="child in childrenFiltered.slice(0, 10)" :key="child?.id || 'none'" class="hover:bg-surface-container-lowest transition-colors group">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                    {{ getFullName(child?.name).initials }}
+                  </div>
+                  <div class="truncate max-w-[180px]">
+                    <p class="font-medium text-on-surface truncate">{{ getFullName(child?.name)?.name || '--' }}</p>
+                    <p class="text-[10px] text-on-surface-variant">Mail non défini</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-xs text-on-surface-variant">{{ child?.classe }}</td>
+              <td class="px-4 py-3 text-xs">{{ getAgeByBirthDate(child?.birth_date || new Date()) }} ans</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold border border-green-200/50">{{ child?.telParent || 'Non défini' }}</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex justify-end gap-1">
+                  <button class="p-1.5 text-on-surface-variant hover:text-primary rounded-md"><Icon size="1.2rem" name="visibility" /></button>
+                  <button class="p-1.5 text-on-surface-variant hover:text-primary rounded-md"><Icon size="1.2rem" name="edit" /></button>
+                  <button class="p-1.5 text-error hover:text-error/80 rounded-md"><Icon size="1.2rem" name="delete" /></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-        <div class="space-y-3">
-          <h5 class="flex items-center gap-2 font-bold text-error bg-error/5 p-2 rounded-lg sticky top-0">
-            <Icon name="cancel" class="text-error" />
-            Enfants Échoués ({{ successSundayList.failed.length }})
-          </h5>
-          <div v-if="successSundayList.failed.length === 0" class="text-sm text-on-surface-variant italic p-4 text-center">
-            Aucun échec enregistré. Bravo !
-          </div>
-          <div v-for="item in successSundayList.failed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-3 rounded-lg">
-            <span class="font-label-md text-on-surface">{{ item.name }}</span>
-            <span class="px-2.5 py-1 bg-error/10 text-error rounded font-bold text-sm">
-              {{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}
-            </span>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="xl:col-span-1 glass-card flex flex-col">
+        <div class="p-4 border-b border-outline-variant">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Contacts Parents ({{ filtreClasse }})</h4>
+        </div>
+        <div class="p-4 space-y-4 overflow-y-auto max-h-[300px] custom-scrollbar">
+          <div v-for="parentInfo in filteredParentInfos" :key="parentInfo.tel" class="flex items-center justify-between group">
+            <div class="flex items-center gap-3 truncate">
+              <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+                <Icon size="1.1rem" class="text-primary" name="call" />
+              </div>
+              <div class="truncate">
+                <p class="text-xs font-medium truncate">{{ parentInfo.name }}</p>
+                <p class="text-[10px] text-on-surface-variant">{{ parentInfo.tel }}</p>
+              </div>
+            </div>
+            <button class="p-2 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors shrink-0">
+              <Icon size="1.1rem" name="chat" />
+            </button>
           </div>
         </div>
       </div>
-      <template #footer>
-        <button class="px-5 py-2 bg-doomu-bg hover:bg-doomu-border border border-outline-variant/50 rounded-lg text-doomu-text transition-colors" @click="showSuccessModal = false">
-          Fermer
-        </button>
-      </template>
-    </Modal>
 
-    <Modal v-model="showDeliberationModal" :title="`Registre de Délibération Générale — Classe : ${filtreClasse}`" size="md">
-      <div class="p-1 max-h-[60vh] overflow-y-auto space-y-2">
-        <p class="text-xs text-on-surface-variant mb-4">
-          Voici le classement récapitulatif par moyenne générale globale (Calcul combiné Évaluations + Concours) pour l'année en cours.
-        </p>
-        <div 
-          v-for="(row, idx) in totalDeliberationList" 
-          :key="row.childId" 
-          class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-3 rounded-xl hover:bg-surface-container-high transition-colors"
-        >
-          <span :class="['w-7 text-center font-bold font-h3', idx === 0 ? 'text-secondary text-lg' : idx < 3 ? 'text-primary' : 'text-on-surface-variant']">
-            {{ idx + 1 }}
+      <div @click="showDeliberationModal = true" class="xl:col-span-2 glass-card cursor-pointer hover:shadow-md hover:border-primary transition-all duration-300">
+        <div class="p-4 border-b border-outline-variant flex justify-between items-center">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Délibération fin d'année (Top 3)</h4>
+          <span class="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+            <Icon name="workspace_premium" size="1.1rem" /> Registre complet
           </span>
-          <div class="flex-1 flex justify-between items-center">
-            <span class="font-label-md text-on-surface font-medium">{{ row.name }}</span>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-on-surface-variant">Moy:</span>
-              <span class="font-bold text-base text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/20">
-                {{ Number(row.moyGen).toFixed(2) }}
-              </span>
+        </div>
+        <div class="p-4 space-y-3">
+          <div v-for="(classementFinal, index) in classementsFinal.slice(0, 3)" :key="classementFinal.childId" class="flex items-center gap-3">
+            <span :class="['w-5 font-bold text-center text-sm', index === 0 ? 'text-secondary text-base' : 'text-on-surface-variant']">{{ index + 1 }}</span>
+            <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 text-sm">
+              <span class="font-medium truncate max-w-[200px]">{{ getNamebyId(classementFinal.childId) || 'Non défini' }}</span>
+              <span class="font-bold text-primary">{{ classementFinal.moyGen }}</span>
             </div>
           </div>
         </div>
-        <div v-if="totalDeliberationList.length === 0" class="text-center py-8 text-on-surface-variant italic">
-          Aucune donnée disponible pour cette classe.
+      </div>
+    </div>
+
+    <Modal v-model="showSuccessModal" :title="`Statut des Examens — ${filtreClasse}`" size="lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-1 max-h-[50vh] overflow-y-auto custom-scrollbar">
+        <div class="space-y-3">
+          <h5 class="flex items-center gap-2 font-bold text-green-700 bg-green-50 p-2 rounded-lg sticky top-0 text-sm">
+            <Icon name="check_circle" class="text-green-600" />
+            Enfants Réussis ({{ successSundayList.passed.length }})
+          </h5>
+          <div v-if="successSundayList.passed.length === 0" class="text-xs text-on-surface-variant italic p-4 text-center">Aucun élève.</div>
+          <div v-for="item in successSundayList.passed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-2.5 rounded-lg text-sm">
+            <span class="font-medium text-on-surface">{{ item.name }}</span>
+            <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded font-bold text-xs">{{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}</span>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <h5 class="flex items-center gap-2 font-bold text-error bg-error/5 p-2 rounded-lg sticky top-0 text-sm">
+            <Icon name="cancel" class="text-error" />
+            Enfants Échoués ({{ successSundayList.failed.length }})
+          </h5>
+          <div v-if="successSundayList.failed.length === 0" class="text-xs text-on-surface-variant italic p-4 text-center">Aucun échec. Bravo !</div>
+          <div v-for="item in successSundayList.failed" :key="item.id" class="flex justify-between items-center bg-surface-container-low border border-outline-variant/30 p-2.5 rounded-lg text-sm">
+            <span class="font-medium text-on-surface">{{ item.name }}</span>
+            <span class="px-2 py-0.5 bg-error/10 text-error rounded font-bold text-xs">{{ item.moyenne !== null ? item.moyenne.toFixed(2) : '--' }}</span>
+          </div>
         </div>
       </div>
       <template #footer>
-        <button class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors" @click="showDeliberationModal = false">
-          Terminer l'analyse
-        </button>
+        <button class="px-4 py-2 border border-outline-variant rounded-lg text-sm transition-colors" @click="showSuccessModal = false">Fermer</button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showDeliberationModal" :title="`Registre de Délibération — ${filtreClasse}`" size="md">
+      <div class="p-1 max-h-[50vh] overflow-y-auto space-y-2 custom-scrollbar">
+        <p class="text-xs text-on-surface-variant mb-3">Classement récapitulatif par moyenne générale globale pour l'année.</p>
+        <div v-for="(row, idx) in totalDeliberationList" :key="row.childId" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-2.5 rounded-xl text-sm">
+          <span :class="['w-6 text-center font-bold', idx === 0 ? 'text-secondary text-base' : 'text-on-surface-variant']">{{ idx + 1 }}</span>
+          <div class="flex-1 flex justify-between items-center">
+            <span class="font-medium text-on-surface truncate max-w-[180px]">{{ row.name }}</span>
+            <span class="font-bold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10 text-xs">{{ Number(row.moyGen).toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm" @click="showDeliberationModal = false">Terminer l'analyse</button>
       </template>
     </Modal>
   </main>
-
-  <div v-else class="md:hidden min-h-[max(884px,100dvh)] w-full font-body-md text-body-md overflow-x-hidden bg-background">
-    <header class="sticky top-0 z-50 bg-background flex justify-between items-center w-full px-margin-mobile py-sm h-16 border-b border-outline-variant">
-      <div class="flex items-center gap-2">
-        <h1 class="font-h3 text-h3 font-bold text-primary">EDCE</h1>
-      </div>
-      <div class="flex items-center gap-4">
-        <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
-          <Icon size="1.5rem" name="notifications" />
-        </button>
-        <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" @click="showDashboardMenu?.()">
-          <Icon size="1.5rem" name="menu" />
-        </button>
-      </div>
-    </header>
-
-    <main class="px-margin-mobile py-md space-y-md">
-      <section>
-        <h2 class="font-h2 text-h2-mobile text-on-surface">Tableau de bord</h2>
-        <p class="font-body-sm text-on-surface-variant">Bienvenue, Admin. Données globales réelles.</p>
-      </section>
-
-      <section class="grid grid-cols-1 gap-sm">
-        <div class="bg-white border border-[#E8E4DE] p-sm rounded-xl custom-shadow flex items-center gap-sm">
-          <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
-            <Icon size="1.5rem" name="child_care" />
-          </div>
-          <div>
-            <p class="font-label-sm text-on-surface-variant">Total enfants</p>
-            <p class="font-h3 text-h3">{{ totalStatistics?.totalLengthChildren || 0 }}</p>
-          </div>
-        </div>
-        <div class="bg-white border border-[#E8E4DE] p-sm rounded-xl custom-shadow flex items-center gap-sm">
-          <div class="w-10 h-10 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary">
-            <Icon size="1.5rem" name="school" />
-          </div>
-          <div>
-            <p class="font-label-sm text-on-surface-variant">Séances totales</p>
-            <p class="font-h3 text-h3">{{ totalStatistics?.totalLengthSeances || 0 }}</p>
-          </div>
-        </div>
-        <div class="bg-white border border-[#E8E4DE] p-sm rounded-xl custom-shadow flex items-center gap-sm">
-          <div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-tertiary">
-            <Icon size="1.5rem" name="group" />
-          </div>
-          <div>
-            <p class="font-label-sm text-on-surface-variant">Moniteurs actifs</p>
-            <p class="font-h3 text-h3">{{ (teacherStatistics?.teachersAvailable || 0) }}</p>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
 </template>
-
 
 <script setup lang="ts">
 import { computed, ref, onMounted, inject } from 'vue'
@@ -362,7 +277,6 @@ const listSeancesFromApi = computed(() => stats.value?.listStats.listSeances || 
 const classeEDCE = ref<ClasseType[]>(classes)
 const filtreClasse = ref<ClasseType>("Petit")
 
-// --- NOUVEAUX ÉTATS DES MODALS INTELLIGENTS ---
 const showSuccessModal = ref(false)
 const showDeliberationModal = ref(false)
 
@@ -405,7 +319,6 @@ const getStatsSeance = computed(() => {
   return { count: count, rate: count / totalSeances }
 })
 
-// --- LOGIQUE DES NOTES & MODALS DÉTAILLÉES ---
 const { 
   getClassementFinal, 
   getNamebyId, 
@@ -413,14 +326,12 @@ const {
   fetchAllNotesData, 
   getPassageDeliberation,
   notesbyYear,
-  getMoyGenperChildId 
 } = useNote()
 
 const classementsFinal = computed(() => {
   return getClassementFinal(filtreClasse.value)
 })
 
-// 🎛️ Traitement pour la Modal 1 : Succès et Échecs de la classe (Filtré sur l'année actuelle en Sunday School)
 const successSundayList = computed(() => {
   const currentYear = new Date().getFullYear().toString()
   const sundaySchoolMoyennes = notesbyYear.value?.sundaySchool?.moyenne?.[currentYear] || []
@@ -440,14 +351,12 @@ const successSundayList = computed(() => {
     }
   })
 
-  // Tri décroissant pour la lisibilité
   passed.sort((a, b) => b.moyenne - a.moyenne)
   failed.sort((a, b) => b.moyenne - a.moyenne)
 
   return { passed, failed }
 })
 
-// 🎛️ Traitement pour la Modal 2 : Délibération complète de toute la classe (Par moyenne générale)
 const totalDeliberationList = computed(() => {
   return classementsFinal.value.map((row: any) => {
     return {
@@ -455,7 +364,7 @@ const totalDeliberationList = computed(() => {
       name: getNamebyId(row.childId),
       moyGen: row.moyGen
     }
-  }).filter(item => item.name !== '') // Nettoyage de sécurité si un enfant n'est pas trouvé
+  }).filter(item => item.name !== '')
 })
 
 const getAgeByBirthDate = (birthDate: string | Date) => {
@@ -468,7 +377,6 @@ const getAgeByBirthDate = (birthDate: string | Date) => {
 }
 
 const desktopMain = ref<HTMLElement | null>(null)
-const showDashboardMenu = inject<() => void>('showDashboardMenu')
 
 onMounted(async () => {
   await fetchAllNotesData()
@@ -480,12 +388,12 @@ onMounted(async () => {
   if (desktopMain.value) {
     desktopMain.value.style.opacity = '0'
     desktopMain.value.style.transform = 'translateY(10px)'
-    desktopMain.value.style.transition = 'all 0.6s ease-out'
+    desktopMain.value.style.transition = 'all 0.5s ease-out'
     window.setTimeout(() => {
       if (!desktopMain.value) return
       desktopMain.value.style.opacity = '1'
       desktopMain.value.style.transform = 'translateY(0)'
-    }, 100)
+    }, 50)
   }
 })
 
@@ -494,9 +402,9 @@ useHead({ title: 'EDCE Admin Dashboard' })
 </script>
 
 <style scoped>
-.ultra-shadow, .custom-shadow { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-.glass-card { background: #FFFFFF; border: 1px solid #E8E4DE; border-radius: 12px; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 10px; }
+.ultra-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.glass-card { background: #FFFFFF; border: 1px solid #E8E4DE; border-radius: 16px; }
+.custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #E8E4DE; border-radius: 10px; }
 </style>

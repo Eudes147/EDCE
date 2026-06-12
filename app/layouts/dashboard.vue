@@ -2,6 +2,7 @@
   <div class="font-body-md overflow-x-hidden md:overflow-hidden bg-background min-h-screen">
     <div class="flex flex-col md:flex-row w-full md:h-screen">
       
+      <!-- 🖥️ SIDEBAR (DESKTOP) -->
       <aside class="hidden md:flex w-[240px] h-screen fixed left-0 top-0 bg-surface-container-low flex-col py-6 z-50 border-r border-outline-variant/20">
         <div class="px-6 mb-8">
           <div class="flex items-center gap-3">
@@ -44,6 +45,7 @@
         </div>
       </aside>
 
+      <!-- 📱 HEADER (MOBILE & TABLET) -->
       <header class="md:hidden h-[56px] bg-surface-container-lowest border-b border-outline-variant/30 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40 shadow-sm">
         <div class="flex items-center gap-2">
           <h1 class="font-h2 text-base font-bold text-primary mr-1">EDCE</h1>
@@ -58,19 +60,26 @@
         </div>
       </header>
 
-      <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-outline-variant/30 flex items-center justify-around px-2 z-50 shadow-[0_-4px_16px_rgba(15,23,42,0.05)]">
+      <!-- 📱 NAVIGATION BASSE RESPONSIVE (MOBILE) -->
+      <!-- Changement : overflow-x-auto, scrollbar-none et ajustement de l'alignement selon le nombre d'éléments -->
+      <nav 
+        class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-outline-variant/30 flex items-center px-2 z-50 shadow-[0_-4px_16px_rgba(15,23,42,0.05)] overflow-x-auto scrollbar-none"
+        :class="filteredLinks.length <= 5 ? 'justify-around' : 'justify-start gap-1'"
+      >
         <NuxtLink 
           v-for="icon_link in mobileLinks" 
           :key="`mobile-${icon_link.label}`" 
           :to="icon_link.to"
-          class="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-on-surface-variant transition-colors"
+          class="flex flex-col items-center justify-center gap-0.5 h-full text-on-surface-variant transition-colors min-w-[68px] shrink-0"
+          :class="filteredLinks.length <= 5 ? 'flex-1' : 'w-[72px]'"
           active-class="text-primary font-bold"
         >
           <Icon :name="icon_link.icon" size="1.3rem" />
-          <span class="text-[10px] font-medium tracking-wide truncate max-w-[68px]">{{ icon_link.label }}</span>
+          <span class="text-[10px] font-medium tracking-wide truncate max-w-[64px]">{{ icon_link.label }}</span>
         </NuxtLink>
       </nav>
 
+      <!-- 🖥️ CONTENU PRINCIPAL & HEADER DESKTOP -->
       <div class="flex-1 flex flex-col min-w-0 md:pl-[240px]">
         
         <header class="hidden md:flex h-[56px] fixed top-0 right-0 left-[240px] justify-between items-center px-6 z-40 bg-surface-container-lowest border-b border-outline-variant/40 shadow-sm">
@@ -113,7 +122,7 @@ const linksDashboard = computed(() => [
   { to: '/seances/admin', icon: 'calendar_today', label: 'Séances', display: authStore.isAdmin },
   { to: '/seances/teacher', icon: 'calendar_today', label: 'Séances', display: !authStore.isAdmin },
   { to: '/classes', icon: 'groups', label: 'Classes', display: authStore.isAdmin },
-  { to: '/children', icon: 'child_care', label: 'Enfants', display: true }, // Accessible ou restreint selon ton besoin
+  { to: '/children', icon: 'child_care', label: 'Enfants', display: true },
   { to: '/tests', icon: 'assignment', label: 'Tests', display: true },
   { to: '/teachers', icon: 'school', label: 'Moniteurs', display: authStore.isAdmin },
   { to: '/events', icon: 'event', label: 'Evènements', display: authStore.isAdmin },
@@ -125,10 +134,10 @@ const linksDashboard = computed(() => [
 // Liens filtrés pour la version Desktop
 const filteredLinks = computed(() => linksDashboard.value.filter(link => link.display))
 
-// Sélection intelligente pour éviter d'inonder la barre de navigation du bas sur mobile
-const mobileLinks = computed(() => filteredLinks.value.slice(0, 5))
+// Changement : On expose TOUS les liens pour que l'overflow gère le défilement horizontal de manière naturelle
+const mobileLinks = computed(() => filteredLinks.value)
 
-// Détermination dynamique de la section courante (gère aussi les sous-routes)
+// Détermination dynamique de la section courante
 const actualSection = computed(() => {
   const currentLink = filteredLinks.value.find(link => route.path.startsWith(link.to))
   return currentLink ? currentLink.label : "EDCE"
@@ -151,6 +160,16 @@ const actualSection = computed(() => {
   background: #e2e1ed;
   border-radius: 10px;
 }
+
+/* Utilitaires pour masquer la scrollbar visuelle sur la Bottom Nav mobile */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 body { font-family: 'Sora', sans-serif; }
 h1, h2, h3 { font-family: 'Outfit', sans-serif; }
 </style>

@@ -514,7 +514,6 @@ export const mockChildren: Child[] = [
     tel: '+225 07 99 88 77',
     telParent: '+225 05 44 33 22',
     sexe: 'Feminin',
-    nivScolaire: 'Tle',
     sexeParent: 'Masculin',
     adresse: 'Plateau, Abidjan',
     created_at: '2025-07-01T10:00:00Z'
@@ -547,7 +546,6 @@ export const mockChildren: Child[] = [
     id: 'child-008',
     classe: 'Moyen',
     name: 'Souleymane Diallo',
-    nivScolaire: 'Tle',
     birth_date: new Date('2017-02-14'),
     telParent: '+225 05 31 09 27',
     sexe: 'Masculin',
@@ -630,7 +628,6 @@ export const mockChildren: Child[] = [
     id: 'child-015',
     classe: 'JuniorB',
     name: 'Léna Adjoua',
-    nivScolaire: '6e',
     birth_date: new Date('2015-11-19'),
     sexe: 'Feminin',
     sexeParent: 'Masculin',

@@ -29,7 +29,7 @@
         </nav>
         
         <div class="mt-auto px-4 space-y-1">
-          <a class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high rounded-xl" href="#">
+          <a class="text-on-surface-variant hover:text-on-surface px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high rounded-xl" href="#" @click="toast.info('Fonctionnalité à venir')">
             <Icon name='notifications' size="1.5rem" />
             <span class="font-body text-body">Notifications</span>
           </a>
@@ -52,12 +52,17 @@
           <Icon name='chevron_right' size="1.1rem" class="text-outline-variant" />
           <span class="text-sm font-bold text-on-surface">{{ actualSection }}</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
-            <Icon name="notifications" size="1.3rem" />
-            <span class="absolute top-2 right-2 w-1.5 h-1.5 bg-error rounded-full"></span>
-          </button>
+        <div class="flex items-center justify-center gap-2">
+          <div class="flex justify-center items-center gap-2">
+            <button @click="handleLogout" title="Déconnexion" class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
+              <Icon name="logout" size="1.3rem" />
+            </button>
+          </div>
+          <div :title="authStore.fullName" class="w-8 h-8 md:w-12 md:h-12  rounded-full bg-secondary-container flex justify-center items-center text-white hover:cursor-pointer">
+          <span>{{ authStore.userInitials }}</span>
+          </div>
         </div>
+        
       </header>
 
       <!-- 📱 NAVIGATION BASSE RESPONSIVE (MOBILE) -->
@@ -92,10 +97,16 @@
             <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer">
               <Icon name="search" size="1.5rem" />
             </button>
-            <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors cursor-pointer relative">
-              <Icon name="notifications" size="1.5rem" />
-              <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+            <div class="flex items-center justify-center gap-2">
+          <div class="flex items-center gap-2">
+            <button @click="handleLogout" title="Déconnexion" class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
+              <Icon name="logout" size="1.3rem" />
             </button>
+          </div>
+          <div :title="authStore.fullName" class="w-8 h-8 md:w-12 md:h-12 rounded-full bg-secondary-container flex justify-center items-center text-white hover:cursor-pointer">
+          <span>{{ authStore.userInitials }}</span>
+          </div>
+        </div>
           </div>
         </header>
 
@@ -113,7 +124,9 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
+import {useToast} from '~/composables/useToast'
 
+const toast=useToast()
 const route = useRoute()
 const authStore = useAuthStore()
 
@@ -142,6 +155,11 @@ const actualSection = computed(() => {
   const currentLink = filteredLinks.value.find(link => route.path.startsWith(link.to))
   return currentLink ? currentLink.label : "EDCE"
 })
+
+//Logique de logout
+const handleLogout= async()=>{
+  await authStore.logout()
+}
 </script>
 
 <style>

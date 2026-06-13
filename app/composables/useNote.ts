@@ -15,7 +15,7 @@ export const useNote = () => {
   const { listTests, fetchAllTests } = useTest()
   
   const listNotes = ref<Note[]>([])
-  const isLoading = ref(false)
+  const isLoading = ref(true)
   const actualYear = computed(() => new Date().getFullYear().toString())
 
   // 🔄 Charger toutes les notes et dépendances depuis le serveur
@@ -108,7 +108,7 @@ export const useNote = () => {
     
     const finalClassement = currentYearMoyennes.map(moyennebyYear => {
       const child = listChildren.value.find(c => c.id === moyennebyYear.childId && c.classe == classe)
-      const moyenneFinal = child ? getMoyGenperChildId(child) : 0
+      const moyenneFinal = child ? getMoyGenperChildId(child) : 'Pas de la classe'
       return {
         childId: moyennebyYear.childId,
         moyGen: moyenneFinal

@@ -1,5 +1,8 @@
 <template>
-  <div class="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 md:space-y-8">
+  <div v-if="isLoading">
+    <Loader name="des activités" />
+  </div>
+  <div v-else-if="listActivities" class="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6 md:space-y-8">
     <div class="flex justify-between items-center">
       <div>
         <h1 class="font-h1 text-xl md:text-h1 font-bold text-on-surface mb-1">Activity Management</h1>
@@ -21,9 +24,9 @@
       <table class="w-full text-left border-collapse">
         <thead class="bg-surface-container-low/50 border-b border-outline-variant/40">
           <tr>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 w-24">ID</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80">Titre de l'activité</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 text-right w-44">Actions</th>
+            <th class="px-3 py-2 md:px-6 md:py-4 text-xs font-semibold md:font-bold uppercase md:tracking-wider text-on-surface-variant/80 w-12 md:w-24">ID</th>
+            <th class="px-3 py-2 md:px-6 md:py-4 text-xs font-semibold md:font-bold uppercase md:tracking-wider text-on-surface-variant/80">Titre de l'activité</th>
+            <th class="px-3 py-2 md:px-6 md:py-4 text-xs font-bold uppercase md:tracking-wider text-on-surface-variant/80 text-right w-44">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-outline-variant/30">
@@ -32,25 +35,25 @@
             :key="activity.id" 
             class="hover:bg-surface-container-low/40 transition-colors group"
           >
-            <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full flex justify-center items-center bg-primary/10 text-primary text-xs font-bold">
+            <td class="px-1 py-2 md:px-6 md:py-4">
+              <div class="w-4 h-4 md:w-8 md:h-8 rounded-full flex justify-center items-center bg-primary/10 text-primary text-xs font-semibold md:font-bold">
                 {{ globalIndex(index) }}
               </div>
             </td>
-            <td class="px-6 py-4 text-sm font-semibold text-on-surface">{{ activity.title }}</td>
-            <td class="px-6 py-4 text-right">
+            <td class="px-1 py-2 md:px-6 md:py-4 text-sm font-normal md:font-semibold text-on-surface">{{ activity.title }}</td>
+            <td class="px-1 py-2 md:px-6 md:py-4 text-right">
               <div class="flex items-center justify-end gap-1">
                 <button 
                   @click="openViewModal(activity)" 
-                  class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-md transition-colors" 
+                  class="p-0.5 md:p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/5 rounded-md transition-colors" 
                   title="Voir"
                 >
-                  <Icon name="visibility" color="text-on-surface-variant hover:text-primary" />
+                  <Icon name="visibility" color="text-on-surface-variant hover:text-primary"  />
                 </button>
                 
                 <button 
                   @click="openEditModal(activity)" 
-                  class="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/5 rounded-md transition-colors" 
+                  class="p-0.5 md:p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/5 rounded-md transition-colors" 
                   title="Modifier"
                 >
                   <Icon name="edit" color="text-on-surface-variant hover:text-secondary" />
@@ -58,7 +61,7 @@
                 
                 <button 
                   @click="openDeleteModal(activity)" 
-                  class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-md transition-colors" 
+                  class="p-0.5 md:p-1.5 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-md transition-colors" 
                   title="Supprimer"
                 >
                   <Icon name="delete" color="text-on-surface-variant hover:text-error" />

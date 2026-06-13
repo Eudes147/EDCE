@@ -5,7 +5,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const tokenCookie = useCookie('auth_token')
 
   // 1. Routes publiques (Accessibles par tout le monde)
-  const publicRoutes = ['/', '/login', '/register']
+  const publicRoutes = ['/', '/login', '/register','/forgot-password','/reset-password']
 
   // 2. TES ROUTES ADMIN (Strictement réservées à l'administrateur)
   const adminOnlyRoutes = [

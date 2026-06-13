@@ -1,10 +1,10 @@
 <template>
   <div class="min-h-screen bg-background text-on-surface font-body">
     <nav class="w-full border-b border-outline-variant bg-background/80 backdrop-blur-md sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-        <h1 class="font-h2 text-primary font-bold text-2xl">EDCE</h1>
-        <div class="flex items-center gap-3">
-          <button @click="navigateTo('/register')" class="bg-transparent text-primary border border-primary px-4 py-2 sm:px-6 rounded-lg font-label-md hover:bg-primary/5 transition-all text-sm">
+      <div class="max-w-7xl mx-auto flex flex-row max-md:flex-col justify-between items-center px-3 py-2 md:px-6 md:py-4">
+        <h1 class="font-h3 md:font-h2 text-primary font-semibold md:font-bold text-xl md:text-2xl">EDCE</h1>
+        <div class="flex justify-center items-center gap-1 md:gap-3 max-md:w-full">
+          <button @click="navigateTo('/register')" class="bg-transparent text-primary border border-primary px-4 py-2 md:px-6 rounded-lg font-label-md hover:bg-primary/5 transition-all text-xs md:text-sm">
             Créer un compte
           </button>
           <button @click="navigateTo('/login')" class="bg-primary text-white px-4 py-2 sm:px-6 rounded-lg font-label-md hover:opacity-90 transition-all text-sm">

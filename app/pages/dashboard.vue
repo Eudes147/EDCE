@@ -103,7 +103,30 @@
           </span>
         </div>
         <div class="space-y-3">
-          <div v-for="classe in classeEDCE" :key="classe">
+          <div v-if="isLoading" class="w-full flex justify-center items-center">
+            <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24"
+                    class="w-8 h-8 sm:w-16 sm:h-12 md:w-12 md:h-16 fill-primary"
+                  >
+                    <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
+                    <g>
+                      <circle cx="12" cy="3.5" r="1.5">
+                        <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
+                        <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                      <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
+                        <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
+                        <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                      <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
+                        <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
+                        <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                    </g>
+                  </svg>
+          </div>
+          <div v-else-if="notesbyYear" v-for="classe in classeEDCE" :key="classe">
             <div class="flex justify-between text-xs font-medium mb-1">
               <span>{{ classe }}</span>
               <span class="text-primary font-bold">{{ percentSuccessbyClasse(classe).toFixed(1) }}%</span>
@@ -193,13 +216,39 @@
             <Icon name="workspace_premium" size="1.1rem" /> Registre complet
           </span>
         </div>
-        <div class="p-4 space-y-3">
-          <div v-for="(classementFinal, index) in classementsFinal.slice(0, 3)" :key="classementFinal.childId" class="flex items-center gap-3">
+        <div v-if="isLoading" class="w-full p-4 space-y-3 flex justify-center items-center">
+            <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24"
+                    class="w-8 h-8 sm:w-16 sm:h-12 md:w-12 md:h-16 fill-primary"
+                  >
+                    <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
+                    <g>
+                      <circle cx="12" cy="3.5" r="1.5">
+                        <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
+                        <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                      <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
+                        <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
+                        <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                      <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
+                        <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
+                        <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+                      </circle>
+                    </g>
+                  </svg>
+          </div>
+        <div v-else-if="notesbyYear" class="p-4 space-y-3">
+          <div v-for="(classementFinal, index) in totalDeliberationList.slice(0, 3)" v-if="totalDeliberationList.length!=0" :key="classementFinal.childId" class="flex items-center gap-3">
             <span :class="['w-5 font-bold text-center text-sm', index === 0 ? 'text-secondary text-base' : 'text-on-surface-variant']">{{ index + 1 }}</span>
             <div class="flex-1 flex items-center justify-between bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 text-sm">
               <span class="font-medium truncate max-w-[200px]">{{ getNamebyId(classementFinal.childId) || 'Non défini' }}</span>
               <span class="font-bold text-primary">{{ classementFinal.moyGen }}</span>
             </div>
+          </div>
+          <div v-else class="text-primary text-center">
+            <p>Information Indisponible.</p>
           </div>
         </div>
       </div>
@@ -238,13 +287,16 @@
     <Modal v-model="showDeliberationModal" :title="`Registre de Délibération — ${filtreClasse}`" size="md">
       <div class="p-1 max-h-[50vh] overflow-y-auto space-y-2 custom-scrollbar">
         <p class="text-xs text-on-surface-variant mb-3">Classement récapitulatif par moyenne générale globale pour l'année.</p>
-        <div v-for="(row, idx) in totalDeliberationList" :key="row.childId" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-2.5 rounded-xl text-sm">
+        <div v-for="(row, idx) in totalDeliberationList" v-if="totalDeliberationList.length != 0" :key="row.childId" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-2.5 rounded-xl text-sm">
           <span :class="['w-6 text-center font-bold', idx === 0 ? 'text-secondary text-base' : 'text-on-surface-variant']">{{ idx + 1 }}</span>
           <div class="flex-1 flex justify-between items-center">
-            <span class="font-medium text-on-surface truncate max-w-[180px]">{{ row.name }}</span>
+            <span class="font-medium text-on-surface truncate max-w-[180px]">{{ row?.name }}</span>
             <span class="font-bold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10 text-xs">{{ Number(row.moyGen).toFixed(2) }}</span>
           </div>
         </div>
+        <div v-else class="text-primary text-center">
+            <p>Information Indisponible.</p>
+          </div>
       </div>
       <template #footer>
         <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm" @click="showDeliberationModal = false">Terminer l'analyse</button>
@@ -263,6 +315,7 @@ import { classes } from '../stores/child'
 import { getFullName } from '~/utils/getFullName'
 import type { ClasseType } from '../types/classe'
 import { useRouter } from 'vue-router'
+import { getAgeByBirthDate } from '~/utils/getAgebyBirthDate'
 
 const { stats, pending, error } = useDashboard()
 
@@ -323,7 +376,8 @@ const {
   getClassementFinal, 
   getNamebyId, 
   percentSuccessbyClasse, 
-  fetchAllNotesData, 
+  fetchAllNotesData,
+  isLoading,
   getPassageDeliberation,
   notesbyYear,
 } = useNote()
@@ -359,22 +413,16 @@ const successSundayList = computed(() => {
 
 const totalDeliberationList = computed(() => {
   return classementsFinal.value.map((row: any) => {
-    return {
+      return {
       childId: row.childId,
+      classe: row.classe,
       name: getNamebyId(row.childId),
       moyGen: row.moyGen
     }
-  }).filter(item => item.name !== '')
+    
+  }).filter(item => item.name !== '' && item.moyGen !== 'Pas de la classe')
 })
 
-const getAgeByBirthDate = (birthDate: string | Date) => {
-  const today = new Date()
-  const birth = new Date(birthDate)
-  let age = today.getFullYear() - birth.getFullYear()
-  const m = today.getMonth() - birth.getMonth()
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-  return age
-}
 
 const desktopMain = ref<HTMLElement | null>(null)
 

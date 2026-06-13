@@ -69,25 +69,25 @@
                 {{ seance.classe }}
               </td>
 
-              <td class="px-5 py-5 md:px-6 text-right align-middle">
+              <td class="px-2 py-2 md:px-6 text-right align-middle">
                 <div class="flex items-center justify-end gap-2 sm:gap-3">
                   <button 
                     @click="view(seance)" 
-                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
+                    class="p-1 md:p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
                     title="Voir les détails"
                   >
                     <Icon name="visibility" size="1.25rem" />
                   </button>
                   <button 
                     @click="edit(seance)" 
-                    class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
+                    class="p-1 md:p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
                     title="Modifier"
                   >
                     <Icon name="edit" size="1.25rem" />
                   </button>
                   <button 
                     @click="supprimer(seance)" 
-                    class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" 
+                    class="p-1 md:p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" 
                     title="Supprimer"
                   >
                     <Icon name="delete" size="1.25rem" />
@@ -98,7 +98,29 @@
 
             <tr v-if="isLoading">
               <td colspan="4" class="px-6 py-12 text-center text-on-surface-variant text-xs md:text-sm font-medium">
-                <span class="inline-block animate-spin mr-2">🔄</span> Chargement...
+                <span class="inline-block">
+                  <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24"
+        class="w-4 h-4 sm:w-8 sm:h-8 md:w-12 md:h-12 fill-primary"
+      >
+        <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
+        <g>
+          <circle cx="12" cy="3.5" r="1.5">
+            <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
+            <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
+            <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
+            <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
+            <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
+            <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+        </g>
+      </svg>
+                </span> Chargement...
               </td>
             </tr>
             <tr v-else-if="!getSeancebyMonthAndClasse || getSeancebyMonthAndClasse.length === 0">

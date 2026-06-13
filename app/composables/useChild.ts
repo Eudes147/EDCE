@@ -2,9 +2,12 @@ import { ref, computed } from 'vue'
 import type { Child } from '~/types/child'
 import type { ClasseType } from '~/types/classe'
 import { getFullName } from '~/utils/getFullName'
+import {useToast} from '~/composables/useToast'
 
+
+const toast=useToast()
 export const useChildren = () => {
-  const examClasses = ["CM2", "3e", "Tle"]
+  const examClasses = ['CM2', '3e', 'Tle']
 
   // Refs réactives miroirs de l'API
   const listChildren = ref<Child[]>([])
@@ -13,7 +16,7 @@ export const useChildren = () => {
   const serverChildrenExamClass = ref<Record<string, Child[]>>({})
   const serverTotalBoy = ref<Child[]>([])
   const serverTotalGirl = ref<Child[]>([])
-  const isLoading = ref(false)
+  const isLoading = ref(true)
 
   // --- ACTIONS RÉSEAU ---
 
@@ -29,8 +32,10 @@ export const useChildren = () => {
       serverChildrenExamClass.value = data.childrenExamClass
       serverTotalBoy.value = data.totalBoy
       serverTotalGirl.value = data.totalGirl
+
+      console.log("OK",data)
     } catch (error) {
-      console.error('Erreur lors du chargement des enfants:', error)
+      toast.error('Erreur lors du chargement des enfants:')
     } finally {
       isLoading.value = false
     }

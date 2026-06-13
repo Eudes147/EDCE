@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import {useToast} from '~/composables/useToast'
 // Import types
 import { 
   type User, 
@@ -11,6 +12,7 @@ import {
   type UserPermissions,
 } from '~/types/auth'
 
+const toast=useToast()
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => {
     // 🍪 Initialisation des cookies Nuxt pour la persistance (SSR-friendly)
@@ -41,7 +43,7 @@ export const useAuthStore = defineStore('auth', {
       if (!state.user) return ''
       return `${state.user.last_name} ${state.user.first_name}`
     },
-    userStatus: (state) => state.user?.status || null,
+    userStatus: (state) => state.user?.status,
 
     // Permissions dynamiques basées sur l'état des permissions
     canCreateChild: (state) => state.permissions?.teacher?.canCreateChild ?? false,
@@ -212,14 +214,25 @@ export const useAuthStore = defineStore('auth', {
     // ==========================================
     // ACTION : LOGOUT (Déconnexion)
     // ==========================================
+    // Dans ton fichier authStore (actions) :
     async logout() {
       this.setLoading(true)
       try {
-        // Envoi optionnel au serveur
-        // await $fetch('/api/auth/logout', { method: 'POST' })
+        // 1. Récupération du token depuis le cookie Nuxt
+        const authCookie = useCookie('auth_token')
+        
+        // 2. Envoi de la requête au serveur avec le Bearer token requis par l'API
+        await $fetch('/api/auth/logout', { 
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authCookie.value}`
+          }
+        })
+        toast.success('Déconnexion réussie.')
       } catch (error) {
-        console.error("Erreur lors de la déconnexion serveur", error)
+        toast.error("Erreur lors de la déconnexion serveur")
       } finally {
+        // 3. Quoiqu'il arrive, on nettoie les cookies/states locaux et on redirige
         this.clearAuthData()
         this.setLoading(false)
         await navigateTo('/login')

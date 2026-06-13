@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+  <div class="max-w-6xl mx-auto p-0 md:p-4 sm:p-6 space-y-6 sm:space-y-8">
     <!-- 📌 EN-TÊTE -->
     <div>
       <h2 class="font-h1 text-xl sm:text-2xl font-bold text-on-surface mb-1 sm:mb-2">Paramètres du système</h2>
@@ -37,7 +37,29 @@
           </h3>
 
           <div v-if="isUsersLoading" class="py-12 text-center text-on-surface-variant text-xs sm:text-sm">
-            <span class="inline-block animate-spin mr-2">🔄</span> Chargement des comptes du système...
+            <span class="inline-block">
+                  <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24"
+        class="w-4 h-4 sm:w-8 sm:h-8 md:w-12 md:h-12 fill-primary"
+      >
+        <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
+        <g>
+          <circle cx="12" cy="3.5" r="1.5">
+            <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
+            <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
+            <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
+            <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
+            <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
+            <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+        </g>
+      </svg>
+                </span> Chargement des comptes du système...
           </div>
 
           <div v-else-if="teachersList.length === 0" class="text-center py-8 border border-dashed border-outline-variant rounded-xl bg-surface-container-low/40 text-xs sm:text-sm text-on-surface-variant italic">
@@ -59,7 +81,7 @@
                   <tr v-for="teacher in teachersList" :key="teacher.id" class="hover:bg-surface-container-lowest transition-colors">
                     <td class="px-6 py-4 flex items-center gap-3">
                       <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold uppercase">
-                        {{ teacher.last_name?.[0] }}{| |}{{ teacher.first_name?.[0] }}
+                        {{ teacher.last_name?.[0] }}{{ teacher.first_name?.[0] }}
                       </div>
                       <div>
                         <p class="font-bold text-on-surface">{{ teacher.last_name }} {{ teacher.first_name }}</p>
@@ -204,7 +226,7 @@
           </div>
           
           <div class="space-y-3 sm:space-y-4">
-            <label v-for="(perm, index) in permissionsList" :key="index" class="flex items-center justify-between p-4 sm:p-5 rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-all group bg-white shadow-sm">
+            <label v-for="(perm, index) in permissionsList" :key="index" class="flex items-center justify-between p-2 sm:p-5 rounded-xl border border-outline-variant hover:border-primary cursor-pointer transition-all group bg-white shadow-sm">
               <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                 <div :class="['w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shrink-0', perm.bg]">
                   <Icon :name="perm.icon" :class="perm.iconColor" size="1.2rem" />
@@ -240,7 +262,7 @@
           </div>
 
           <div class="space-y-3">
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-surface-container-high border-l-4 border-primary transition-all hover:bg-surface-container-highest">
+            <div class="flex items-start gap-3 p-1 md:p-4 rounded-xl bg-surface-container-high border-l-4 border-primary transition-all hover:bg-surface-container-highest">
               <div class="w-9 h-9 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                 <Icon name="error" class="text-primary" size="1.2rem" />
               </div>
@@ -259,8 +281,8 @@
     </div>
 
     <!-- ⚠️ MODALE DE CONFIRMATION DE ROLES (Remplace confirm natif) -->
-    <div v-if="modalState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-outline-variant/30">
+    <div v-if="modalState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-1 md:p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-3 md:p-5 sm:p-6 space-y-4 border border-outline-variant/30">
         <div class="flex items-center gap-3 text-primary">
           <Icon name="help_outline" size="1.6rem" />
           <h4 class="font-bold text-base sm:text-lg text-on-surface">Confirmer la modification</h4>

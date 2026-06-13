@@ -9,7 +9,7 @@ export const useActivities = () => {
   const listEvent = ref<any[]>([])
   const groupActivityperYear = ref<Record<string, Activity[]>>({})
   const groupActivityperEvent = ref<Record<string, Activity[]>>({})
-  const isLoading = ref(false)
+  const isLoading = ref(true)
 
   // 🔄 1. Charger toutes les données depuis le serveur
   const fetchAllData = async () => {

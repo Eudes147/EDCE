@@ -19,7 +19,7 @@ export default defineEventHandler((event) => {
   }
 
   // Logique des anciennes propriétés calculées déplacée côté serveur pour plus de légèreté
-  const examClasses = ["CM2", "3e", "Tle"]
+  const examClasses = ['CM2', '3e', 'Tle']
   
   const childrenPerClass = childrenState.classes.reduce((acc, classe) => {
     acc[classe.classe] = childrenState.children.filter(c => c.classe === classe.classe)
@@ -27,7 +27,7 @@ export default defineEventHandler((event) => {
   }, {} as Record<string, Child[]>)
 
   const childrenExamClass = examClasses.reduce((acc, classe) => {
-    acc[classe] = childrenState.children.filter(c => c.nivScolaire === classe)
+    acc[classe] = childrenState.children.filter(c => c.nivScolaire == classe)
     return acc
   }, {} as Record<string, Child[]>)
 

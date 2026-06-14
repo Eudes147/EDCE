@@ -211,7 +211,7 @@
             v-model="sujetTest" 
             rows="3"
             class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
-            placeholder="Lien du PDF ou énoncé complet..."
+            placeholder="Ex: https://drive.google.com/..."
           ></textarea>
         </div>
 
@@ -221,7 +221,7 @@
             v-model="correctionTest" 
             rows="2"
             class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
-            placeholder="Éléments de réponse ou lien du corrigé..."
+            placeholder="Ex: https://drive.google.com/..."
           ></textarea>
         </div>
       </form>

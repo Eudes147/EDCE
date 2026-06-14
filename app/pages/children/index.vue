@@ -630,7 +630,7 @@ const handleSubmit = async () => {
     return
   }
   if(formChild.value.tel && !validateFormTel(formChild.value.tel)){
-    toast.warning("Le numéro de téléphone de ", formChild.value.name, " ne respecte pas les normes.")
+    toast.warning(`Le numéro de téléphone de  ${formChild.value.name} ne respecte pas les normes.`)
     return
   }
 

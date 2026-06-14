@@ -608,7 +608,7 @@ watch(testSelectedId,(newTestId)=>{
 )
 
 const validateParent = () => {
-  if (!formChild.value.telParent || formChild.value.telParent.includes('x') || !validateFormTel(formChild.value.telPaent)) {
+  if (!formChild.value.telParent || formChild.value.telParent.includes('x') || !validateFormTel(formChild.value.telParent)) {
     toast.warning('Numéro invalide', 'Saisissez le numéro de téléphone réel du parent avec 01.')
     return
   }

@@ -467,6 +467,9 @@ import type { Child, childSubmit } from '~/types/child'
 import type {Note} from '~/types/test'
 import type {EventType} from '~/types/activity'
 
+//Utils
+import {validateFormTel} from '~/utils/validateFormatTel'
+
 definePageMeta({
   layout: 'dashboard',
 })
@@ -605,8 +608,8 @@ watch(testSelectedId,(newTestId)=>{
 )
 
 const validateParent = () => {
-  if (!formChild.value.telParent || formChild.value.telParent.includes('x') ) {
-    toast.warning('Numéro invalide', 'Saisissez le numéro de téléphone réel du parent.')
+  if (!formChild.value.telParent || formChild.value.telParent.includes('x') || !validateFormTel(formChild.value.telPaent)) {
+    toast.warning('Numéro invalide', 'Saisissez le numéro de téléphone réel du parent avec 01.')
     return
   }
   toast.success('Parent mémorisé', 'Les informations du tuteur légal ont été rattachées.')
@@ -624,6 +627,10 @@ const handleSubmit = async () => {
   }
   if (!formChild.value.telParent || formChild.value.telParent === '01xxxxxxxx') {
     toast.warning("Parent manquant", "Veuillez associer un numéro de parent avant de valider.")
+    return
+  }
+  if(formChild.value.tel && !validateFormTel(formChild.value.tel)){
+    toast.warning("Le numéro de téléphone de ", formChild.value.name, " ne respecte pas les normes.")
     return
   }
 

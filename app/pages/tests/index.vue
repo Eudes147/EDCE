@@ -206,7 +206,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Contenu du Sujet (URL ou Texte)</label>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5"> Lien Drive du test (URL)</label>
           <textarea 
             v-model="sujetTest" 
             rows="3"
@@ -216,7 +216,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Lien / Contenu du Corrigé</label>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5"> Lien Drive du corrigé (URL)</label>
           <textarea 
             v-model="correctionTest" 
             rows="2"
@@ -424,6 +424,11 @@ const handleSubmitForm = async () => {
     toast.warning('Donnée manquante', 'Le titre de l\'épreuve ne peut pas être vide.')
     return
   }
+  else if(!sujetTest.value.trim().startsWith("https://drive.google.com") || !correctionTest.value.trim().startsWith("https://drive.google.com")){
+    toast.warning("Copié le bon lien drive du drive et de son corrigé.")
+    return
+  }
+
 
   try {
     if (isEditMode.value && selectedTest.value) {

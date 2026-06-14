@@ -1,9 +1,14 @@
-export const validateFormTel = (tel:string)=>{
-  const format_regex=""
+export const validateFormTel = (tel: string): string => {
+  // 1. Nettoyage : on enlève les espaces au début, à la fin et à l'intérieur
+  const cleanTel = tel.trim().replace(/\s+/g, '');
 
-  if(!tel.trim()) return ""
-  else if(tel.trim().startsWith('01') && (tel.trim().length == 10||tel.trim().split(' ').join('').length==10)){
-    return tel.trim()
+  // 2. La Regex pour valider 10 chiffres commençant par 01
+  const format_regex = /^01\d{8}$/;
+
+  // 3. Test et retour
+  if (format_regex.test(cleanTel)) {
+    return cleanTel; // Retourne le numéro propre (ou `tel` si tu veux garder les espaces d'origine)
   }
-  else return ""
-}
+
+  return "";
+};

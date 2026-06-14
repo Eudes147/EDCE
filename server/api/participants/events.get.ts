@@ -1,11 +1,13 @@
-import { mockActivities, mockParticipantEvent, mockActivityatEvent, mockChildren } from '~/data/mockData'
+import { mockParticipantEvent } from '~/data/mockData'
 import type { ParticipantEventActivity } from '~/types/participant'
-
+import {state} from '../activities/index.get'
+import { Activity, EventActivity } from '~/types/activity'
+import { childrenState } from '../children/index.get'
 // States persistants côté serveur pour la partie Événements / Activités
 export const participantEventState = {
-  activities: [...mockActivities],
+  activities: [...state.activities] as Activity[],
   participantEvents: [...mockParticipantEvent] as ParticipantEventActivity[],
-  eventActivities: [...mockActivityatEvent]
+  eventActivities: [...state.events] as EventActivity[]
 }
 
 export default defineEventHandler(() => {
@@ -13,6 +15,6 @@ export default defineEventHandler(() => {
     listActivities: participantEventState.activities,
     listParticipantEventActivity: participantEventState.participantEvents,
     listEventActivity: participantEventState.eventActivities,
-    listChildren: mockChildren // Données brutes de référence
+    listChildren: childrenState.children // Données brutes de référence
   }
 })

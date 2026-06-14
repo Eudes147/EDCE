@@ -8,7 +8,11 @@
     </p>
   </div>
 </div>
+<div v-if="isLoading || isTestLoading">
+  <Loader name="des enfants..." />
+</div>
 
+<div v-else-if="childrenPerClass">
 <!-- Section principale : Liste des enfants -->
 <section class="section-card overflow-hidden bg-white rounded-xl shadow-sm border border-outline-variant/20 space-y-2 md:space-y-4">
   <div class="p-4 md:p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -159,10 +163,10 @@
               </div>
               <div class="flex-1 sm:w-32">
                 <button 
-                  class="w-full bg-primary text-white hover:opacity-90 transition-all text-xs font-semibold py-1.5 rounded-lg shadow-sm" 
+                  class="w-full bg-primary text-white hover:opacity-90 transition-all text-xs font-semibold py-1.5 rounded-lg shadow-sm disabled:bg-primary/10" 
                   @click="saveNote(attributeChild.id, testSelectedId)" :disabled="isNoteLoading"
                 >
-                  Enregistrer
+                {{isNoteLoading?'Enregistrement':'Enregistrer'}}
                 </button>
               </div>
             </div>
@@ -223,16 +227,17 @@
         >
           <Icon name="family_history" size="1.15rem"/>
           <span class="text-xs font-medium">
-            {{ formChild.telParent && formChild.telParent !== '01xxxxxxxx' ? '👨‍👩‍👦 Parent configuré' : 'Associer des Parents' }}
+            {{ formChild.telParent && formChild.telParent !== '01xxxxxxxx' ? '👨‍👩‍👦 Parent configuré' : 'Associer un Parent' }}
           </span>
         </button>
       </div>
 
       <button 
-        class="w-full bg-primary text-white font-semibold py-2 rounded-lg shadow-md shadow-primary/10 hover:opacity-95 transition-all text-xs" 
-        type="submit" :disabled="isLoading"
+        class="w-full bg-primary text-white font-semibold py-2 rounded-lg shadow-md shadow-primary/10 hover:opacity-95 transition-all text-xs disabled:bg-primary/10" 
+        type="submit" :disabled="isCreateLoading"
       >
-        Finaliser l'Inscription
+      {{ isCreateLoading ? 'Inscription en cours...':"Finaliser l'Inscription" }}
+        
       </button>
     </form>
   </div>
@@ -290,6 +295,8 @@
     </div>
   </div>
 </div>
+</div>
+
 
 <!-- Modals (Tous tes modals sont conservés et harmonisés) -->
 
@@ -335,7 +342,7 @@
     </div>
     <div>
       <label class="block font-caption text-[11px] text-outline mb-1">Téléphone du Responsable <span class="text-error">*</span></label>
-      <input v-model="formChild.telParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: +2290195487596" type="tel" />
+      <input v-model="formChild.telParent" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: 0195487596" type="tel" />
     </div>
   </div>
   <template #footer>
@@ -457,6 +464,7 @@ import { useNote } from '~/composables/useNote'
 import { useToast } from '~/composables/useToast'
 import type { ClasseType } from '~/types/classe'
 import type { Child, childSubmit } from '~/types/child'
+import type {Note} from '~/types/test'
 import type {EventType} from '~/types/activity'
 
 definePageMeta({
@@ -467,8 +475,8 @@ definePageMeta({
 const actualYear = computed(() => new Date().getFullYear().toString())
 const toast = useToast()
 const { childrenPerClass, getFullName, fetchAllChildren, createChild, updateChild, deleteChild, isLoading } = useChildren()
-const { getTestbyClasse, fetchAllTests } = useTest()
-const { createNote } = useNote() 
+const { getTestbyClasse, fetchAllTests, isTestLoading } = useTest()
+const { createNote, updateNote, fetchAllNotesData, isExistNotebyTestAndChildIds, getNote } = useNote() 
 
 // --- INSTANCIATION DU STORE DES PARTICIPANTS (Résout l'erreur 7022 & 2769) ---
 const participantEventStore = useParticipantEventActivity()
@@ -479,6 +487,7 @@ const listActivities = participantEventStore.listActivities
 const createParticipantEventActivity = participantEventStore.createParticipantEventActivity
 const fetchAllEventData = participantEventStore.fetchAllEventData
 const isEventLoading = participantEventStore.isLoading
+const isCreateLoading=ref(false)
 
 // --- ETATS DE NAVIGATION / SELECTION ---
 const activeParentModal = ref(false)
@@ -502,6 +511,9 @@ const note = ref<number | null>(null)
 const testSelectedId = ref("")
 const isNoteLoading = ref(false)
 
+// Variables
+const noteFound=ref<Note>()
+
 // --- FORMULAIRE REACTIF D'INSCRIPTION ---
 const formChild = ref<childSubmit>({
   classe: 'Petit',
@@ -524,6 +536,7 @@ onMounted(async () => {
   await fetchAllTests()
   await fetchAllChildren()
   await fetchAllEventData()
+  await fetchAllNotesData()
   resetTestSelection()
 })
 
@@ -569,11 +582,31 @@ const getLimitedActivitiesWithChildren = (eventType: EventType) => {
 // --- ACTIONS METIERS : ENFANTS ---
 const attribute = (child: Child) => {
   attributeChild.value = child
+  if(isExistNotebyTestAndChildIds(testSelectedId.value, child.id)){
+    noteFound.value=getNote(testSelectedId.value, child.id)
+    note.value=Number(noteFound.value?.note||0)
+  }
+  else{
+    note.value=Number(0)
+  }
+
 }
 
+watch(testSelectedId,(newTestId)=>{
+  if(attributeChild.value && newTestId && isExistNotebyTestAndChildIds(newTestId, attributeChild.value.id)){
+    noteFound.value=getNote(newTestId,attributeChild.value.id)
+    note.value=Number(noteFound.value?.note||0)
+  }
+  else{
+    note.value=Number(0)
+  }
+
+ }
+)
+
 const validateParent = () => {
-  if (!formChild.value.telParent || formChild.value.telParent.includes('x')) {
-    toast.warning('Numéro invalide', 'Veuillez saisir le numéro de téléphone réel du parent.')
+  if (!formChild.value.telParent || formChild.value.telParent.includes('x') ) {
+    toast.warning('Numéro invalide', 'Saisissez le numéro de téléphone réel du parent.')
     return
   }
   toast.success('Parent mémorisé', 'Les informations du tuteur légal ont été rattachées.')
@@ -595,6 +628,7 @@ const handleSubmit = async () => {
   }
 
   try {
+    isCreateLoading.value=true
     await createChild({
       name: formChild.value.name,
       sexe: formChild.value.sexe,
@@ -607,6 +641,7 @@ const handleSubmit = async () => {
     })
     
     toast.success('Inscription validée', `${formChild.value.name} a été inscrit en classe ${formChild.value.classe}.`)
+    isCreateLoading.value=false
     
     formChild.value = {
       classe: classeSelected.value,
@@ -676,15 +711,26 @@ const saveNote = async (childId: string, testId: string | undefined) => {
 
   isNoteLoading.value = true
   try {
-    if (createNote) {
+    if(isExistNotebyTestAndChildIds(testId, childId)){
+      if(noteFound.value)
+      await updateNote({
+        id: noteFound.value?.id,
+        testId: testId,
+        childId: childId,
+        note: Number(note.value)
+      })
+    }
+    else{
+      if (createNote) {
       await createNote({
         childId,
         testId: testId as string, // Cast explicite pour résoudre l'erreur 2322 🎯
         note: note.value
       })
-      toast.success('Note enregistrée', `La note de ${note.value}/20 a été ajoutée avec succès.`)
       note.value = null 
     }
+    }
+    
   } catch (err) {
     toast.error('Erreur', "La note n'a pas pu être sauvegardée.")
   } finally {

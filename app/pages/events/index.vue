@@ -110,7 +110,27 @@
       </p>
 
       <div v-if="isLoading" class="py-8 text-center text-on-surface-variant text-sm flex items-center justify-center gap-2">
-        <span class="inline-block animate-spin">🔄</span> Traitement réseau en cours...
+        <span class="inline-block"><svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 24 24"
+        class="w-4 h-4 sm:w-8 sm:h-8 md:w-12 md:h-12 fill-primary"
+      >
+        <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
+        <g>
+          <circle cx="12" cy="3.5" r="1.5">
+            <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
+            <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
+            <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
+            <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+          <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
+            <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
+            <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
+          </circle>
+        </g>
+      </svg></span> Traitement réseau en cours...
       </div>
 
       <div v-else class="grid grid-cols-1 gap-2 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">

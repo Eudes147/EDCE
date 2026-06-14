@@ -6,26 +6,26 @@ import type { ClasseType } from '~/types/classe'
 export const useTest = () => {
   const actualYear = computed(() => new Date().getFullYear().toString())
   const listTests = ref<Test[]>([])
-  const isLoading = ref(false)
+  const isTestLoading = ref(false)
 
   // --- ACTIONS RÉSEAU (SYNCHRONISATION) ---
 
   // 🔄 Charger tous les tests depuis le serveur
   const fetchAllTests = async () => {
-    isLoading.value = true
+    isTestLoading.value = true
     try {
       const data = await $fetch<any>('/api/tests')
       listTests.value = data.listTests || []
     } catch (error) {
       console.error('Erreur lors du chargement des tests:', error)
     } finally {
-      isLoading.value = false
+      isTestLoading.value = false
     }
   }
 
   // ➕ Ajouter un nouveau test via l'API
   const createTest = async (testPayload: TestSubmit) => {
-    isLoading.value = true
+    isTestLoading.value = true
     try {
       await $fetch('/api/tests', {
         method: 'POST',
@@ -36,13 +36,13 @@ export const useTest = () => {
       console.error("Erreur lors de la création du test:", error)
       throw error
     } finally {
-      isLoading.value = false
+      isTestLoading.value = false
     }
   }
 
   // 📝 Modifier un test existant via l'API (Ajouté !)
   const updateTest = async (testId: string, updatedPayload: Partial<TestSubmit>) => {
-    isLoading.value = true
+    isTestLoading.value = true
     try {
       await $fetch(`/api/tests/${testId}`, {
         method: 'PUT',
@@ -53,13 +53,13 @@ export const useTest = () => {
       console.error("Erreur lors de la modification du test:", error)
       throw error
     } finally {
-      isLoading.value = false
+      isTestLoading.value = false
     }
   }
 
   // ❌ Supprimer un test via l'API (Ajouté !)
   const deleteTest = async (testId: string) => {
-    isLoading.value = true
+    isTestLoading.value = true
     try {
       await $fetch(`/api/tests/${testId}`, {
         method: 'DELETE'
@@ -69,7 +69,7 @@ export const useTest = () => {
       console.error("Erreur lors de la suppression du test:", error)
       throw error
     } finally {
-      isLoading.value = false
+      isTestLoading.value = false
     }
   }
 
@@ -111,7 +111,7 @@ export const useTest = () => {
   return {
     actualYear,
     listTests,
-    isLoading,
+    isTestLoading,
     fetchAllTests,
     createTest,
     updateTest,

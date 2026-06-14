@@ -162,7 +162,7 @@
                   <td class="py-3 px-4 text-xs text-on-surface-variant">
                     {{ examClassInfo?.classe}}
                   </td>
-                  <td class="py-4">
+                  <td class="py-4 text-right">
                     <span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed text-caption font-bold">{{ examClasse }}</span>
                   </td>
                 </tr>
@@ -207,7 +207,7 @@
   <Modal v-model="showArbre" :title="`Participant des Génie Biblique en Arbre de noël — ${classe}`" size="md">
       <div class="p-1 max-h-[50vh] overflow-y-auto space-y-2 custom-scrollbar">
         <p class="text-xs text-on-surface-variant mb-3">Liste des participants-{{ classe }}.</p>
-        <div v-for="(row, idx) in getChildrenCountByGenieBib('Soirée récréative des enfants').liste" v-if="getChildrenCountByGenieBib('Soirée récréative des enfants').liste.length != 0" :key="row.id" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-2.5 rounded-xl text-sm">
+        <div v-for="(row, idx) in getChildrenCountByGenieBib('Arbre de noël').liste" v-if="getChildrenCountByGenieBib('Arbre de noël').liste.length != 0" :key="row.id" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant/40 p-2.5 rounded-xl text-sm">
           <span :class="['w-6 text-center font-bold', idx === 0 ? 'text-secondary text-base' : 'text-on-surface-variant']">{{ idx + 1 }}</span>
           <div class="flex-1 flex justify-between items-center">
             <span class="font-medium text-on-surface truncate max-w-[180px]">{{ row?.name }}</span>
@@ -297,14 +297,12 @@ const getChildrenCountByGenieBib = computed(() => {
 
 const examClassInfos =computed(()=>childrenExamClass.value)
 
-console.log(examClassInfos.value)
 // Statistiques des cartes d'affichage
 const cardInfos = computed(() => {
   const boys = totalBoy.value?.filter(child => child.classe === classe.value).length || 0
   const girls = totalGirl.value?.filter(child => child.classe === classe.value).length || 0
 
   const cm2Count = examClassInfos.value['CM2']?.length || 0
-  console.log(cm2Count)
   const troisieCount = examClassInfos.value['3e']?.length || 0
   const tleCount = examClassInfos.value['Tle']?.length || 0
   

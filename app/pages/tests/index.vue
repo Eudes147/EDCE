@@ -1,5 +1,8 @@
 <template>
-  <div class="flex-1 w-full bg-background overflow-x-hidden p-2.5 sm:p-4 md:p-6 space-y-4 md:space-y-6 pb-24 md:pb-6">
+  <div v-if="isLoadingTests">
+    <Loader name='des tests' />
+  </div>
+  <div v-else-if="totalTests" class="flex-1 w-full bg-background overflow-x-hidden p-2.5 sm:p-4 md:p-6 space-y-4 md:space-y-6 pb-24 md:pb-6">
     
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-outline-variant/30 pb-3">
       <div class="flex items-center justify-between w-full sm:w-auto">
@@ -227,7 +230,7 @@
         <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container transition-colors text-sm font-medium" @click="activeTestModal = false">
           Annuler
         </button>
-        <button type="submit" form="testForm" class="px-6 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity" :disabled="isLoadingTests">
+        <button type="submit" form="testForm" class="px-6 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm text-sm hover:opacity-90 transition-opacity disabled:bg-primary/10" :disabled="isCreateLoading">
           {{ isEditMode ? 'Sauvegarder' : 'Créer l\'épreuve' }}
         </button>
       </template>
@@ -289,15 +292,15 @@
 
 <script setup lang="ts">
 import { definePageMeta } from '#imports'
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useTeacher } from '~/composables/useTeacher'
+import { useTest } from '~/composables/useTest'
+import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth'
 import { classes } from '~/stores/child'
-import { useTest } from '~/composables/useTest'
-import { useTeacher } from '~/composables/useTeacher'
-import { useToast } from '~/composables/useToast'
-import type { Month } from '~/types/index'
 import type { ClasseType } from '~/types/classe'
-import type { TypeTest, Test } from '~/types/test'
+import type { Month } from '~/types/index'
+import type { Test, TypeTest } from '~/types/test'
 
 definePageMeta({
   layout: 'dashboard',
@@ -309,7 +312,7 @@ const showMobileSearch = ref(false)
 // Configuration des composables et stores
 const toast = useToast()
 const authStore = useAuthStore()
-const { totalTests, getTestbyType, createTest, updateTest, deleteTest, fetchAllTests, isLoading: isLoadingTests } = useTest()
+const { totalTests, getTestbyType, createTest, updateTest, deleteTest, fetchAllTests, isTestLoading: isLoadingTests } = useTest()
 const { getTeacherById, fetchAllTeachers } = useTeacher()
 
 // Contrôleurs d'états pour les ouvertures de fenêtres modales
@@ -317,6 +320,7 @@ const activeTestModal = ref(false)
 const showViewModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditMode = ref(false)
+const isCreateLoading=ref(false)
 
 // Éléments de formulaire et cibles réactives
 const selectedTest = ref<Test | null>(null)
@@ -424,6 +428,7 @@ const handleSubmitForm = async () => {
   try {
     if (isEditMode.value && selectedTest.value) {
       // 📝 Mode Modification (PUT)
+      isCreateLoading.value=true
       await updateTest(selectedTest.value.id, {
         titleTest: titleTest.value,
         classe: classe.value,
@@ -431,9 +436,11 @@ const handleSubmitForm = async () => {
         sujetTest: sujetTest.value,
         correctionTest: correctionTest.value
       })
+      isCreateLoading.value=false
       toast.success('Test modifié', `L'épreuve "${titleTest.value}" a été actualisée.`)
     } else {
       // ➕ Mode Création (POST)
+      isCreateLoading.value=true
       await createTest({
         titleTest: titleTest.value,
         classe: classe.value,
@@ -442,6 +449,7 @@ const handleSubmitForm = async () => {
         correctionTest: correctionTest.value,
         authorId: authStore.user?.id || ""
       })
+      isCreateLoading.value=false
       toast.success('Test créé', `Le nouveau test "${titleTest.value}" a bien été ajouté au catalogue.`)
     }
     activeTestModal.value = false

@@ -9,7 +9,9 @@ import { useChildren } from "~/composables/useChild"
 import { useTest } from "~/composables/useTest" // Import du composable de tests qu'on a écrit ensemble
 import { getMoyFinal } from '~/utils/getMoyFinal'
 import { processNotesAndAverages } from "~/utils/processNotes"
+import { useToast } from '~/composables/useToast'
 
+const toast=useToast()
 export const useNote = () => {
   const { listChildren, fetchAllChildren } = useChildren()
   const { listTests, fetchAllTests } = useTest()
@@ -18,6 +20,11 @@ export const useNote = () => {
   const isLoading = ref(true)
   const actualYear = computed(() => new Date().getFullYear().toString())
 
+
+  const getNamebyId = (id: string): string => {
+    const child = listChildren.value.find(c => c.id === id)
+    return child?.name || ''
+  }
   // 🔄 Charger toutes les notes et dépendances depuis le serveur
   const fetchAllNotesData = async () => {
     isLoading.value = true
@@ -37,18 +44,43 @@ export const useNote = () => {
   // ➕ Ajouter une note (Action Réseau)
   const createNote = async (notePayload: Omit<Note, 'id' | 'created_at'>) => {
     try {
+      isLoading.value=true
       await $fetch('/api/notes', { method: 'POST', body: notePayload })
       await fetchAllNotesData() // Rafraîchissement
+      toast.success(`Note de ${notePayload.note} enegistré avec succès pour ${getNamebyId(notePayload.childId)}`)
     } catch (error) {
-      console.error(error)
+      toast.error(`${error}`)
     }
+    finally{
+      isLoading.value=false
+
+    }
+  }
+  // Mettre a jour la note
+  const updateNote= async (notePayload: Omit<Note,'created_at'>)=>{
+    try {
+      isLoading.value=true
+      await $fetch(`/api/notes/${notePayload.id}`,{method: 'PUT', body: notePayload})
+      await fetchAllNotesData() // Rafraîchissement
+      toast.success(`Note de ${notePayload.note} mis à jour avec succès pour ${getNamebyId(notePayload.childId)}`)
+      
+    }
+    catch(err){
+      toast.error(`${err}`)
+
+    }
+  }
+
+  const isExistNotebyTestAndChildIds = (testId: string, childId: string)=>{
+    const noteFound = listNotes.value.find(note=>note.childId==childId && note.testId==testId)
+    return noteFound?.note ? true: false
   }
 
   // 🔥 MISE EN CACHE RÉACTIVE GLOBALE (mise à jour dynamique grâce aux Refs)
   const notesAndAveragesComputed = computed(() => {
     return {
       evaluations: processNotesAndAverages('EVALUATION', listNotes.value, listTests.value),
-      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL', listNotes.value, listTests.value),
+      sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL', listNotes.value,  listTests.value),
       concours: processNotesAndAverages('CONCOURS', listNotes.value, listTests.value)
     }
   })
@@ -117,11 +149,14 @@ export const useNote = () => {
     
     return finalClassement.sort((a, b) => Number(b.moyGen) - Number(a.moyGen))
   }
-
-  const getNamebyId = (id: string): string => {
-    const child = listChildren.value.find(c => c.id === id)
-    return child?.name || ''
+  const getNote=(testId: string, childid: string)=>{
+    const noteFound=listNotes.value.find(note=>note.testId == testId && note.childId==childid)||{id: 'not found', note: '0'}
+    if(noteFound) return {
+      id: noteFound.id,
+      note: noteFound.note
+    }
   }
+
 
   return {
     notesbyYear,
@@ -129,9 +164,12 @@ export const useNote = () => {
     isLoading,
     fetchAllNotesData, // À appeler à l'initialisation de ta page de notes / bulletins
     createNote,
+    getNote,
+    updateNote,
     getNamebyId,
     getPassageDeliberation,
     getnotebychildperTestType,
+    isExistNotebyTestAndChildIds,
     getMoyGenperChildId,
     getClassementFinal,
     getNotesAndAverages,

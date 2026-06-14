@@ -139,7 +139,7 @@
       </div>
     </div>
 
-    <section class="glass-card overflow-hidden">
+    <section class="glass-card overflow-hidden" @click="navigateTo('/children')">
       <div class="px-4 py-3 md:px-6 border-b border-outline-variant flex justify-between items-center">
         <h4 class="font-h3 text-base font-bold text-on-surface">Liste des enfants ({{ filtreClasse }})</h4>
         <button class="text-primary font-medium text-xs hover:underline">Voir tout</button>
@@ -156,7 +156,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/30 text-sm">
-            <tr v-for="child in childrenFiltered.slice(0, 10)" :key="child?.id || 'none'" class="hover:bg-surface-container-lowest transition-colors group">
+            <tr v-for="child in childrenFiltered.slice(0, 3)" :key="child?.id || 'none'" class="hover:bg-surface-container-lowest transition-colors group">
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
@@ -306,16 +306,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, inject } from 'vue'
-import { useChildren } from '~/composables/useChild'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useNote } from '~/composables/useNote'
-import { useSeance } from '~/composables/useSeance'
+import { getAgeByBirthDate } from '~/utils/getAgebyBirthDate'
+import { getFullName } from '~/utils/getFullName'
 import { useDashboard } from '../composables/useDashboard'
 import { classes } from '../stores/child'
-import { getFullName } from '~/utils/getFullName'
 import type { ClasseType } from '../types/classe'
-import { useRouter } from 'vue-router'
-import { getAgeByBirthDate } from '~/utils/getAgebyBirthDate'
 
 const { stats, pending, error } = useDashboard()
 
@@ -422,6 +420,9 @@ const totalDeliberationList = computed(() => {
     
   }).filter(item => item.name !== '' && item.moyGen !== 'Pas de la classe')
 })
+const copyToClipboard = (numero:string)=>{
+  //Logique de copie du numéro
+}
 
 
 const desktopMain = ref<HTMLElement | null>(null)

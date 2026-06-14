@@ -32,8 +32,6 @@ export const useChildren = () => {
       serverChildrenExamClass.value = data.childrenExamClass
       serverTotalBoy.value = data.totalBoy
       serverTotalGirl.value = data.totalGirl
-
-      console.log("OK",data)
     } catch (error) {
       toast.error('Erreur lors du chargement des enfants:')
     } finally {

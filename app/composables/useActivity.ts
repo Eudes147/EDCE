@@ -32,20 +32,29 @@ export const useActivities = () => {
       isLoading.value = false
     }
   }
+  const isExist =(title:string)=>{
+    return listActivities.value.find(activity=>activity.title.trim().toLowerCase() == title.trim().toLowerCase())
+  }
 
   // ➕ 2. Créer une activité globale (le modèle d'activité)
   const createActivity = async (title: string) => {
-    try {
+    if(!isExist(title)){
+      try {
       await $fetch('/api/activities', {
         method: 'POST',
         body: { title }
       })
       await fetchAllData()
-      toast.success('Activité créée', `L'activité "${title}" est disponible.`)
+      toast.success('Activité créée', `L'activité ${title} est disponible.`)
     } catch (error) {
       console.error(error)
       toast.error('Erreur', 'Impossible de générer cette activité.')
     }
+    }
+    else{
+      toast.warning('Attention! Activité déja inscrite...')
+    }
+    
   }
 
   // ❌ 3. Supprimer une activité globale
@@ -61,7 +70,8 @@ export const useActivities = () => {
 
   // 📝 4. Modifier une activité globale
   const updateActivity = async (activityId: string, updatedTitle: string) => {
-    try {
+    if(!isExist(updatedTitle)){
+      try {
       await $fetch(`/api/activities/${activityId}`, {
         method: 'PUT',
         body: { title: updatedTitle }
@@ -69,6 +79,10 @@ export const useActivities = () => {
       await fetchAllData()
     } catch (error) {
       console.error(error)
+    }
+    }
+    else{
+      toast.warning('Attention! Activité déja inscrite...')
     }
   }
 

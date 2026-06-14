@@ -1,6 +1,5 @@
 import { mockChildren, mockClasses } from '~/data/mockData'
 import type { Child } from '~/types/child'
-import type { Activity } from '~/types/activity'
 
 // State en mémoire vive côté serveur
 export const childrenState = {

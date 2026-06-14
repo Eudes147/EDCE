@@ -1,8 +1,10 @@
 import { defineEventHandler, readBody, createError } from 'h3'
+import {testsState} from './index.get'
 
 export default defineEventHandler(async (event) => {
   // 1. Récupérer l'ID passé dans l'URL (/api/tests/123)
   const testId = event.context.params?.id
+  const index=testsState.tests.findIndex(test=>test.id==testId)
 
   if (!testId) {
     throw createError({
@@ -15,21 +17,17 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    // TODO: Insère ici ta logique de base de données (Prisma, Mongoose, Supabase, etc.)
-    // Exemple avec un ORM fictif :
-    // const updatedTest = await db.test.update({
-    //   where: { id: testId },
-    //   data: {
-    //     titleTest: body.titleTest,
-    //     classe: body.classe,
-    //     typeTest: body.typeTest
-    //   }
-    // })
+    // Fusion des données en conservant l'ID d'origine
+      testsState.tests[index] = { 
+        ...testsState.tests[index], 
+        ...body, 
+        testId
+      }
 
     return {
       success: true,
       message: `Le test avec l'ID ${testId} a été modifié avec succès.`,
-      // data: updatedTest
+      data: testsState.tests[index]
     }
   } catch (error: any) {
     throw createError({

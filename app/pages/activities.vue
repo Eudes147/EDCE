@@ -314,10 +314,8 @@ const submitForm = async () => {
   try {
     if (isEditMode.value) {
       await updateActivity(form.id, form.title)
-      toast.success('Activité mise à jour', `L'activité "${form.title}" a été modifiée avec succès.`)
     } else {
       await createActivity(form.title)
-      toast.success('Activité créée', `L'activité "${form.title}" a bien été ajoutée au catalogue.`)
       currentPage.value = totalPages.value // Se déplacer automatiquement sur la dernière page pour voir le nouvel élément
     }
     showFormModal.value = false

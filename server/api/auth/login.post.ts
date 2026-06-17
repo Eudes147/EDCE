@@ -1,4 +1,4 @@
-import { mockUsers } from '~/data/mockData' 
+import { usersState } from '../admin/users.get' 
 
 export default defineEventHandler(async (event) => {
   try {
@@ -14,9 +14,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 2. Recherche de l'utilisateur (insensible à la casse)
-    const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
-
-    console.log(user)
+    const user = usersState.users.find((u) => u.email.toLowerCase() === email.toLowerCase())
 
     if (!user) {
       throw createError({
@@ -40,7 +38,7 @@ export default defineEventHandler(async (event) => {
     // 5. Envoi de la réponse structurée attendue par ton store
     return {
       token: `mock-jwt-token-${user.id}-${user.status}-${Date.now()}`,
-      user: user
+      user: userWithoutPassword
     }
 
   } catch (error: any) {

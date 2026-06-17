@@ -3,6 +3,10 @@ import type { User } from '~/types/auth'
 // Importation directe de ta source de données locale
 import { mockUsers } from '~/data/mockData'
 
+export const usersState = {
+  users: [...mockUsers] as User[]
+}
+
 export default defineEventHandler(async (event) => {
   // 1. Récupération et validation de la session via le cookie
   const cookies = parseCookies(event)
@@ -21,9 +25,9 @@ export default defineEventHandler(async (event) => {
 
   try {
     // 3. On nettoie la propriété 'password' de chaque utilisateur avant l'envoi au client
-    return mockUsers.map((u) => {
-      // const { password, ...userWithoutPassword } = u
-      return u
+    return usersState.users.map((u) => {
+      const { password, ...userWithoutPassword } = u
+      return userWithoutPassword
     })
   } catch (error) {
     throw createError({

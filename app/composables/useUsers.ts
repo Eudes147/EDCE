@@ -4,7 +4,7 @@ import type { User, UserStatus } from '~/types/auth'
 
 export const useUsers = () => {
   const listUsers = ref<User[]>([])
-  const isUsersLoading = ref(false)
+  const isUsersLoading = ref(true)
   const authStore = useAuthStore()
 
   // Récupère tous les utilisateurs depuis l'API back-end

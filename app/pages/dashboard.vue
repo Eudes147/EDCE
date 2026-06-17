@@ -202,7 +202,7 @@
                 <p class="text-[10px] text-on-surface-variant">{{ parentInfo.tel }}</p>
               </div>
             </div>
-            <button class="p-2 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors shrink-0">
+            <button class="p-2 flex justify-center items-center rounded-full hover:bg-primary-container hover:text-white transition-colors shrink-0" @click="copyToClipboard(parentInfo.tel)">
               <Icon size="1.1rem" name="chat" />
             </button>
           </div>
@@ -314,9 +314,11 @@ import { getFullName } from '~/utils/getFullName'
 import { useDashboard } from '../composables/useDashboard'
 import { classes } from '../stores/child'
 import type { ClasseType } from '../types/classe'
+import {useToast} from '~/composables/useToast'
 
 const { stats, pending, error } = useDashboard()
 
+const toast=useToast()
 const router = useRouter()
 const navigateTo = (to: string) => {
   router.push(to)
@@ -420,8 +422,15 @@ const totalDeliberationList = computed(() => {
     
   }).filter(item => item.name !== '' && item.moyGen !== 'Pas de la classe')
 })
-const copyToClipboard = (numero:string)=>{
+const copyToClipboard = async(numero:string)=>{
   //Logique de copie du numéro
+  try {
+    await navigator.clipboard.writeText(numero)
+    toast.success('Lien copié dans le presse-papiers')
+  } 
+  catch(err) {
+    toast.error('Erreur lors de la copie')
+  }
 }
 
 

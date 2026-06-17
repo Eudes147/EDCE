@@ -47,7 +47,7 @@
         </select>
       </div>
       
-      <button 
+      <button v-if='permissionsLocal.canCreateTest'
         @click="openCreateModal"
         class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:opacity-90 shadow-sm transition-all active:scale-98 text-xs font-semibold w-full sm:w-auto"
       >
@@ -131,9 +131,9 @@
               <td class="px-4 py-2.5 text-right">
                 <div class="flex items-center justify-end gap-px sm:gap-0.5 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                   <button @click="openViewModal(test)" class="p-1 text-on-surface-variant hover:text-primary rounded transition-colors" title="Voir"><Icon size="1.1rem" name="visibility" /></button>
-                  <button @click="openEditModal(test)" class="p-1 text-on-surface-variant hover:text-secondary rounded transition-colors" title="Éditer"><Icon size="1.1rem" name="edit" /></button>
-                  <button class="p-1 text-on-surface-variant hover:text-tertiary rounded transition-colors" title="Télécharger"><Icon size="1.1rem" name="download" /></button>
-                  <button @click="openDeleteModal(test)" class="p-1 text-error hover:bg-error/5 rounded transition-colors" title="Supprimer"><Icon size="1.1rem" name="delete" /></button>
+                  <button v-if="authStore.isAdmin || permissionsLocal.canEditTest" @click="openEditModal(test)" class="p-1 text-on-surface-variant hover:text-secondary rounded transition-colors" title="Éditer"><Icon size="1.1rem" name="edit" /></button>
+                  <button  class="p-1 text-on-surface-variant hover:text-tertiary rounded transition-colors" title="Télécharger"><Icon size="1.1rem" name="download" /></button>
+                  <button v-if="authStore.isAdmin" @click="openDeleteModal(test)" class="p-1 text-error hover:bg-error/5 rounded transition-colors" title="Supprimer"><Icon size="1.1rem" name="delete" /></button>
                 </div>
               </td>
             </tr>
@@ -250,14 +250,14 @@
         <div v-if="selectedTest.sujetTest" class="space-y-1">
           <span class="block text-xs font-bold uppercase text-on-surface-variant tracking-wide">Énoncé / Sujet :</span>
           <div class="bg-white p-3 border border-outline-variant rounded-lg font-mono text-xs whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar">
-            {{ selectedTest.sujetTest }}
+            <a :href="selectedTest.sujetTest" class="text-surface-tint underline">{{ selectedTest.sujetTest }}</a>
           </div>
         </div>
 
         <div v-if="selectedTest.correctionTest" class="space-y-1">
           <span class="block text-xs font-bold uppercase text-on-surface-variant tracking-wide">Corrigé :</span>
           <div class="bg-white p-3 border border-outline-variant rounded-lg font-mono text-xs whitespace-pre-line max-h-40 overflow-y-auto custom-scrollbar">
-            {{ selectedTest.correctionTest }}
+            <a :href="selectedTest.correctionTest" class="text-surface-tint underline">{{ selectedTest.correctionTest }}</a>
           </div>
         </div>
       </div>
@@ -321,6 +321,7 @@ const showViewModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditMode = ref(false)
 const isCreateLoading=ref(false)
+const permissionsLocal=ref()
 
 // Éléments de formulaire et cibles réactives
 const selectedTest = ref<Test | null>(null)
@@ -343,7 +344,10 @@ const months = ref<Month[]>([
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
 ])
 const monthSelected = ref<Month>('janvier')
-
+const permissions=authStore.permissions
+if(authStore.userStatus && permissions){
+  permissionsLocal.value=permissions[authStore.userStatus]
+}
 // Téléchargement synchrone initial des bases de données
 onMounted(async () => {
   await Promise.all([

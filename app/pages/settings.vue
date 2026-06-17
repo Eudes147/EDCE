@@ -1,5 +1,8 @@
 <template>
-  <div class="max-w-6xl mx-auto p-0 md:p-4 sm:p-6 space-y-6 sm:space-y-8">
+  <div v-if="isUsersLoading">
+    <Loader name="des Utilisateurs" />
+  </div>
+  <div v-else-if="listUsers" class="max-w-6xl mx-auto p-0 md:p-4 sm:p-6 space-y-6 sm:space-y-8">
     <!-- 📌 EN-TÊTE -->
     <div>
       <h2 class="font-h1 text-xl sm:text-2xl font-bold text-on-surface mb-1 sm:mb-2">Paramètres du système</h2>
@@ -321,6 +324,7 @@ import { definePageMeta } from '#imports'
 import { useUsers } from '~/composables/useUsers'
 import { useToast } from '~/composables/useToast' // Utilisation officielle de ton Composable Alerte
 import type { User, UserStatus } from '~/types/auth'
+
 
 definePageMeta({
   layout: 'dashboard'

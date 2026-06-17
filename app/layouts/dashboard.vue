@@ -34,7 +34,8 @@
             <span class="font-body text-body">Notifications</span>
           </a>
           <div class="p-4 bg-surface-container-high rounded-xl mt-4 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-xs uppercase flex-shrink-0">
+            <div :class="['w-8 h-8 rounded-full font-bold text-xs uppercase flex-shrink-0 flex justify-center items-center text-white hover:cursor-pointer', authStore.userStatus=='moderator' ? 'bg-tertiary-container':(authStore.userStatus=='teacher' ? 'bg-primary-container': 'bg-secondary-container') ]"
+            >
               {{ authStore.fullName ? authStore.fullName.charAt(0) : 'U' }}
             </div>
             <div class="overflow-hidden">
@@ -58,7 +59,7 @@
               <Icon name="logout" size="1.3rem" />
             </button>
           </div>
-          <div :title="authStore.fullName" class="w-8 h-8 md:w-12 md:h-12  rounded-full bg-secondary-container flex justify-center items-center text-white hover:cursor-pointer">
+          <div :title="authStore.fullName" :class="['w-8 h-8 md:w-12 md:h-12  rounded-full  flex justify-center items-center text-white hover:cursor-pointer', authStore.userStatus=='moderator' ? 'bg-tertiary-container':(authStore.userStatus=='teacher' ? 'bg-primary-container': 'bg-secondary-container') ]">
           <span>{{ authStore.userInitials }}</span>
           </div>
         </div>
@@ -103,7 +104,7 @@
               <Icon name="logout" size="1.3rem" />
             </button>
           </div>
-          <div :title="authStore.fullName" class="w-8 h-8 md:w-12 md:h-12 rounded-full bg-secondary-container flex justify-center items-center text-white hover:cursor-pointer">
+          <div :title="authStore.fullName" :class="['w-8 h-8 md:w-12 md:h-12  rounded-full  flex justify-center items-center text-white hover:cursor-pointer', authStore.userStatus=='moderator' ? 'bg-tertiary-container':(authStore.userStatus=='teacher' ? 'bg-primary-container': 'bg-secondary-container') ]">
           <span>{{ authStore.userInitials }}</span>
           </div>
         </div>
@@ -132,8 +133,10 @@ const authStore = useAuthStore()
 
 const linksDashboard = computed(() => [
   { to: '/dashboard', icon: 'dashboard', label: 'Dashboard', display: authStore.isAdmin },
-  { to: '/seances/admin', icon: 'calendar_today', label: 'Séances', display: authStore.isAdmin },
-  { to: '/seances/teacher', icon: 'calendar_today', label: 'Séances', display: !authStore.isAdmin },
+  { to: '/seances/admin', icon: 'calendar_today', label: 'Séances', display: (authStore.isAdmin || authStore.userStatus=='moderator') 
+  },
+  { to: '/seances/teacher', icon: 'calendar_today', label: 'Séances', display: (!authStore.isAdmin && authStore.userStatus=='teacher')
+  },
   { to: '/classes', icon: 'groups', label: 'Classes', display: authStore.isAdmin },
   { to: '/children', icon: 'child_care', label: 'Enfants', display: true },
   { to: '/tests', icon: 'assignment', label: 'Tests', display: true },

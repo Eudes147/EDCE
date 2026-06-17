@@ -78,14 +78,14 @@
                   >
                     <Icon name="visibility" size="1.25rem" />
                   </button>
-                  <button 
+                  <button v-if="authStore.isAdmin || permissionsLocal.canEditSeance"
                     @click="edit(seance)" 
                     class="p-1 md:p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg transition-all" 
                     title="Modifier"
-                  >
+                  >                  
                     <Icon name="edit" size="1.25rem" />
                   </button>
-                  <button 
+                  <button v-if="authStore.isAdmin"
                     @click="supprimer(seance)" 
                     class="p-1 md:p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" 
                     title="Supprimer"
@@ -304,11 +304,13 @@ import { useToast } from '~/composables/useToast'
 import type { ClasseType } from '~/types/classe'
 import type { Month } from '~/types/index'
 import type { Seance } from '~/types/seance'
+import {useAuthStore} from '~/stores/auth'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
+// Stores
 // Composables
 const toast = useToast()
 const { groupSeanceperYear, typeSeances, fetchAllSeances, updateSeance, deleteSeance, isLoading } = useSeance()
@@ -331,6 +333,7 @@ const months = ref<Month[]>([
   'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
 ])
+const permissionsLocal=ref()
 
 // Cycle de vie : Charger les données
 onMounted(async () => {
@@ -340,6 +343,9 @@ onMounted(async () => {
 
 // --- 👥 LOGIQUE FILTRE PARTICIPANTS ---
 // Récupère dynamiquement la liste des enfants de la séance ouverte dans la modale
+
+const authStore=useAuthStore()
+if(authStore.permissions && authStore.userStatus) permissionsLocal.value=authStore.permissions[authStore.userStatus]
 const currentSeanceParticipants = computed(() => {
   if (!seanceModal.value?.id) return []
   return getChildbySeanceId(seanceModal.value.id)

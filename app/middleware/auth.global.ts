@@ -13,9 +13,15 @@ export default defineNuxtRouteMiddleware((to) => {
     '/settings',
     '/classes',
     '/teachers',
+    '/events',
+  ]
+  const adminAndModeratorOnlyRoutes=[
     '/seances/admin'
   ]
 
+  const teachersOnlyRoutes=[
+    '/seances/teacher'
+  ]
   // 3. CAS : L'utilisateur n'est pas connecté
   if (!tokenCookie.value) {
     if (!publicRoutes.includes(to.path)) {
@@ -42,8 +48,12 @@ export default defineNuxtRouteMiddleware((to) => {
   if (tokenCookie.value && publicRoutes.includes(to.path)) {
     if (authStore.userStatus === 'admin') {
       return navigateTo('/dashboard')
-    } else {
+    } else if(authStore.userStatus == 'teacher') {
       return navigateTo('/seances/teacher')
+    }
+    else if(authStore.userStatus=='moderator') {
+      return navigateTo('/seances/admin')
+
     }
   }
 
@@ -53,10 +63,19 @@ export default defineNuxtRouteMiddleware((to) => {
 
   // Vérification : est-ce que la route est dans ta liste admin ?
   const isAdminRoute = adminOnlyRoutes.includes(currentPath)
+
+  const isAdminAndModeratorRoute=adminAndModeratorOnlyRoutes.includes(currentPath)
+
+  const isTeacherRoute=teachersOnlyRoutes.includes(currentPath)
   
-  if (isAdminRoute && authStore.userStatus !== 'admin') {
+  if ((isAdminRoute || isAdminAndModeratorRoute) && authStore.userStatus == 'teacher') {
     // Si un prof ou modérateur tente d'aller sur /dashboard, /settings, /classes ou /teachers
     // Il est bloqué et renvoyé sur ses séances !
     return navigateTo('/seances/teacher')
+  }
+  else if ((isAdminRoute || isTeacherRoute) && authStore.userStatus == 'moderator') {
+    // Si un prof ou modérateur tente d'aller sur /dashboard, /settings, /classes ou /teachers
+    // Il est bloqué et renvoyé sur ses séances !
+    return navigateTo('/seances/admin')
   }
 })

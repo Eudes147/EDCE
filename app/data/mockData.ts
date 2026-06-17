@@ -15,6 +15,7 @@ import type{Note} from "~/types/test"
 
 import type { User } from '~/types/auth'
 import type {MonthlySchedulePayload} from '~/types/monthlySchedule'
+import type { SupervisorSeance } from '~/types/seance'
 
 
 export const mockMonthlySchedule = {
@@ -1149,27 +1150,9 @@ export const mockActivityatEvent: EventActivity[] = [
   { "id": "event-002", "activityId": "activity-001", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-003", "activityId": "activity-003", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-004", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },
-  { "id": "event-005", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-006", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
   { "id": "event-007", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
   { "id": "event-008", "activityId": "activity-002", "eventType": "Arbre de noël", "year": "2026" },
   { "id": "event-009", "activityId": "activity-002", "eventType": "Soirée récréative des enfants", "year": "2026" },
-  { "id": "event-010", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-011", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-012", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-013", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-014", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-015", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-016", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-017", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-018", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-019", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-020", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-021", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-022", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-023", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
-  { "id": "event-024", "activityId": "activity-004", "eventType": "Arbre de noël", "year": "2026" },                 // Réaligné sur activity-004
-  { "id": "event-025", "activityId": "activity-004", "eventType": "Soirée récréative des enfants", "year": "2026" }, // Réaligné sur activity-004
   { "id": "event-026", "activityId": "activity-024", "eventType": "Arbre de noël", "year": "2026" },
   { "id": "event-027", "activityId": "activity-025", "eventType": "Soirée récréative des enfants", "year": "2026" },
   { "id": "event-028", "activityId": "activity-026", "eventType": "Arbre de noël", "year": "2026" },
@@ -1248,6 +1231,13 @@ export const mockSeance:Seance[]=[
   { "id": "seance-048", "title": "La tour de Babel", "type": "NORMAL", "classe": "Moyen", "authorId": "teacher-004", "supervisorId": "teacher-003", "created_at": "2026-03-08T10:30:00Z" },
   { "id": "seance-049", "title": "DLT - Synthèse Trimestre", "type": "DLT", "classe": "JuniorA", "authorId": "teacher-007", "supervisorId": "teacher-013", "created_at": "2026-03-11T15:00:00Z" },
   { "id": "seance-050", "title": "Bilan Intermédiaire", "type": "NORMAL", "classe": "JuniorB", "authorId": "teacher-010", "supervisorId": "teacher-009", "created_at": "2026-03-11T16:30:00Z" }
+]
+
+export const mockSupervisorSeance: SupervisorSeance[]=[
+  {"id": "superv-seance-001", "seanceId": "seance-003","supervisorSeanceId": "teacher-002"},
+  {"id": "superv-seance-002", "seanceId": "seance-010","supervisorSeanceId": "teacher-010"},
+  {"id": "superv-seance-003", "seanceId": "seance-013","supervisorSeanceId": "teacher-011"},
+
 ]
 
 export const mockParticipantSeance: ParticipantSeance[]=[
@@ -1335,8 +1325,6 @@ export const mockParticipantEvent: ParticipantEventActivity[]=[
   { "id": "part-event-009", "eventActivityId": "event-004", "childId": "child-008" },
   { "id": "part-event-010", "eventActivityId": "event-005", "childId": "child-002" },
   { "id": "part-event-011", "eventActivityId": "event-005", "childId": "child-009" },
-  { "id": "part-event-012", "eventActivityId": "event-006", "childId": "child-003" },
-  { "id": "part-event-013", "eventActivityId": "event-006", "childId": "child-010" },
   { "id": "part-event-014", "eventActivityId": "event-007", "childId": "child-004" },
   { "id": "part-event-015", "eventActivityId": "event-007", "childId": "child-011" },
   { "id": "part-event-016", "eventActivityId": "event-008", "childId": "child-005" },
@@ -1345,36 +1333,6 @@ export const mockParticipantEvent: ParticipantEventActivity[]=[
   { "id": "part-event-019", "eventActivityId": "event-009", "childId": "child-013" },
   { "id": "part-event-020", "eventActivityId": "event-010", "childId": "child-007" },
   { "id": "part-event-021", "eventActivityId": "event-010", "childId": "child-014" },
-  { "id": "part-event-022", "eventActivityId": "event-011", "childId": "child-001" },
-  { "id": "part-event-023", "eventActivityId": "event-011", "childId": "child-015" },
-  { "id": "part-event-024", "eventActivityId": "event-012", "childId": "child-002" },
-  { "id": "part-event-025", "eventActivityId": "event-012", "childId": "child-008" },
-  { "id": "part-event-026", "eventActivityId": "event-013", "childId": "child-003" },
-  { "id": "part-event-027", "eventActivityId": "event-013", "childId": "child-009" },
-  { "id": "part-event-028", "eventActivityId": "event-014", "childId": "child-004" },
-  { "id": "part-event-029", "eventActivityId": "event-014", "childId": "child-010" },
-  { "id": "part-event-030", "eventActivityId": "event-015", "childId": "child-005" },
-  { "id": "part-event-031", "eventActivityId": "event-015", "childId": "child-011" },
-  { "id": "part-event-032", "eventActivityId": "event-016", "childId": "child-006" },
-  { "id": "part-event-033", "eventActivityId": "event-016", "childId": "child-012" },
-  { "id": "part-event-034", "eventActivityId": "event-017", "childId": "child-007" },
-  { "id": "part-event-035", "eventActivityId": "event-017", "childId": "child-013" },
-  { "id": "part-event-036", "eventActivityId": "event-018", "childId": "child-001" },
-  { "id": "part-event-037", "eventActivityId": "event-018", "childId": "child-014" },
-  { "id": "part-event-038", "eventActivityId": "event-019", "childId": "child-002" },
-  { "id": "part-event-039", "eventActivityId": "event-019", "childId": "child-015" },
-  { "id": "part-event-040", "eventActivityId": "event-020", "childId": "child-003" },
-  { "id": "part-event-041", "eventActivityId": "event-020", "childId": "child-008" },
-  { "id": "part-event-042", "eventActivityId": "event-021", "childId": "child-004" },
-  { "id": "part-event-043", "eventActivityId": "event-021", "childId": "child-009" },
-  { "id": "part-event-044", "eventActivityId": "event-022", "childId": "child-005" },
-  { "id": "part-event-045", "eventActivityId": "event-022", "childId": "child-010" },
-  { "id": "part-event-046", "eventActivityId": "event-023", "childId": "child-006" },
-  { "id": "part-event-047", "eventActivityId": "event-023", "childId": "child-011" },
-  { "id": "part-event-048", "eventActivityId": "event-024", "childId": "child-007" },
-  { "id": "part-event-049", "eventActivityId": "event-024", "childId": "child-012" },
-  { "id": "part-event-050", "eventActivityId": "event-025", "childId": "child-001" },
-  { "id": "part-event-051", "eventActivityId": "event-025", "childId": "child-013" },
   { "id": "part-event-052", "eventActivityId": "event-026", "childId": "child-002" },
   { "id": "part-event-053", "eventActivityId": "event-026", "childId": "child-014" },
   { "id": "part-event-054", "eventActivityId": "event-027", "childId": "child-003" },

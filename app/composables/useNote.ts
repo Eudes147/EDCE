@@ -135,18 +135,14 @@ export const useNote = () => {
     return 0
   }
 
-  const getClassementFinal = (classe: ClasseType) => {
-    const currentYearMoyennes = notesAndAveragesComputed.value.evaluations.moyenne[actualYear.value] || []
-    
-    const finalClassement = currentYearMoyennes.map(moyennebyYear => {
-      const child = listChildren.value.find(c => c.id === moyennebyYear.childId && c.classe == classe)
+  const getClassementFinal = (classe: ClasseType) => {    
+    const finalClassement = listChildren.value.filter(child=>child.classe==classe).map(child => {
       const moyenneFinal = child ? getMoyGenperChildId(child) : 'Pas de la classe'
       return {
-        childId: moyennebyYear.childId,
+        childId: child.id,
         moyGen: moyenneFinal
       }
     })
-    
     return finalClassement.sort((a, b) => Number(b.moyGen) - Number(a.moyGen))
   }
   const getNote=(testId: string, childid: string)=>{

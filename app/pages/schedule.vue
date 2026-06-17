@@ -1,5 +1,6 @@
 <template>
-  <div class="p-3 sm:p-4 md:p-8 max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+  <div v-if="isLoadingSchedule"><Loader name="des plannings." /></div>
+  <div v-else-if="scheduleRows" class="p-3 sm:p-4 md:p-8 max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
     
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-outline-variant/30 pb-4">
       <div>

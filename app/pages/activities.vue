@@ -11,7 +11,7 @@
     </div>
 
     <div class="flex gap-4">
-      <button 
+      <button v-if="authStore.isAdmin || permissionsLocal.canEditChild"
         @click="openCreateModal" 
         class="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95"
       >
@@ -51,7 +51,7 @@
                   <Icon name="visibility" color="text-on-surface-variant hover:text-primary"  />
                 </button>
                 
-                <button 
+                <button v-if="authStore.isAdmin || permissionsLocal.canEditChild"
                   @click="openEditModal(activity)" 
                   class="p-0.5 md:p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary/5 rounded-md transition-colors" 
                   title="Modifier"
@@ -59,7 +59,7 @@
                   <Icon name="edit" color="text-on-surface-variant hover:text-secondary" />
                 </button>
                 
-                <button 
+                <button v-if="authStore.isAdmin"
                   @click="openDeleteModal(activity)" 
                   class="p-0.5 md:p-1.5 text-on-surface-variant hover:text-error hover:bg-error/5 rounded-md transition-colors" 
                   title="Supprimer"
@@ -203,6 +203,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import type { Activity } from '~/types/activity'
 import { useActivities } from '~/composables/useActivity'
 import { useToast } from '~/composables/useToast'
+import { useAuthStore } from '../stores/auth'
 
 definePageMeta({
   layout: 'dashboard'
@@ -218,12 +219,14 @@ const {
 } = useActivities()
 
 const toast = useToast()
+const authStore=useAuthStore()
 
 // États des Modales
 const showViewModal = ref(false)
 const showFormModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditMode = ref(false)
+const permissionsLocal=ref()
 
 const selectedActivity = ref<Activity | null>(null)
 
@@ -236,6 +239,10 @@ const form = reactive({
 const currentPage = ref(1)
 const itemsPerPage = 10
 
+const permissions=authStore.permissions
+if(authStore.userStatus && permissions){
+  permissionsLocal.value=permissions[authStore.userStatus]
+} 
 onMounted(async () => {
   await fetchAllData()
 })

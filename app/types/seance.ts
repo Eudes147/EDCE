@@ -12,6 +12,12 @@ export interface Seance {
   created_at: string
 }
 
+export interface SupervisorSeance {
+  id: string
+  seanceId: string
+  supervisorSeanceId: string
+}
+
 export interface SeanceStats {
   [year: string]:{
     "NORMAL": number,

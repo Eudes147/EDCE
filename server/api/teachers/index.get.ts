@@ -1,11 +1,11 @@
-import { mockUsers, mockTeachers } from '~/data/mockData'
+import { mockTeachers } from '~/data/mockData'
 import type { User } from '~/types/auth'
 import type { Teacher } from '~/types/teacher'
+import {usersState} from '../admin/users.get'
 
 // Les états serveur persistent en mémoire vive
-export const usersState = {
-  users: [...mockUsers] as User[]
-}
+
+export const usersTeachersState=usersState
 
 export const teachersState = {
   teachers: [...mockTeachers] as Teacher[]
@@ -13,7 +13,7 @@ export const teachersState = {
 
 export default defineEventHandler(() => {
   // 1. Filtrer les utilisateurs qui ont le statut 'teacher'
-  const activeUserTeachers = usersState.users.filter(u => u.status === 'teacher')
+  const activeUserTeachers = usersTeachersState.users.filter(u => u.status === 'teacher')
 
   // 2. Construire la liste complète des Teacher en combinant l'User et son état de disponibilité
   const listTeachers: Teacher[] = activeUserTeachers.map(user => {

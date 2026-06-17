@@ -83,8 +83,18 @@ export const useAuthStore = defineStore('auth', {
     setPermissions(status: UserStatus) {
       this.permissions = {
         admin: { canAccessDashboard: false, canAttributePermission: false },
-        moderator: { canCreateTest: false, canEditNote: false },
-        teacher: { canCreateChild: false, canCreateNote: false }
+        moderator: { 
+          canCreateTest: false,
+          canEditSeance: false,
+          canEditTest: false,
+          canEditChild: false,
+          canEditNote: false 
+        },
+        teacher: { 
+          canCreateChild: false,
+          canCreateNote: false,
+          canCreateSeance: false 
+        }
       }
 
       if (status === "admin") {
@@ -94,10 +104,14 @@ export const useAuthStore = defineStore('auth', {
       else if (status === "moderator") {
         this.permissions.moderator.canCreateTest = true
         this.permissions.moderator.canEditNote = true
+        this.permissions.moderator.canEditTest=true
+        this.permissions.moderator.canEditChild=true
+        this.permissions.moderator.canEditSeance=true
       } 
       else if (status === "teacher") {
         this.permissions.teacher.canCreateChild = true
         this.permissions.teacher.canCreateNote = true
+        this.permissions.teacher.canCreateSeance=true
       }
 
       // On sauvegarde l'état mis à jour des permissions dans les cookies

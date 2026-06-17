@@ -229,6 +229,8 @@ import { useAuthStore } from '~/stores/auth'
 import type { User } from '~/types/auth'
 import type { Sexe } from '~/types/index'
 import { useToast } from '~/composables/useToast'
+//Utils
+import {validateFormTel} from '~/utils/validateFormatTel'
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -328,6 +330,13 @@ function validatePassword(): void {
     validationErrors.confirmPassword = 'Passwords do not match'
   }
 }
+function validateTel(){
+  if(!validateFormTel(signupForm.tel)){
+    toast.warning("Numéro de téléphone incorrecte")
+    return false
+  }
+  return true
+}
 
 function togglePasswordVisibility(field: 'signup' | 'confirmSignup') {
   passwordVisible[field] = !passwordVisible[field]
@@ -336,6 +345,7 @@ function togglePasswordVisibility(field: 'signup' | 'confirmSignup') {
 async function handleSignup(): Promise<void> {
   validateEmail()
   validatePassword()
+  if(!validateTel()) return
 
   if (!isFormValid.value) return
 
@@ -351,7 +361,7 @@ async function handleSignup(): Promise<void> {
         last_name: signupForm.lastName,
         email: signupForm.email,
         sexe: signupForm.sexe,
-        tel: signupForm.tel || undefined, // On envoie undefined ou une chaîne vide si non rempli
+        tel: validateFormTel(signupForm.tel) || undefined, // On envoie undefined ou une chaîne vide si non rempli
         birth_date: signupForm.birthDate || undefined, 
         password: signupForm.password,
       }

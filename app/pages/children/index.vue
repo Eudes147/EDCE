@@ -8,7 +8,7 @@
     </p>
   </div>
 </div>
-<div v-if="isLoading || isTestLoading">
+<div v-if="isLoading || isTestLoading ">
   <Loader name="des enfants..." />
 </div>
 
@@ -75,8 +75,8 @@
           <td class="px-6 py-4 text-right">
             <div class="flex items-center justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
               <button @click.stop="view(child)" class="p-1.5 text-outline hover:text-primary transition-colors" title="Voir"><Icon name="visibility" size="1.2rem"/></button>
-              <button @click.stop="edit(child)" class="p-1.5 text-outline hover:text-primary transition-colors" title="Editer"><Icon name="edit" size="1.2rem" /></button>
-              <button @click.stop="supprimer(child)" class="p-1.5 text-outline hover:text-error transition-colors" title="Supprimer"><Icon name="delete" size="1.2rem"/></button>
+              <button v-if="authStore.isAdmin || permissionsLocal.canEditNote" @click.stop="edit(child)" class="p-1.5 text-outline hover:text-primary transition-colors" title="Editer"><Icon name="edit" size="1.2rem" /></button>
+              <button v-if="authStore.isAdmin" @click.stop="supprimer(child)" class="p-1.5 text-outline hover:text-error transition-colors" title="Supprimer"><Icon name="delete" size="1.2rem"/></button>
             </div>
           </td>
         </tr>
@@ -108,8 +108,8 @@
 
       <div class="flex justify-end gap-2 pt-2 border-t border-dashed border-outline-variant/20">
         <button @click.stop="view(child)" class="flex items-center gap-1 text-[11px] text-outline hover:text-primary px-2 py-1.5 bg-surface-container-low rounded-lg"><Icon name="visibility" size="0.95rem"/> Voir</button>
-        <button @click.stop="edit(child)" class="flex items-center gap-1 text-[11px] text-outline hover:text-primary px-2 py-1.5 bg-surface-container-low rounded-lg"><Icon name="edit" size="0.95rem" /> Éditer</button>
-        <button @click.stop="supprimer(child)" class="flex items-center gap-1 text-[11px] text-error hover:bg-error/10 px-2 py-1.5 bg-error/5 rounded-lg"><Icon name="delete" size="0.95rem"/> Supprimer</button>
+        <button v-if="authStore.isAdmin || permissionsLocal.canEditNote" @click.stop="edit(child)" class="flex items-center gap-1 text-[11px] text-outline hover:text-primary px-2 py-1.5 bg-surface-container-low rounded-lg"><Icon name="edit" size="0.95rem" /> Éditer</button>
+        <button v-if="authStore.isAdmin" @click.stop="supprimer(child)" class="flex items-center gap-1 text-[11px] text-error hover:bg-error/10 px-2 py-1.5 bg-error/5 rounded-lg"><Icon name="delete" size="0.95rem"/> Supprimer</button>
       </div>
     </div>
   </div>
@@ -211,7 +211,9 @@
         </div>
         <div>
           <label class="block font-caption text-[11px] text-outline mb-1">Niveau Scolaire <span class="text-error">*</span></label>
-          <input v-model="formChild.nivScolaire" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" placeholder="Ex: CP2" type="text" required />
+          <select v-model="formChild.nivScolaire" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" required>
+            <option v-for="child_niv in nivScolaireByClasse" :key="child_niv" :value="child_niv">{{ child_niv }}</option>
+          </select>
         </div>
       </div>
       
@@ -221,7 +223,7 @@
       </div>
 
       <div class="py-1">
-        <button 
+        <button v-if="authStore.isAdmin || permissionsLocal.canCreateChild"
           class="w-full border border-dashed border-outline-variant hover:border-primary hover:text-primary text-outline rounded-lg py-2 flex flex-col items-center gap-0.5 transition-all bg-doomu-bg/20" 
           @click="activeParentModal = true" type="button"
         >
@@ -418,7 +420,9 @@
         </div>
         <div>
           <label class="block font-caption text-xs text-outline mb-1.5">Niveau Scolaire</label>
-          <input v-model="childSelected.nivScolaire" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="text" required />
+          <select v-model="childSelected.nivScolaire" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" required>
+            <option v-for="child_niv in nivScolaireByChild" :key="child_niv" :value="child_niv">{{ child_niv }}</option>
+          </select>
         </div>
       </div>
       <div>
@@ -456,25 +460,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { classes } from "~/stores/child"
+import { computed, onMounted, ref, watch } from 'vue'
 import { useChildren } from '~/composables/useChild'
+import { useNote } from '~/composables/useNote'
 import { useTest } from '~/composables/useTest'
-import { useNote } from '~/composables/useNote' 
 import { useToast } from '~/composables/useToast'
-import type { ClasseType } from '~/types/classe'
+import { useAuthStore } from '~/stores/auth'
+import { classes, nivScolaireClasse } from "~/stores/child"
+import type { EventType } from '~/types/activity'
 import type { Child, childSubmit } from '~/types/child'
-import type {Note} from '~/types/test'
-import type {EventType} from '~/types/activity'
-
+import type { ClasseType } from '~/types/classe'
+import type { Note } from '~/types/test'
 //Utils
-import {validateFormTel} from '~/utils/validateFormatTel'
+import { validateFormTel } from '~/utils/validateFormatTel'
 
 definePageMeta({
   layout: 'dashboard',
 })
 
 // --- COMPOSABLES GENERAUX ---
+
+const authStore=useAuthStore()
+const permissionsLocal=ref()
+const permissions=authStore.permissions
+if(authStore.userStatus && permissions){
+  permissionsLocal.value=permissions[authStore.userStatus]
+} 
 const actualYear = computed(() => new Date().getFullYear().toString())
 const toast = useToast()
 const { childrenPerClass, getFullName, fetchAllChildren, createChild, updateChild, deleteChild, isLoading } = useChildren()
@@ -516,6 +527,8 @@ const isNoteLoading = ref(false)
 
 // Variables
 const noteFound=ref<Note>()
+// AuthStore
+
 
 // --- FORMULAIRE REACTIF D'INSCRIPTION ---
 const formChild = ref<childSubmit>({
@@ -529,6 +542,13 @@ const formChild = ref<childSubmit>({
   telParent: '',
 })
 
+const nivScolaireByClasse=computed(()=>{
+  return nivScolaireClasse[formChild.value?.classe]
+})
+
+const nivScolaireByChild=computed(()=>{
+  if(childSelected) return nivScolaireClasse[childSelected?.value.classe]
+})
 // --- ETATS LOCAUX COMPOSANTE PARTICIPANTS / EVENT ---
 const isModalOpen = ref(false)
 const selectedActivityTitle = ref('')
@@ -560,7 +580,6 @@ const resetTestSelection = () => {
   }
 }
 
-
 watch(classeSelected, () => {
   resetTestSelection()
   attributeChild.value = null
@@ -570,7 +589,7 @@ watch(classeSelected, () => {
 
 const getLimitedActivitiesWithChildren = (eventType: EventType) => {
   // 1. Appel du store
-  const fullCrossedData = participantEventStore.getChildrenByActivityTitle('2026', eventType)
+  const fullCrossedData = participantEventStore.getChildrenByActivityTitle(actualYear.value, eventType)
   
   // 2. Vérification de sécurité (si fullCrossedData est null/undefined)
   if (!fullCrossedData) return {}
@@ -585,6 +604,7 @@ const getLimitedActivitiesWithChildren = (eventType: EventType) => {
 // --- ACTIONS METIERS : ENFANTS ---
 const attribute = (child: Child) => {
   attributeChild.value = child
+
   if(isExistNotebyTestAndChildIds(testSelectedId.value, child.id)){
     noteFound.value=getNote(testSelectedId.value, child.id)
     note.value=Number(noteFound.value?.note||0)
@@ -757,11 +777,11 @@ const submitAssociation = async () => {
 
   const associatedActivity = listActivities.value.find((a: any) => a.title === selectedActivityTitle.value)
   const associatedEvent = listEventActivity.value.find(
-    (e: any) => e.activityId === associatedActivity?.id && e.year === '2026'
+    (e: any) => e.activityId === associatedActivity?.id && e.year === actualYear.value
   )
 
   if (!associatedEvent || !associatedEvent.id) {
-    alert("Impossible de procéder à l'inscription : aucun événement correspondant trouvé pour 2026.")
+    alert(`Impossible de procéder à l'inscription : aucun événement correspondant trouvé pour ${actualYear.value}.`)
     return
   }
 

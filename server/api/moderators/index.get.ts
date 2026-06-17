@@ -1,4 +1,4 @@
-import { usersState } from '../teachers/index.get' // Utilisation du state utilisateur unique
+import { usersState } from '../admin/users.get' // Utilisation du state utilisateur unique
 import { mockModerators } from '~/data/mockData'
 import type { Moderator } from '~/types/moderator'
 

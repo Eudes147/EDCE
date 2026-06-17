@@ -14,6 +14,9 @@ export default defineNuxtConfig({
       '~/assets/css/main.css',  
       '~/assets/css/tailwind.css',  
   ],
+  $fetch: {
+    baseURL: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000'
+  },
 
   // Configuration du module google-fonts pour des polices locales / téléchargées
   googleFonts: {

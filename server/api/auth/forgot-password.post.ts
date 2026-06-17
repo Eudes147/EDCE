@@ -1,9 +1,10 @@
 import nodemailer from 'nodemailer'
 
 import { useToast } from '~/composables/useToast' // Assurez-vous que le chemin est correct
-const toast = useToast()
 
 export default defineEventHandler(async (event) => {
+  const toast = useToast()
+
   const body = await readBody(event)
   const { email } = body
 
@@ -20,6 +21,7 @@ export default defineEventHandler(async (event) => {
   // Génération d'un Token temporaire unique
   const fakeToken = `tok_${Math.random().toString(36).substring(2, 15)}`
   const resetLink = `http://localhost:3000/reset-password?token=${fakeToken}`
+
 
   try {
     // Création du compte éphémère gratuit sur Ethereal

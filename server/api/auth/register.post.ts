@@ -1,4 +1,4 @@
-import { usersState } from '../teachers/index.get' // Importation du state persistant en mémoire
+import { usersState } from '../admin/users.get' // Importation du state persistant en mémoire
 import type { User } from '~/types/auth'
 
 export default defineEventHandler(async (event) => {
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       token: `mock-jwt-token-${newUser.id}-${newUser.status}-${Date.now()}`,
-      user: newUser
+      user: userWithoutPassword
     }
 
   } catch (error: any) {

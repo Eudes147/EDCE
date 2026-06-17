@@ -199,7 +199,10 @@ async function handleLogin() {
     // 4. Redirection
     if (authStore.userStatus === 'admin') {
       await navigateTo('/dashboard')
-    } else {
+    } else if(authStore.userStatus == 'moderator') {
+      await navigateTo('/seances/admin')
+    }
+    else{
       await navigateTo('/seances/teacher')
     }
 

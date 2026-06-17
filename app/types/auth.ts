@@ -21,9 +21,13 @@ export interface UserPermissions {
   teacher: {
     canCreateChild: boolean
     canCreateNote: boolean
+    canCreateSeance: boolean
   },
   moderator: {
     canCreateTest: boolean
+    canEditSeance: boolean
+    canEditTest: boolean
+    canEditChild: boolean
     canEditNote: boolean
   },
   admin: {
@@ -35,10 +39,14 @@ export interface UserPermissions {
 export const defaultPermissions: UserPermissions = {
   teacher: {
     canCreateChild: false,
-    canCreateNote: false
+    canCreateNote: false,
+    canCreateSeance: false
   },
   moderator: {
     canCreateTest: false,
+    canEditSeance: false,
+    canEditTest: false,
+    canEditChild: false,
     canEditNote: false
   },
   admin: {

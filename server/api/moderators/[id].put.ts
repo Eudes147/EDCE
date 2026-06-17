@@ -1,4 +1,4 @@
-import { usersState } from '../teachers/index.get'
+import { usersState } from '../admin/users.get'
 import { moderatorsState } from './index.get'
 import type { UserStatus } from '~/types/auth'
 

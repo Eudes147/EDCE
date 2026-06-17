@@ -1,7 +1,7 @@
 import { defineEventHandler, createError, readBody, parseCookies } from 'h3'
 import type { User, UserStatus } from '~/types/auth'
 // Importation de ta source de données locale pour la modifier
-import { mockUsers } from '~/data/mockData'
+import { usersState } from '../../users.get'
 
 export default defineEventHandler(async (event) => {
   // 1. Récupération de l'ID cible depuis l'URL de la requête
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // 4. Recherche de l'utilisateur dans le tableau local
-    const userToUpdate = mockUsers.find(u => u.id === targetUserId)
+    const userToUpdate = usersState.users.find(u => u.id === targetUserId)
 
     if (!userToUpdate) {
       throw createError({ statusCode: 404, statusMessage: 'Utilisateur introuvable.' })

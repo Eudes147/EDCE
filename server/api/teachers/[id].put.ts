@@ -1,4 +1,4 @@
-import { usersState, teachersState } from './index.get'
+import { usersTeachersState, teachersState } from './index.get'
 import type { UserStatus } from '~/types/auth'
 
 export default defineEventHandler(async (event) => {
@@ -6,13 +6,13 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event) // Peut contenir { status, isAvailable, quarter, tel }
 
   // 1. Mettre à jour l'utilisateur dans le state User (Option B: Changement de statut)
-  const userIndex = usersState.users.findIndex(u => u.id === id)
+  const userIndex = usersTeachersState.users.findIndex(u => u.id === id)
   if (userIndex !== -1) {
-    if (body.status && usersState.users[userIndex]) {
-      usersState.users[userIndex].status = body.status as UserStatus
+    if (body.status && usersTeachersState.users[userIndex]) {
+      usersTeachersState.users[userIndex].status = body.status as UserStatus
     }
-    if (body.quarter && usersState.users[userIndex]) usersState.users[userIndex].quarter = body.quarter
-    if (body.tel && usersState.users[userIndex]) usersState.users[userIndex].tel = body.tel
+    if (body.quarter && usersTeachersState.users[userIndex]) usersTeachersState.users[userIndex].quarter = body.quarter
+    if (body.tel && usersTeachersState.users[userIndex]) usersTeachersState.users[userIndex].tel = body.tel
   }
 
   // 2. Mettre à jour ou initialiser l'état spécifique au Teacher (Disponibilité)
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
       teachersState.teachers[teacherIndex].isAvailable = body.isAvailable
     } else {
       // Si l'enseignant n'existait pas encore dans la table étendue, on l'ajoute
-      const user = usersState.users.find(u => u.id === id)
+      const user = usersTeachersState.users.find(u => u.id === id)
       if (user) {
         teachersState.teachers.push({
           id: user.id,

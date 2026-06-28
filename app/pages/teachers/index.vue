@@ -9,7 +9,6 @@
     </div>
 
     <section class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-      
       <div class="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-surface-container-low/30">
         <div class="relative w-full sm:max-w-xs">
           <Icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70" size="1.15rem" />
@@ -129,14 +128,22 @@
           <h3 class="font-h2 text-lg md:text-h2 font-bold text-on-surface">Emploi du Temps Mensuel</h3>
           <p class="font-body text-xs md:text-sm text-on-surface-variant">Affectations régulées pour le mois courant</p>
         </div>
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <select 
+            v-model="selectedClass" 
+            @change="onClassChange"
+            class="bg-white border border-outline-variant rounded-lg px-3 py-2 text-xs md:text-sm font-semibold text-on-surface focus:ring-2 focus:ring-primary focus:outline-none"
+          >
+            <option v-for="c in classesList" :key="c" :value="c">{{ c }}</option>
+          </select>
+
           <button 
             @click="publishSchedule"
-            :disabled="isPublishing"
+            :disabled="isLoadingSchedule"
             class="flex items-center justify-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            <Icon :name="isPublishing ? 'sync' : 'publish'" :class="[{ 'animate-spin': isPublishing }]" size="1.1rem" />
-            <span>{{ isPublishing ? 'Publication...' : "Publier l'emploi du temps" }}</span>
+            <Icon :name="isLoadingSchedule ? 'sync' : 'publish'" :class="[{ 'animate-spin': isLoadingSchedule }]" size="1.1rem" />
+            <span>{{ isLoadingSchedule ? 'Enregistrement...' : "Enregistrer le planning" }}</span>
           </button>
         </div>
       </div>
@@ -147,7 +154,7 @@
         <div class="bg-surface-container-high p-4 font-bold text-secondary text-center text-xs md:text-sm uppercase tracking-wider">SUNDAY_SCHOOL</div>
         <div class="bg-surface-container-high p-4 font-bold text-tertiary text-center text-xs md:text-sm uppercase tracking-wider">DLT</div>
 
-        <template v-for="(row, rowIndex) in schedule" :key="row.dateLabel">
+        <template v-for="(row, rowIndex) in localSchedule" :key="row.dateLabel">
           <div class="bg-surface-container-low/60 p-4 flex items-center justify-center font-bold text-on-surface text-xs md:text-sm text-center">
             {{ row.dateLabel }}
           </div>
@@ -157,7 +164,7 @@
             :key="slotType"
             @click="openAssignmentManager(rowIndex, slotType)"
             :class="[
-              'p-3 transition-colors cursor-pointer min-h-[85px] flex flex-col justify-center gap-1.5 relative group bg-white',
+              'p-3 transition-colors cursor-pointer min-h-[100px] flex flex-wrap content-center justify-center gap-1 relative group bg-white',
               slotType === 'NORMAL' ? 'hover:bg-primary/5' : slotType === 'SUNDAY_SCHOOL' ? 'hover:bg-secondary/5' : 'hover:bg-tertiary/5'
             ]"
           >
@@ -165,17 +172,14 @@
               v-for="tId in row.assignments[slotType]" 
               :key="tId"
               :class="[
-                'text-[10px] md:text-xs px-2 py-1 rounded-md text-center font-semibold block truncate border',
+                'text-[10px] md:text-xs px-2 py-1 rounded-md text-center font-semibold block max-w-[120px] truncate border',
                 slotType === 'NORMAL' ? 'bg-primary/5 text-primary border-primary/10' : slotType === 'SUNDAY_SCHOOL' ? 'bg-secondary/5 text-secondary border-secondary/10' : 'bg-tertiary/5 text-tertiary border-tertiary/10'
               ]"
             >
               {{ getTeacherDisplayName(tId) }}
             </span>
 
-            <div 
-              v-if="row.assignments[slotType].length < 2" 
-              class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded"
-            >
+            <div class="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded">
               <div class="bg-white p-1.5 rounded-full shadow-md border border-outline-variant/40 flex items-center justify-center text-primary">
                 <Icon name="add" size="1rem" />
               </div>
@@ -194,7 +198,7 @@
               <input 
                 v-model="form.first_name" 
                 class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium" 
-                placeholder="Ex: Tshibamba" type="text" required 
+                placeholder="Ex: Responsable" type="text" required 
               />
             </div>
             <div>
@@ -232,26 +236,31 @@
       </template>
     </Modal>
 
-    <Modal v-model="showAssignModal" title="Affectation des Moniteurs (Max 2)" size="md">
-      <div v-if="activeCell && schedule[activeCell.rowIndex]" class="space-y-4 py-1">
+    <Modal v-model="showAssignModal" title="Affectation des Moniteurs" size="md">
+      <div v-if="activeCell && localSchedule[activeCell.rowIndex]" class="space-y-4 py-1">
         <div class="bg-primary/5 p-4 rounded-xl border border-primary/10 text-xs md:text-sm space-y-1">
-          <p class="text-on-surface-variant font-medium">Dimanche : <span class="font-bold text-on-surface">{{ schedule[activeCell.rowIndex]?.dateLabel }}</span></p>
+          <p class="text-on-surface-variant font-medium">Dimanche : <span class="font-bold text-on-surface">{{ localSchedule[activeCell.rowIndex]?.dateLabel }}</span></p>
           <p class="text-on-surface-variant font-medium">Créneau ciblé : <span class="font-bold text-primary">{{ activeCell.slotType }}</span></p>
+          <p class="text-on-surface-variant font-medium">Classe active : <span class="font-bold text-secondary">{{ selectedClass }}</span></p>
         </div>
 
-        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Sélectionnez les moniteurs (disponibles uniquement) :</p>
+        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wide">Sélectionnez les moniteurs :</p>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
           <div 
             v-for="teacher in listTeachers.filter(t => t.isAvailable)" 
             :key="teacher.id"
             @click="toggleTeacherInCell(teacher.id)"
             :class="[
               'p-3 border rounded-xl cursor-pointer text-sm font-semibold flex items-center justify-between transition-all',
-              isTeacherSelectedInActiveCell(teacher.id) ? 'bg-primary/5 border-primary text-primary' : 'bg-white border-outline-variant/60 text-on-surface hover:bg-surface-container-low'
+              isTeacherSelectedInActiveCell(teacher.id) ? 'bg-primary/5 border-primary text-primary' : 'bg-white border-outline-variant/60 text-on-surface hover:bg-surface-container-low',
+              isTeacherConflictingElsewhere(teacher.id) ? 'opacity-40 cursor-not-allowed bg-surface-container-low border-dashed' : ''
             ]"
           >
-            <span class="truncate">{{ teacher.first_name }} {{ teacher.last_name }}</span>
+            <div class="flex flex-col min-w-0">
+              <span class="truncate">{{ teacher.first_name }} {{ teacher.last_name }}</span>
+              <span v-if="isTeacherConflictingElsewhere(teacher.id)" class="text-[10px] text-error font-normal">Déjà pris sur ce créneau</span>
+            </div>
             <Icon v-if="isTeacherSelectedInActiveCell(teacher.id)" name="check" size="1.1rem" class="text-primary flex-shrink-0 ml-2" />
           </div>
         </div>
@@ -275,6 +284,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'
 import { useToast } from '~/composables/useToast'
+import { useSchedule } from '~/composables/useSchedule'
 import type { Teacher } from '~/types/teacher'
 
 definePageMeta({
@@ -283,28 +293,31 @@ definePageMeta({
 
 type SlotType = 'NORMAL' | 'SUNDAY_SCHOOL' | 'DLT'
 
-interface ScheduleRow {
+interface LocalScheduleRow {
   dateLabel: string
   assignments: Record<SlotType, string[]>
 }
 
-// Déclaration des composables
 const toast = useToast()
 const { listTeachers, fetchAllTeachers, updateTeacher, isLoading } = useTeacher()
+const { isLoading: isLoadingSchedule, getScheduleByMonthAndClass, createSchedule, updateSchedule,currentSchedule } = useSchedule()
 
-// États de filtrage et pagination
+// Gestion des classes
+const classesList = ['Petit', 'Débutant', 'Moyen', 'JuniorA', 'JuniorB']
+const selectedClass = ref('JuniorA') // JuniorA par défaut au chargement
+
+// États filtrage & pagination
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 3
 
-// États des modales
+// États modales
 const showFormModal = ref(false)
 const showAssignModal = ref(false)
 const isEditMode = ref(false)
-const isPublishing = ref(false)
-const hasExistingSchedule = ref(false) // Permet d'arbitrer entre POST et PUT
+const hasExistingSchedule = ref(false) // Arbitre l'upsert pour le couple MonthKey + Classe
 
-// Cible active de formulaire
+// Formulaire enseignant
 const selectedTeacher = ref<Teacher | null>(null)
 const form = reactive({
   id: '',
@@ -314,113 +327,106 @@ const form = reactive({
   quarter: ''
 })
 
-// --- STRUCTURE ET ÉTAT DU PLANNING MENSUEL ---
-const schedule = ref<ScheduleRow[]>([])
+// --- ÉTAT DU PLANNING (Local et Global pour conflits) ---
+const localSchedule = ref<LocalScheduleRow[]>([])
+const globalScheduleRowsFromServer = ref<any[]>([]) // Cache la structure globale brute reçue de l'API
 const activeCell = ref<{ rowIndex: number; slotType: SlotType } | null>(null)
 
-// Format de clé dynamique pour le mois actuel "YYYY-MM" (2026-06)
 const currentMonthKey = computed(() => {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  return `${year}-${month}`
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 })
 
-// Algorithme de génération des dimanches du mois courant
-const generateCurrentMonthSundays = (): ScheduleRow[] => {
-  const sundays: ScheduleRow[] = []
+const generateCurrentMonthSundays = (): LocalScheduleRow[] => {
+  const sundays: LocalScheduleRow[] = []
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth()
-
   const date = new Date(year, month, 1)
 
-  while (date.getDay() !== 0) {
-    date.setDate(date.getDate() + 1)
-  }
+  while (date.getDay() !== 0) { date.setDate(date.getDate() + 1) }
 
   while (date.getMonth() === month) {
     const dayNum = date.getDate()
-    let displayDay = `${dayNum}`
-    
-    if (dayNum === 1) {
-      displayDay = '1er'
-    }
-
-    const monthsShort = [
-      'Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 
-      'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'
-    ]
-    const currentMonthLabel = monthsShort[month] || ''
+    const displayDay = dayNum === 1 ? '1er' : `${dayNum}`
+    const monthsShort = ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc']
 
     sundays.push({
-      dateLabel: `Dim ${displayDay} ${currentMonthLabel}`,
-      assignments: {
-        NORMAL: [],
-        SUNDAY_SCHOOL: [],
-        DLT: []
-      }
+      dateLabel: `Dim ${displayDay} ${monthsShort[month]}`,
+      assignments: { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }
     })
-
     date.setDate(date.getDate() + 7)
   }
-
   return sundays
 }
 
 // Chargement initial
 onMounted(async () => {
-  schedule.value = generateCurrentMonthSundays()
-  
-  // Exécution parallèle du chargement des enseignants et de l'EDT existant
+  localSchedule.value = generateCurrentMonthSundays()
   await Promise.all([
     fetchAllTeachers(),
     loadExistingSchedule()
   ])
 })
 
-// Récupération de l'emploi du temps existant si disponible (GET)
-const loadExistingSchedule = async () => {
-  try {
-    const response = await $fetch<any>(`/api/schedules/${currentMonthKey.value}`, {
-      method: 'GET'
-    })
+// Rechargement dynamique quand la classe change
+const onClassChange = async () => {
+  localSchedule.value = generateCurrentMonthSundays()
+  await loadExistingSchedule()
+}
 
-    if (response && response.success && Array.isArray(response.rows)) {
-      schedule.value = response.rows
-      hasExistingSchedule.value = true
-      console.log(`[Vue Schedule] Planning existant chargé pour ${currentMonthKey.value}`)
-    }
-  } catch (error: any) {
-    // Si l'erreur est un 404, c'est normal (aucun planning créé pour l'instant)
-    if (error.statusCode === 404) {
-      hasExistingSchedule.value = false
-      console.log(`[Vue Schedule] Aucun planning préexistant pour ${currentMonthKey.value}. Mode création (POST).`)
-    } else {
-      console.error('[Vue Schedule] Erreur lors de la vérification du planning existant:', error)
-    }
+// Interrogation asynchronisée du composable
+const loadExistingSchedule = async () => {
+  await getScheduleByMonthAndClass(currentMonthKey.value, selectedClass.value)
+  
+  if (currentSchedule.value) {
+    // Stockage global brute pour notre algorithme anti-collision
+    globalScheduleRowsFromServer.value = currentSchedule.value.rows
+
+    // Extraction et mapping des données de la classe sélectionnée dans notre structure locale
+    localSchedule.value = currentSchedule.value.rows.map((row: any) => {
+      const classData = row
+      return {
+        dateLabel: row.dateLabel,
+        assignments: {
+          NORMAL: classData.assignments?.NORMAL || [],
+          SUNDAY_SCHOOL: classData.assignments?.SUNDAY_SCHOOL || [],
+          DLT: classData.assignments?.DLT || []
+        }
+      }
+    })
+    hasExistingSchedule.value = true
+  } else {
+    hasExistingSchedule.value = false
+    globalScheduleRowsFromServer.value = []
   }
 }
 
-// --- LOGIQUE FILTRAGE TABLEAU ---
-const filteredTeachers = computed(() => {
-  if (!searchQuery.value.trim()) return listTeachers.value
-  const query = searchQuery.value.toLowerCase()
-  return listTeachers.value.filter(t => 
-    t.first_name.toLowerCase().includes(query) || 
-    t.last_name.toLowerCase().includes(query)
-  )
-})
+// --- ANTI-COLLISION SUR UN MÊME CRÉNEAU UN MÊME DIMANCHE ---
+const isTeacherConflictingElsewhere = (teacherId: string): boolean => {
+  if (!activeCell.value) return false
+  
+  const currentTargetRow = localSchedule.value[activeCell.value.rowIndex]
+  if (!currentTargetRow) return false
 
-const totalPages = computed(() => Math.ceil(filteredTeachers.value.length / itemsPerPage) || 1)
-const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
-const endIndex = computed(() => startIndex.value + itemsPerPage)
-const paginatedTeachers = computed(() => filteredTeachers.value.slice(startIndex.value, endIndex.value))
+  // Recherche de la ligne équivalente dans l'historique global du serveur
+  const serverRow = globalScheduleRowsFromServer.value.find(r => r.dateLabel === currentTargetRow.dateLabel)
+  if (!serverRow || !serverRow.classes) return false
 
-const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+  // On vérifie le même type de séance sur toutes les AUTRES classes
+  for (const cName of Object.keys(serverRow.classes)) {
+    if (cName === selectedClass.value) continue // On ignore la classe courante
+    
+    const targetSlotAssignments = serverRow.classes[cName]?.[activeCell.value.slotType] || []
+    if (targetSlotAssignments.includes(teacherId)) {
+      return true // Trouvé ailleurs sur la même séance ! Conflit validé.
+    }
+  }
 
-// --- LOGIQUE METIER PLANNING ---
+  return false
+}
+
+// --- LOGIQUE METIER ET AFFECTATIONS ---
 const getTeacherDisplayName = (id: string): string => {
   const teacher = listTeachers.value.find(t => t.id === id)
   return teacher ? `${teacher.first_name} ${teacher.last_name.substring(0, 1)}.` : 'Inconnu'
@@ -433,73 +439,64 @@ const openAssignmentManager = (rowIndex: number, slotType: SlotType) => {
 
 const isTeacherSelectedInActiveCell = (teacherId: string): boolean => {
   if (!activeCell.value) return false
-  const row = schedule.value[activeCell.value.rowIndex]
-  if (!row) return false
-  const cell = row.assignments[activeCell.value.slotType]
-  return cell.includes(teacherId)
+  return localSchedule.value[activeCell.value.rowIndex]?.assignments[activeCell.value.slotType].includes(teacherId) || false
 }
 
 const toggleTeacherInCell = (teacherId: string) => {
   if (!activeCell.value) return
   
-  const row = schedule.value[activeCell.value.rowIndex]
-  if (!row) return
+  // Sécurité anti-collision active
+  if (isTeacherConflictingElsewhere(teacherId)) {
+    toast.error('Enseignant indisponible', 'Ce moniteur supervise déjà une séance identique dans une autre classe ce jour-là.')
+    return
+  }
 
-  const currentCell = row.assignments[activeCell.value.slotType]
+  const currentCell = localSchedule.value[activeCell.value.rowIndex].assignments[activeCell.value.slotType]
   const index = currentCell.indexOf(teacherId)
 
   if (index > -1) {
     currentCell.splice(index, 1)
     toast.info('Affectation retirée')
   } else {
-    if (currentCell.length >= 2) {
-      toast.warning('Limite atteinte', 'Un maximum de 2 enseignants peut être affecté à ce créneau.')
-      return
-    }
-    currentCell.push(teacherId)
+    currentCell.push(teacherId) // Pas de limitation stricte à 2
     toast.success('Moniteur affecté au planning')
   }
 }
 
-// --- LOGIQUE DE PUBLICATION EFFECTIVE (POST / PUT) ---
+// --- PERSISTENCE DE L'UPSERT VIA COMPOSABLE ---
 const publishSchedule = async () => {
-  if (isPublishing.value) return
-  isPublishing.value = true
+  let response
+  
+  if (hasExistingSchedule.value) {
+    response = await updateSchedule(currentMonthKey.value, selectedClass.value, localSchedule.value, 'published')
+  } else {
+    response = await createSchedule(currentMonthKey.value, selectedClass.value, localSchedule.value, 'published')
+  }
 
-  try {
-    // Arbitrage dynamique selon l'état actuel de la base
-    const method = hasExistingSchedule.value ? 'PUT' : 'POST'
-    const url = hasExistingSchedule.value 
-      ? `/api/schedules/${currentMonthKey.value}` 
-      : '/api/schedules'
-
-    const payload = {
-      monthKey: currentMonthKey.value,
-      status: 'published',
-      rows: schedule.value
-    }
-
-    const response = await $fetch<any>(url, {
-      method,
-      body: payload
-    })
-
-    if (response && response.success) {
-      hasExistingSchedule.value = true // Fixé à true car l'entité existe désormais en base
-      toast.success(
-        hasExistingSchedule.value ? 'Planning mis à jour' : 'Planning partagé', 
-        `L'emploi du temps mensuel a été enregistré avec succès pour ${currentMonthKey.value}.`
-      )
-    }
-  } catch (err: any) {
-    console.error('[Vue Schedule publish] Échec :', err)
-    toast.error('Échec de publication', err.statusMessage || 'Une erreur est survenue lors de l\'enregistrement.')
-  } finally {
-    isPublishing.value = false
+  if (response) {
+    hasExistingSchedule.value = true
+    // Rechargement du cache pour mettre à jour les règles de conflits
+    await loadExistingSchedule()
   }
 }
 
-// --- CONTROLEURS DES FORMULAIRES ENSEIGNANTS ---
+// --- LOGIQUE FILTRAGE ET COMPOSANTS DE BASE (INCHANGÉS) ---
+const filteredTeachers = computed(() => {
+  if (!searchQuery.value.trim()) return listTeachers.value
+  const query = searchQuery.value.toLowerCase()
+  return listTeachers.value.filter(t => 
+    t.first_name.toLowerCase().includes(query) || t.last_name.toLowerCase().includes(query)
+  )
+})
+
+const totalPages = computed(() => Math.ceil(filteredTeachers.value.length / itemsPerPage) || 1)
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
+const endIndex = computed(() => startIndex.value + itemsPerPage)
+const paginatedTeachers = computed(() => filteredTeachers.value.slice(startIndex.value, endIndex.value))
+
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+
 const openAddModal = () => {
   isEditMode.value = false
   selectedTeacher.value = null
@@ -536,13 +533,9 @@ const submitForm = async () => {
     toast.warning('Formulaire incomplet', 'Veuillez remplir tous les champs obligatoires (*).')
     return
   }
-
   try {
     if (isEditMode.value) {
-      await updateTeacher(form.id, {
-        quarter: form.quarter,
-        tel: form.tel
-      })
+      await updateTeacher(form.id, { quarter: form.quarter, tel: form.tel })
       toast.success('Modifications enregistrées', `La fiche de ${form.first_name} a été mise à jour.`)
     } else {
       toast.success('Nouvelle fiche créée', `L'enseignant ${form.first_name} a rejoint l'EDCE.`)

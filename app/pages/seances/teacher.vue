@@ -157,7 +157,7 @@
         <div v-show="currentStep === 3" class="p-4 sm:p-6 md:p-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <header class="mb-5">
             <h2 class="font-h2 text-on-surface mb-1 font-semibold text-lg sm:text-xl">Récapitulatif & Validation</h2>
-            <p class="text-xs sm:text-body-md text-on-surface-variant opacity-70">Choisissez un superviseur de séance puis validez le résumé.</p>
+            <p class="text-xs sm:text-body-md text-on-surface-variant opacity-70">Choisissez l'équipe d'encadrement puis validez le résumé.</p>
           </header>
 
           <div class="space-y-5">
@@ -186,7 +186,7 @@
               </h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-[180px] overflow-y-auto pr-1">
                 <div
-                  v-for="teacher in filteredTeachers"
+                  v-for="teacher in filteredSupervisors"
                   :key="teacher.id"
                   @click="toggleSupervisorSelection(teacher.id)"
                   :class="[
@@ -210,7 +210,44 @@
                       teacher.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
                     ]"
                   >
-                    <Icon v-if="teacher.selected" name="check" class="text-white text-[10px]" />
+                    <div v-if="teacher.selected" class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xs sm:text-label-md text-on-surface font-semibold mb-3 flex items-center gap-2">
+                <Icon name="group" class="text-primary"/>
+                Désigner les autres moniteurs
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 h-[180px] overflow-y-auto pr-1">
+                <div
+                  v-for="assistant in filteredAssistants"
+                  :key="assistant.id"
+                  @click="toggleAssistantSelection(assistant.id)"
+                  :class="[
+                    'flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all duration-200',
+                    assistant.selected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-outline-variant/20 hover:bg-surface-container-low'
+                  ]"
+                >
+                  <div class="w-8 h-8 rounded-full bg-outline text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    {{ assistant.first_name.charAt(0) }}
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-on-surface truncate text-doomu-text">
+                      {{ assistant.first_name.toUpperCase() }} {{ assistant.last_name }}
+                    </p>
+                  </div>
+
+                  <div
+                    :class="[
+                      'w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0',
+                      assistant.selected ? 'bg-primary border-primary' : 'border-outline-variant bg-transparent'
+                    ]"
+                  >
+                    <Icon v-if="assistant.selected" name="check" class="text-white text-[10px]" />
                   </div>
                 </div>
               </div>
@@ -288,50 +325,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
 import { definePageMeta, useRouter } from '#imports'
-import { classes } from '~/stores/child'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useChildren } from '~/composables/useChild'
-import { useTeacher } from '~/composables/useTeacher'
+import { useParticipantSeance } from '~/composables/useParticipant'
 import { useSeance } from '~/composables/useSeance'
+import { useSupervisorSeance } from '~/composables/useSupervisor'
+import { useTeacher } from '~/composables/useTeacher'
 import { useToast } from '~/composables/useToast'
+import { useAuthStore } from '~/stores/auth'
+import { classes } from '~/stores/child'
+import type { Child } from '~/types/child'
 import type { ClasseType } from '~/types/classe'
 import type { SeanceType } from '~/types/seance'
-import type { Child } from '~/types/child'
-import { useAuthStore } from '~/stores/auth'
-import { useParticipantSeance } from '~/composables/useParticipant'
 
-// --- CORRECTION DU TYPE POUR L'UI ---
-// On crée un type local qui inclut la propriété 'selected' requise par le template
 type ChildWithSelection = Child & { selected: boolean }
+type TeacherWithSelection = { id: string; first_name: string; last_name: string; selected: boolean }
 
 definePageMeta({
   layout: 'dashboard'
 })
 
-// --- INSTANCIATION DES COMPOSABLES ---
 const authStore = useAuthStore()
 const toast = useToast()
 const router = useRouter()
 
 const { childrenPerClass, fetchAllChildren } = useChildren()
 const { listTeachers, fetchAllTeachers } = useTeacher()
+const { create } = useSupervisorSeance()
 
-// Composable Séances (Gestion de la fiche racine)
 const seanceStore = useSeance()
 const { createSeance, listSeances } = seanceStore
 
-// Composable Participants (Gestion de l'émargement des présents)
 const participantSeanceStore = useParticipantSeance()
 const { createParticipantSeance } = participantSeanceStore
 
-// --- ÉTATS DU STEPPER & INTERFACE ---
+// --- ÉTATS ---
 const currentStep = ref(1)
 const isSubmitting = ref(false)
 const showSuccessModal = ref(false)
 const searchTerm = ref('')
 
-// Formulaire racine réactif
 const form = ref({
   title: '',
   date: new Date(),
@@ -347,66 +381,54 @@ const steps = [
   { id: 3, label: 'Confirmation' }
 ]
 
-// --- CACHING DES LISTES LOCALES ---
-// Utilisation du type étendu pour éviter les erreurs 2339
+// --- CACHING SEPARÉ DES LISTES LOCALES ---
 const children = ref<ChildWithSelection[]>([])
-const teachers = ref<any[]>([])
+const supervisors = ref<TeacherWithSelection[]>([])
+const assistantTeachers = ref<TeacherWithSelection[]>([])
 
-// --- FONCTION DE SYNCHRONISATION DE LA CLASSE ---
-// Centralise la logique pour éviter les crashs si le store est vide au départ
 const updateChildrenList = (targetClass: ClasseType) => {
   const targets = childrenPerClass.value[targetClass] || []
-  children.value = targets.map(c => ({
-    ...c,
-    selected: false
-  }))
+  children.value = targets.map(c => ({ ...c, selected: false }))
 }
 
-// Recalcule la liste des enfants et des superviseurs si la classe change à l'Étape 1
+// Watcher de changement de classe à l'Étape 1
 watch(() => form.value.classe, (newClass) => {
   updateChildrenList(newClass)
-
-  teachers.value = listTeachers.value
-    .filter(t => t.id !== form.value.authorId)
-    .map(t => ({
-      ...t,
-      selected: false
-    }))
 }, { immediate: true })
 
-// Dans ton bloc "CACHING DES LISTES LOCALES / WATCHERS"
-
-// 1. Ton watcher existant pour les enfants :
 watch(childrenPerClass, () => {
   updateChildrenList(form.value.classe)
 }, { deep: true })
 
-// 2. LA CORRECTION : Ajoute ce watcher pour les enseignants 🟢
+// Remplissage initial et mise à jour des listes de d'enseignants
 watch(listTeachers, (newList) => {
-  teachers.value = newList
-    .filter(t => t.id !== form.value.authorId)
-    .map(t => ({
-      ...t,
-      selected: false
-    }))
+  const filteredList = newList.filter(t => t.id !== form.value.authorId)
+  
+  supervisors.value = filteredList.map(t => ({ ...t, selected: false }))
+  assistantTeachers.value = filteredList.map(t => ({ ...t, selected: false }))
 }, { deep: true, immediate: true })
 
-
-// --- PROPRIÉTÉS CALCULÉES (FILTRES RECHERCHE) ---
+// --- COMPUTES (FILTRAGE ET RÈGLES MÉTIERS COISÉES) ---
 const filteredChildren = computed<ChildWithSelection[]>(() => {
   if (!searchTerm.value.trim()) return children.value
   return children.value.filter(c => c.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
 })
 
-const filteredTeachers = computed(() => {
-  return teachers.value
+// Les superviseurs éligibles (Exclut l'auteur, et optionnellement les profs cochés comme assistants si désiré)
+const filteredSupervisors = computed(() => {
+  return supervisors.value
+})
+
+// RÈGLE MÉTIER : Les assistants disponibles ne peuvent pas inclure le superviseur sélectionné
+const filteredAssistants = computed(() => {
+  return assistantTeachers.value.filter(t => t.id !== form.value.supervisorId)
 })
 
 const selectedCount = computed(() => {
   return children.value.filter(c => c.selected).length
 })
 
-// --- ACTIONS MÉTIERS (SÉLECTIONS) ---
+// --- GESTION DES SELECTIONS ---
 const toggleChild = (id: string) => {
   const child = children.value.find(c => c.id === id)
   if (child) child.selected = !child.selected
@@ -417,8 +439,9 @@ const toggleSelectAll = () => {
   children.value.forEach(c => (c.selected = !allSelected))
 }
 
+// Sélection Unique du Superviseur Obligatoire
 const toggleSupervisorSelection = (id: string) => {
-  teachers.value.forEach(t => {
+  supervisors.value.forEach(t => {
     if (t.id === id) {
       t.selected = !t.selected
       form.value.supervisorId = t.selected ? t.id : ''
@@ -428,7 +451,15 @@ const toggleSupervisorSelection = (id: string) => {
   })
 }
 
-// --- NAVIGATIONS DU STEPPER ---
+// Multi-sélection des Assistants Moniteurs
+const toggleAssistantSelection = (id: string) => {
+  const assistant = assistantTeachers.value.find(t => t.id === id)
+  if (assistant) {
+    assistant.selected = !assistant.selected
+  }
+}
+
+// --- CONTROLE NAVIGATION STEPPER ---
 const goToStep = (step: number) => {
   if (step < currentStep.value || validateStep(currentStep.value)) {
     currentStep.value = step
@@ -459,7 +490,7 @@ const validateStep = (step: number): boolean => {
   return true
 }
 
-// --- 📤 VALIDATION ET ENVOI CRÉATION SÉANCE + PARTICIPANTS (ONE BY ONE) ---
+// --- SOUMISSION GLOBALE ---
 const handleSubmit = async () => {
   if (!form.value.supervisorId) {
     toast.info('Superviseur manquant', "Faites le choix obligatoire d'un superviseur témoin.")
@@ -468,7 +499,7 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true
   try {
-    // 1. Création de la fiche séance sur le serveur
+    // 1. Création de la fiche séance racine
     await createSeance({
       title: form.value.title,
       type: form.value.type,
@@ -477,7 +508,7 @@ const handleSubmit = async () => {
       supervisorId: form.value.supervisorId
     })
 
-    // 2. Récupération de la séance qu'on vient d'insérer en prenant la plus récente du tableau mis à jour
+    // 2. Récupération de l'ID généré de la séance
     const updatedSeances = listSeances.value
     const latestSeance = updatedSeances[updatedSeances.length - 1]
 
@@ -485,23 +516,35 @@ const handleSubmit = async () => {
       throw new Error("Impossible de retrouver l'identifiant de la séance créée.")
     }
 
-    // 3. Filtrer uniquement les enfants cochés présents
-    const checkedChildren = children.value.filter(c => c.selected)
+    // 3. Envoi du Superviseur Obligatoire dans la table de jointure
+    await create({
+      seanceId: latestSeance.id,
+      supervisorSeanceId: form.value.supervisorId
+    })
 
-    // 4. Inscription des participants "One by One" via le composable dédié
+    // 4. Envoi Séquentiel ("One by One") des autres moniteurs sélectionnés
+    const selectedAssistants = assistantTeachers.value.filter(t => t.selected)
+    for (const assistant of selectedAssistants) {
+      await create({
+        seanceId: latestSeance.id,
+        supervisorSeanceId: assistant.id
+      })
+    }
+
+    // 5. Envoi Séquentiel des enfants présents
+    const checkedChildren = children.value.filter(c => c.selected)
     for (const child of checkedChildren) {
       await createParticipantSeance({
-        id: `part-seance-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, // ID unique dynamique
-        seanceId: latestSeance.id, // L'ID récupéré dynamiquement du serveur
+        id: `part-seance-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        seanceId: latestSeance.id,
         childId: child.id
       })
     }
     
-    // Tout s'est bien passé ! Affichage du modal de succès.
     showSuccessModal.value = true
   } catch (error) {
     console.error(error)
-    toast.error('Erreur', "Échec lors de la création de la séance ou de l'émargement des élèves.")
+    toast.error('Erreur', "Échec lors de la création de la séance ou de l'émargement.")
   } finally {
     isSubmitting.value = false
   }
@@ -521,7 +564,6 @@ const finishProcess = () => {
 onMounted(async () => {
   await fetchAllChildren()
   await fetchAllTeachers()
-  // Sécurité pour forcer le premier rendu si les données sont déjà là en cache
   updateChildrenList(form.value.classe)
 })
 </script>

@@ -221,6 +221,10 @@
         <label class="block font-caption text-[11px] text-outline mb-1">Téléphone Personnel</label>
         <input v-model="formChild.tel" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" placeholder="Ex: 0198564789" type="text" />
       </div>
+      <div>
+        <label class="block font-caption text-[11px] text-outline mb-1">Quartier <span class="text-error"></span></label>
+        <input v-model="formChild.quarter" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: Yénawa 2e Von..." type="text" />
+      </div>
 
       <div class="py-1">
         <button v-if="authStore.isAdmin || permissionsLocal.canCreateChild"
@@ -381,7 +385,11 @@
       </div>
       <div>
         <p class="text-xs text-doomu-text-muted">Téléphone Parent</p>
-        <p class="font-medium text-doomu-text">{{ childSelected.telParent }}</p>
+        <p class="font-medium text-doomu-text">{{ childSelected.telParent || 'Non défini' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-doomu-text-muted">Quartier</p>
+        <p class="font-medium text-doomu-text">{{ childSelected.quarter || 'Non défini' }}</p>
       </div>
     </div>
   </div>
@@ -428,6 +436,10 @@
       <div>
         <label class="block font-caption text-xs text-outline mb-1.5">Téléphone Parent</label>
         <input v-model="childSelected.telParent" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" required />
+      </div>
+      <div>
+        <label class="block font-caption text-xs text-outline mb-1.5">Quartier</label>
+        <input v-model="childSelected.quarter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" required />
       </div>
     </form>
   </div>
@@ -540,6 +552,7 @@ const formChild = ref<childSubmit>({
   sexeParent: 'Masculin',
   tel: '',
   telParent: '',
+  quarter: '',
 })
 
 const nivScolaireByClasse=computed(()=>{
@@ -663,6 +676,7 @@ const handleSubmit = async () => {
       classe: formChild.value.classe,
       nivScolaire: formChild.value.nivScolaire,
       sexeParent: formChild.value.sexeParent,
+      quarter: formChild.value.quarter||'Non défini',
       tel: formChild.value.tel || 'Aucun',
       telParent: formChild.value.telParent
     })
@@ -679,6 +693,7 @@ const handleSubmit = async () => {
       sexeParent: 'Masculin',
       tel: '',
       telParent: '',
+      quarter: ''
     }
     dateSelected.value = ""
   } catch (err) {
@@ -695,7 +710,8 @@ const handleUpdate = async () => {
       sexe: childSelected.value.sexe,
       classe: childSelected.value.classe,
       nivScolaire: childSelected.value.nivScolaire,
-      telParent: childSelected.value.telParent
+      telParent: childSelected.value.telParent,
+      quarter: childSelected.value.quarter
     }
     
     if (editDateSelected.value) {

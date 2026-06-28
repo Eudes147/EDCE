@@ -145,6 +145,10 @@ const linksDashboard = computed(() => [
   { to: '/activities', icon: 'history', label: 'Activités', display: true },
   { to: '/settings', icon: 'settings', label: 'Paramètres', display: authStore.isAdmin },
   { to: '/schedule', icon: 'event_busy', label: 'Planning', display: !authStore.isAdmin },
+  {to: '/presenceSeance', icon: 'class', label: 'Présences', display: authStore.userStatus == 'moderator'},
+  {to: '/presenceSeance/admin', icon: 'class', label: 'Présences', display: authStore.isAdmin},
+  {to: '/presenceReunion', icon: 'meeting_room', label: 'Omnétique', display: authStore.userStatus == 'moderator'},
+  {to: '/presenceReunion/admin', icon: 'meeting_room', label: 'Omnétique', display: authStore.isAdmin}
 ])
 
 // Liens filtrés pour la version Desktop

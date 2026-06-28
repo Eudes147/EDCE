@@ -14,9 +14,17 @@ export default defineNuxtRouteMiddleware((to) => {
     '/classes',
     '/teachers',
     '/events',
+    '/presenceSeance/admin',
+    '/presenceReunion/admin'
   ]
   const adminAndModeratorOnlyRoutes=[
     '/seances/admin'
+  ]
+
+  const moderatorsOnlyRoutes=[
+    '/presenceSeance',
+    '/presenceReunion'
+
   ]
 
   const teachersOnlyRoutes=[
@@ -67,8 +75,10 @@ export default defineNuxtRouteMiddleware((to) => {
   const isAdminAndModeratorRoute=adminAndModeratorOnlyRoutes.includes(currentPath)
 
   const isTeacherRoute=teachersOnlyRoutes.includes(currentPath)
+  const isModeratorRoute=moderatorsOnlyRoutes.includes(currentPath)
+
   
-  if ((isAdminRoute || isAdminAndModeratorRoute) && authStore.userStatus == 'teacher') {
+  if ((isAdminRoute || isAdminAndModeratorRoute || isModeratorRoute) && authStore.userStatus == 'teacher') {
     // Si un prof ou modérateur tente d'aller sur /dashboard, /settings, /classes ou /teachers
     // Il est bloqué et renvoyé sur ses séances !
     return navigateTo('/seances/teacher')
@@ -77,5 +87,8 @@ export default defineNuxtRouteMiddleware((to) => {
     // Si un prof ou modérateur tente d'aller sur /dashboard, /settings, /classes ou /teachers
     // Il est bloqué et renvoyé sur ses séances !
     return navigateTo('/seances/admin')
+  }
+  else if((isTeacherRoute || isModeratorRoute) && authStore.isAdmin){
+    return navigateTo('/dashboard')
   }
 })

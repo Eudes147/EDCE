@@ -3,10 +3,12 @@ export interface MonthlySchedulePayload {
   status: 'draft' | 'published'
   rows: {
     dateLabel: string
-    assignments: {
-      NORMAL: string[]
-      SUNDAY_SCHOOL: string[]
-      DLT: string[]
+    classes: {
+      [className: string]: {
+        NORMAL: string[]
+        SUNDAY_SCHOOL: string[]
+        DLT: string[]
+      }
     }
   }[]
 }

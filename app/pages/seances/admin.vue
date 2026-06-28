@@ -96,31 +96,9 @@
               </td>
             </tr>
 
-            <tr v-if="isLoading">
+            <tr v-if="isLoading || isGlobalTeachersLoading">
               <td colspan="4" class="px-6 py-12 text-center text-on-surface-variant text-xs md:text-sm font-medium">
-                <span class="inline-block">
-                  <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 24 24"
-        class="w-4 h-4 sm:w-8 sm:h-8 md:w-12 md:h-12 fill-primary"
-      >
-        <!-- Icon from Material Line Icons by Vjacheslav Trushkin - https://github.com/cyberalien/line-md/blob/master/license.txt -->
-        <g>
-          <circle cx="12" cy="3.5" r="1.5">
-            <animateTransform attributeName="transform" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="0 12 12;90 12 12;180 12 12;270 12 12"/>
-            <animate attributeName="opacity" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
-          </circle>
-          <circle cx="12" cy="3.5" r="1.5" transform="rotate(30 12 12)">
-            <animateTransform attributeName="transform" begin="0.2s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="30 12 12;120 12 12;210 12 12;300 12 12"/>
-            <animate attributeName="opacity" begin="0.2s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
-          </circle>
-          <circle cx="12" cy="3.5" r="1.5" transform="rotate(60 12 12)">
-            <animateTransform attributeName="transform" begin="0.4s" calcMode="discrete" dur="2.4s" repeatCount="indefinite" type="rotate" values="60 12 12;150 12 12;240 12 12;330 12 12"/>
-            <animate attributeName="opacity" begin="0.4s" dur="0.6s" repeatCount="indefinite" values="1;1;0"/>
-          </circle>
-        </g>
-      </svg>
-                </span> Chargement...
+                Chargement...
               </td>
             </tr>
             <tr v-else-if="!getSeancebyMonthAndClasse || getSeancebyMonthAndClasse.length === 0">
@@ -164,10 +142,6 @@
               {{ getAuthorSupervisorbySeance(seanceModal)?.supervisorName || 'Aucun superviseur' }}
             </p>
           </div>
-          <div class="sm:col-span-2 border-t border-outline-variant/40 pt-3 mt-1">
-            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Identifiant Technique</p>
-            <p class="font-mono text-[11px] sm:text-xs text-primary bg-primary/5 border border-primary/10 px-2 py-1 rounded mt-1 break-all font-semibold">{{ seanceModal.id }}</p>
-          </div>
         </div>
       </div>
       <template #footer>
@@ -180,14 +154,22 @@
             <Icon name="groups" size="1.1rem" />
             Voir les participants
           </button>
+          <button 
+            v-if="seanceModal"
+            class="flex items-center justify-center gap-2 px-4 py-2 bg-tertiary text-white rounded-lg font-semibold hover:opacity-90 transition-opacity shadow-sm text-xs sm:text-sm w-full sm:w-auto"
+            @click="openSuperVisorsFromView"
+          >
+            <Icon name="school" size="1.1rem" />
+            Voir les moniteurs
+          </button>
           
           <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface transition-colors hover:bg-surface-container text-xs sm:text-sm font-medium w-full sm:w-auto sm:ml-auto" @click="showViewModal = false">Fermer</button>
         </div>
       </template>
     </Modal>
 
-    <Modal v-model="showEditModal" title="Modifier la séance" size="md">
-      <div v-if="seanceModal" class="space-y-4 py-1">
+    <Modal v-model="showEditModal" title="Modifier la séance" size="lg">
+      <div v-if="seanceModal" class="space-y-5 py-1">
         <form @submit.prevent="handleUpdate" id="editSeanceForm" class="space-y-4">
           <div>
             <label class="block font-caption text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5">Titre de la Séance</label>
@@ -210,6 +192,66 @@
               <select v-model="seanceModal.classe" class="w-full bg-white border border-outline-variant rounded-lg text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2.5 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary font-medium cursor-pointer">
                 <option v-for="c in classes" :key="c" :value="c">{{ c }}</option>
               </select>
+            </div>
+          </div>
+
+          <hr class="border-outline-variant/30 my-4">
+
+          <div>
+            <label class="block font-caption text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              Superviseur Principal (Obligatoire)
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto p-1 border border-outline-variant/30 rounded-xl custom-scrollbar bg-surface-container-lowest">
+              <div 
+                v-for="teacher in availableSupervisorsList" 
+                :key="`sup-${teacher.id}`"
+                @click="selectedSupervisorId = teacher.id"
+                :class="[
+                  'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all',
+                  selectedSupervisorId === teacher.id ? 'bg-primary/5 border-primary shadow-xs' : 'bg-white border-outline-variant/30 hover:bg-surface-container-low'
+                ]"
+              >
+                <input 
+                  type="radio" 
+                  :id="`radio-${teacher.id}`" 
+                  :value="teacher.id" 
+                  v-model="selectedSupervisorId"
+                  class="text-primary focus:ring-primary/20 h-3.5 w-3.5 border-outline-variant"
+                  @click.stop
+                />
+                <label :for="`radio-${teacher.id}`" class="text-xs font-medium text-on-surface truncate cursor-pointer">
+                  {{ teacher.first_name.toUpperCase() }} {{ teacher.last_name }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="block font-caption text-[10px] sm:text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              Autres Moniteurs présents (Optionnel)
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto p-1 border border-outline-variant/30 rounded-xl custom-scrollbar bg-surface-container-lowest">
+              <div 
+                v-for="teacher in availableAssistantsList" 
+                :key="`asst-${teacher.id}`"
+                @click="toggleAssistantSelection(teacher.id)"
+                :class="[
+                  'flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all',
+                  selectedAssistantIds.includes(teacher.id) ? 'bg-secondary/5 border-secondary shadow-xs' : 'bg-white border-outline-variant/30 hover:bg-surface-container-low'
+                ]"
+              >
+                <input 
+                  type="checkbox" 
+                  :id="`check-${teacher.id}`" 
+                  :value="teacher.id" 
+                  v-model="selectedAssistantIds"
+                  class="rounded text-secondary focus:ring-secondary/20 h-3.5 w-3.5 border-outline-variant"
+                  @click.stop
+                />
+                <label :for="`check-${teacher.id}`" class="text-xs font-medium text-on-surface truncate cursor-pointer">
+                  {{ teacher.first_name.toUpperCase() }} {{ teacher.last_name }}
+                </label>
+              </div>
             </div>
           </div>
         </form>
@@ -276,7 +318,7 @@
             </div>
           </div>
 
-          <div v-else class="text-center py-8 border border-dashed border-outline-variant rounded-xl bg-surface-container-low/30">
+          <div class="text-center py-8 border border-dashed border-outline-variant rounded-xl bg-surface-container-low/30" v-else>
             <Icon name="face" size="1.8rem" class="text-on-surface-variant/40 mb-1.5 mx-auto" />
             <p class="font-body text-xs italic text-on-surface-variant">Aucun enfant n'a été émargé présent pour cette séance.</p>
           </div>
@@ -284,6 +326,53 @@
       </div>
       <template #footer>
         <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface transition-colors hover:bg-surface-container text-xs sm:text-sm font-medium ml-auto" @click="showParticipantsModal = false">Fermer</button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showSupervisorsModal" title="Liste des autres Moniteurs" size="lg">
+      <div v-if="seanceModal" class="space-y-4 py-1">
+        <div class="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/40 flex flex-col gap-0.5">
+          <span class="text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Séance sélectionnée</span>
+          <h4 class="font-bold text-sm sm:text-base text-on-surface leading-tight">{{ seanceModal.title }}</h4>
+          <p class="text-xs text-on-surface-variant flex items-center gap-2 mt-0.5">
+            <span class="px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] sm:text-xs rounded font-semibold">{{ seanceModal.classe }}</span>
+            <span class="text-on-surface-variant/50">•</span> 
+            <span class="font-medium">{{ formatDate(seanceModal.created_at) }}</span>
+          </p>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center border-b border-outline-variant/40 pb-2">
+            <span class="font-bold text-[10px] sm:text-xs uppercase tracking-wide text-on-surface-variant">Moniteurs présents</span>
+            <span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[11px] rounded-full font-bold">
+              {{ currentSeanceSupervisors?.length || 0 }} inscrit(s)
+            </span>
+          </div>
+
+          <div v-if="currentSeanceSupervisors?.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+            <div 
+              v-for="supervisor in currentSeanceSupervisors" 
+              :key="supervisor.id"
+              class="flex items-center gap-3 p-2.5 bg-surface-container-low/40 rounded-xl border border-outline-variant/40 hover:border-outline-variant transition-all"
+            >
+              <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] uppercase flex-shrink-0">
+                {{ supervisor?.first_name[0] }}{{ supervisor?.last_name[0] }}
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-body text-xs sm:text-sm text-on-surface font-semibold truncate">{{ supervisor?.first_name }} {{ supervisor?.last_name }}</span>
+                <span v-if="supervisor.tel" class="text-[11px] text-on-surface-variant font-medium truncate">{{ supervisor.tel }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center py-8 border border-dashed border-outline-variant rounded-xl bg-surface-container-low/30" v-else>
+            <Icon name="face" size="1.8rem" class="text-on-surface-variant/40 mb-1.5 mx-auto" />
+            <p class="font-body text-xs italic text-on-surface-variant">Aucun autre moniteur n'a été émargé présent pour cette séance.</p>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface transition-colors hover:bg-surface-container text-xs sm:text-sm font-medium ml-auto" @click="showSupervisorsModal = false">Fermer</button>
       </template>
     </Modal>
   </div>
@@ -301,28 +390,40 @@ import { classes } from '~/stores/child'
 import { useSeance } from '~/composables/useSeance'
 import { useParticipantSeance } from '~/composables/useParticipant'
 import { useToast } from '~/composables/useToast'
+import { useAuthStore } from '~/stores/auth'
+import { useSupervisorSeance } from '~/composables/useSupervisor'
+import { useTeacher } from '~/composables/useTeacher'
 import type { ClasseType } from '~/types/classe'
 import type { Month } from '~/types/index'
 import type { Seance } from '~/types/seance'
-import {useAuthStore} from '~/stores/auth'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
-// Stores
-// Composables
+// Composables & Stores
 const toast = useToast()
+const authStore = useAuthStore()
 const { groupSeanceperYear, typeSeances, fetchAllSeances, updateSeance, deleteSeance, isLoading } = useSeance()
-// Extraction de 'getChildbySeanceId' depuis ton composable
+const { isSupervSeanceLoading, listTeachers: activeSeanceTeachers, fetchAllSupervSeances, create: linkSupervisorToSeance } = useSupervisorSeance()
 const { getAuthorSupervisorbySeance, fetchAllSeanceData, getChildbySeanceId } = useParticipantSeance()
+
+// Nouveau Composable Enseignants Globaux injecté 🟢
+const { listTeachers: allGlobalTeachers, fetchAllTeachers, isLoading: isGlobalTeachersLoading } = useTeacher()
 
 // États d'affichage & Modales
 const showViewModal = ref(false)
 const showEditModal = ref(false)
+const showSupervisorsModal = ref(false)
 const showDeleteModal = ref(false)
 const showParticipantsModal = ref(false)
 const seanceModal = ref<Seance | null>(null)
+
+// 🟢 États d'édition locale pour l'allocation des rôles
+const selectedSupervisorId = ref<string>('')
+const selectedAssistantIds = ref<string[]>([])
+// Conserver la liste brute originale à l'ouverture pour calculer le différentiel (Ajout/Suppression)
+let originalAssistantIds: string[] = []
 
 // Filtres de recherche
 const classeSelected = ref<ClasseType>("Petit")
@@ -333,25 +434,43 @@ const months = ref<Month[]>([
   'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
 ])
-const permissionsLocal=ref()
+const permissionsLocal = ref()
+const seanceId = computed(() => seanceModal.value?.id)
 
-// Cycle de vie : Charger les données
 onMounted(async () => {
   await fetchAllSeances()
   await fetchAllSeanceData()
+  await fetchAllTeachers() // Synchronisation de la liste de tous les enseignants du système 🟢
 })
 
-// --- 👥 LOGIQUE FILTRE PARTICIPANTS ---
-// Récupère dynamiquement la liste des enfants de la séance ouverte dans la modale
+if (authStore.permissions && authStore.userStatus) {
+  permissionsLocal.value = authStore.permissions[authStore.userStatus]
+}
 
-const authStore=useAuthStore()
-if(authStore.permissions && authStore.userStatus) permissionsLocal.value=authStore.permissions[authStore.userStatus]
+// --- COMPUTED FILTRAGES ENSEIGNANTS DANS L'ÉDITION ---
+
+// 1. Liste des superviseurs éligibles (On exclut l'auteur originel de la séance)
+const availableSupervisorsList = computed(() => {
+  if (!seanceModal.value) return allGlobalTeachers.value
+  return allGlobalTeachers.value.filter(t => t.id !== seanceModal.value?.authorId)
+})
+
+// 2. Liste des assistants éligibles (On exclut l'auteur et le superviseur principal actuellement choisi)
+const availableAssistantsList = computed(() => {
+  if (!seanceModal.value) return allGlobalTeachers.value
+  return allGlobalTeachers.value.filter(t => t.id !== seanceModal.value?.authorId && t.id !== selectedSupervisorId.value)
+})
+
 const currentSeanceParticipants = computed(() => {
   if (!seanceModal.value?.id) return []
   return getChildbySeanceId(seanceModal.value.id)
 })
 
-// --- LOGIQUE FILTRES COMPUTED SÉANCES ---
+const currentSeanceSupervisors = computed(() => {
+  if (!seanceId.value) return []
+  return activeSeanceTeachers.value
+})
+
 const getSeanceActualYear = computed(() => {
   return groupSeanceperYear.value[actualYear.value] || []
 })
@@ -364,26 +483,56 @@ const getSeancebyMonthAndClasse = computed(() => {
   })
 })
 
-// Formateur de date utilitaire
 const formatDate = (dateStr: string | Date) => {
   if (!dateStr) return '-'
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
   return new Date(dateStr).toLocaleDateString('fr-FR', options)
 }
 
-// --- GESTIONNAIRES ACTIONS ---
-const view = (seance: Seance) => {
+// --- ACTIONS CLICS MONITEURS ---
+const toggleAssistantSelection = (id: string) => {
+  const index = selectedAssistantIds.value.indexOf(id)
+  if (index > -1) {
+    selectedAssistantIds.value.splice(index, 1)
+  } else {
+    selectedAssistantIds.value.push(id)
+  }
+}
+
+// --- GESTIONNAIRES ACTIONS SÉANCES ---
+const view = async (seance: Seance) => {
   seanceModal.value = { ...seance }
   showViewModal.value = true
+  if (seanceId.value) await fetchAllSupervSeances(seanceId.value)
 }
 
 const openParticipantsFromView = () => {
   showViewModal.value = false
   showParticipantsModal.value = true
 }
+const openSuperVisorsFromView = () => {
+  showViewModal.value = false
+  showSupervisorsModal.value = true
+}
 
-const edit = (seance: Seance) => {
+// Déclencheur Édition : Hydratation des états de modification locaux 🟢
+const edit = async (seance: Seance) => {
   seanceModal.value = { ...seance }
+  
+  // 1. Charger la liste des enseignants assignés à cette séance spécifique
+  await fetchAllSupervSeances(seance.id)
+
+  // 2. Hydrater le superviseur principal obligatoire
+  selectedSupervisorId.value = seance.supervisorId || ''
+
+  // 3. Filtrer et hydrater les assistants (les enseignants liés qui ne sont pas le superviseur principal)
+  const assistantIds = activeSeanceTeachers.value
+    .filter(t => t.id !== seance.supervisorId)
+    .map(t => t.id)
+  
+  selectedAssistantIds.value = [...assistantIds]
+  originalAssistantIds = [...assistantIds] // Mémoire tampon pour la comparaison différentielle
+
   showEditModal.value = true
 }
 
@@ -392,18 +541,56 @@ const supprimer = (seance: Seance) => {
   showDeleteModal.value = true
 }
 
+// Enregistrement global asynchrone (Option B : Sauvegarde au bouton Enregistrer) 🟢
 const handleUpdate = async () => {
   if (!seanceModal.value) return
+  if (!selectedSupervisorId.value) {
+    toast.warning('Superviseur manquant', 'Le choix du superviseur témoin principal est obligatoire.')
+    return
+  }
+
   try {
+    // Phase 1 : Mise à jour de la table Séance Racine (inclut le nouveau supervisorId s'il a changé)
     await updateSeance(seanceModal.value.id, {
       title: seanceModal.value.title,
       type: seanceModal.value.type,
-      classe: seanceModal.value.classe
+      classe: seanceModal.value.classe,
+      supervisorId: selectedSupervisorId.value
     })
-    toast.success('Séance mise à jour', 'Les détails du cours ont été modifiés.')
+
+    // Phase 2 : Ajuster l'assignation du Superviseur Témoin dans la table de jointure
+    // On s'assure qu'il est présent (l'API gère ou on force l'ajout)
+    await linkSupervisorToSeance({
+      seanceId: seanceModal.value.id,
+      supervisorSeanceId: selectedSupervisorId.value
+    })
+
+    // Phase 3 : Calcul différentiel et synchronisation des Moniteurs Assistants
+    
+    // A. Identifier les assistants supprimés (présents dans l'original mais plus dans la sélection courante)
+    const assistantsToDelete = originalAssistantIds.filter(id => !selectedAssistantIds.value.includes(id))
+    for (const idToDelete of assistantsToDelete) {
+      await $fetch('/api/supervSeances', {
+        method: 'DELETE',
+        query: { seanceId: seanceModal.value.id, supervisorSeanceId: idToDelete }
+      })
+    }
+
+    // B. Identifier les assistants ajoutés (présents dans la sélection courante mais pas dans l'original)
+    const assistantsToAdd = selectedAssistantIds.value.filter(id => !originalAssistantIds.includes(id))
+    for (const idToAdd of assistantsToAdd) {
+      await linkSupervisorToSeance({
+        seanceId: seanceModal.value.id,
+        supervisorSeanceId: idToAdd
+      })
+    }
+
+    toast.success('Séance mise à jour', 'Les détails et l\'équipe d\'encadrement ont été modifiés.')
     showEditModal.value = false
+    await fetchAllSeances() // Rafraîchir l'affichage global
   } catch (err) {
-    toast.error('Erreur', 'Impossible de modifier la séance.')
+    console.error(err)
+    toast.error('Erreur', 'Impossible de modifier la séance et ses moniteurs.')
   }
 }
 
@@ -412,9 +599,10 @@ const confirmDelete = async () => {
   const title = seanceModal.value.title
   try {
     await deleteSeance(seanceModal.value.id)
-    toast.success('Séance annulée', `La séance "${title}" a été supprimée.`);
+    toast.success('Séance annulée', `La séance "${title}" a été supprimée.`)
     showDeleteModal.value = false
     seanceModal.value = null
+    await fetchAllSeances()
   } catch (err) {
     toast.error('Erreur d\'annulation', 'Le serveur a bloqué la suppression de cette séance.')
   }

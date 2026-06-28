@@ -1,110 +1,75 @@
-import { defineEventHandler, readBody, createError } from 'h3'
-import { upsertSchedule } from '~/composables/useSchedule'
+import { defineEventHandler, readBody, createError, getRouterParam } from 'h3'
+import { mockSchedulesStore, type ScheduleRow } from '~/data/mockData'
 
 export default defineEventHandler(async (event) => {
   try {
-    // 1. Récupération des données envoyées par le client Vue
+    const monthKey = getRouterParam(event, 'monthKey')
     const body = await readBody(event)
 
-    // 2. Validation des données obligatoires
-    if (!body || !body.monthKey || !body.rows) {
+    if (!monthKey || !body || !body.rows || !body.classe) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Données invalides. Le mois (monthKey) et les lignes du planning (rows) sont requis.',
+        statusMessage: 'Données invalides. monthKey (URL), classe et rows (body) sont requis.',
       })
     }
 
-    // 3. Validation du format monthKey (YYYY-MM)
-    const monthKeyRegex = /^\d{4}-\d{2}$/
-    if (!monthKeyRegex.test(body.monthKey)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Format de mois invalide. Utilisez le format YYYY-MM (ex: 2026-06).',
-      })
-    }
+    const { rows, classe, status } = body
+    const classeName = classe as string
 
-    // 4. Validation du status
-    const validStatus = ['draft', 'published']
-    const status = body.status || 'draft'
-    if (!validStatus.includes(status)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Le statut doit être "draft" ou "published".',
-      })
-    }
+    // 1. Recherche sécurisée de l'index dans le store
+    const scheduleIndex = mockSchedulesStore.schedules.findIndex(s => s.monthKey === monthKey)
+    
+    // Récupération sécurisée sans chaînage optionnel conflictuel
+// 1. On récupère l'élément du tableau s'il existe
+const currentSchedule = scheduleIndex !== -1 ? mockSchedulesStore.schedules[scheduleIndex] : null
 
-    // 5. Validation du tableau rows
-    if (!Array.isArray(body.rows) || body.rows.length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Les lignes du planning (rows) doivent être un tableau non-vide.',
-      })
-    }
+// 2. On extrait les lignes en s'assurant que l'objet ET ses lignes sont bien définis
+const existingRows: ScheduleRow[] = (currentSchedule && currentSchedule.rows) ? currentSchedule.rows : []
 
-    // 6. Validation de la structure des rows
-    const validAssignmentTypes = ['NORMAL', 'SUNDAY_SCHOOL', 'DLT']
-    for (const row of body.rows) {
-      if (!row.dateLabel || !row.assignments) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: 'Chaque ligne doit contenir "dateLabel" et "assignments".',
-        })
+    // 2. Fusion native strictement typée grâce à ScheduleRow[]
+    const updatedGlobalRows: ScheduleRow[] = rows.map((incomingRow: any) => {
+      const existingRow = existingRows.find((r) => r.dateLabel === incomingRow.dateLabel)
+      
+      // On extrait ou on initialise l'objet des classes
+      const currentClassesData = existingRow?.classes ? { ...existingRow.classes } : {}
+
+      // Assignation de l'index dynamique
+      currentClassesData[classeName] = incomingRow.assignments
+
+      return {
+        dateLabel: incomingRow.dateLabel as string,
+        classes: currentClassesData
       }
+    })
 
-      // Vérifier que assignments contient les bonnes clés
-      for (const key of Object.keys(row.assignments)) {
-        if (!validAssignmentTypes.includes(key)) {
-          throw createError({
-            statusCode: 400,
-            statusMessage: `Type d'assignment invalide: ${key}. Les types valides sont: ${validAssignmentTypes.join(', ')}`,
-          })
-        }
+    // 3. Persistence (Upsert) sécurisée via stockage de la référence
+    if (scheduleIndex !== -1) {
+      const currentSchedule = mockSchedulesStore.schedules[scheduleIndex]
+      if (currentSchedule) {
+        currentSchedule.status = status || currentSchedule.status
+        currentSchedule.rows = updatedGlobalRows
       }
-
-      // Vérifier que chaque assignment est un array
-      for (const assignmentList of Object.values(row.assignments)) {
-        if (!Array.isArray(assignmentList)) {
-          throw createError({
-            statusCode: 400,
-            statusMessage: 'Chaque type d\'assignment doit contenir un tableau d\'IDs d\'enseignants.',
-          })
-        }
-      }
+    } else {
+      mockSchedulesStore.schedules.push({
+        monthKey,
+        status: status || 'draft',
+        rows: updatedGlobalRows
+      })
     }
 
-    const { monthKey, rows } = body
-
-    // 7. Utiliser le store en mémoire (mockées) au lieu de Prisma
-    const schedule = upsertSchedule(monthKey, status, rows)
-
-    // 8. Parsing des données pour la réponse
-    const parsedRows = JSON.parse(schedule.matrixData)
-
-    console.log(`[API Schedule POST] Emploi du temps publié avec succès pour: ${monthKey}`)
-    console.log(`[API Schedule POST] Nombre de dimanches traités: ${rows.length}`)
-
-    // 9. Réponse renvoyée au client
     return {
       success: true,
-      message: `L'emploi du temps pour ${monthKey} a été enregistré et publié avec succès.`,
-      monthKey: schedule.monthKey,
-      status: schedule.status,
-      rows: parsedRows,
-      publishedAt: schedule.updatedAt.toISOString(),
+      monthKey,
+      classe: classeName,
+      status: status || 'draft',
+      rows: updatedGlobalRows.map((r) => ({
+        dateLabel: r.dateLabel,
+        assignments: r.classes[classeName] || { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }
+      }))
     }
 
   } catch (error: any) {
-    console.error('[API Schedule POST] Erreur:', error)
-
-    // Si c'est une erreur créée, la renvoyer directement
-    if (error.statusCode) {
-      throw error
-    }
-
-    // Sinon, renvoyer une erreur générique
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Erreur interne lors de la publication du planning.',
-    })
+    if (error.statusCode) throw error
+    throw createError({ statusCode: 500, statusMessage: 'Erreur lors du POST du planning.' })
   }
 })

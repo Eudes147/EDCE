@@ -12,6 +12,7 @@ export interface Child {
   sexeParent:Sexe
   adresse ?:string
   sexe: Sexe
+  quarter?: string
   created_at ?: string
   updated_at ?: string
 }
@@ -35,6 +36,7 @@ export interface childSubmit {
   telParent?: string
   sexe: Sexe
   sexeParent: Sexe
+  quarter?: string
 }
 
 export interface childUpdate {

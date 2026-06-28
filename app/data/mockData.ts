@@ -17,45 +17,565 @@ import type { User } from '~/types/auth'
 import type {MonthlySchedulePayload} from '~/types/monthlySchedule'
 import type { SupervisorSeance } from '~/types/seance'
 
+import type { AttendancePayload } from '~/types/attendance'
+import type { MeetingTeacherAttendance,MeetingAttendancePayload } from '~/types/globalAttendance'
 
-export const mockMonthlySchedule = {
-  success: true,
-  monthKey: "2026-06",
-  status: "published",
-  rows: [
-    {
-      dateLabel: "Dim 7 Juin",
-      assignments: {
-        NORMAL: ["teacher-001", "teacher-002"], // IDs fictifs correspondants à vos enseignants
-        SUNDAY_SCHOOL: ["teacher-003"],
-        DLT: []
+
+
+export const mockGlobalAttendanceDb: MeetingAttendancePayload[] = [
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dimanche 07 Juin",
+    checkedAt: "2026-06-07T13:00:00.000Z",
+    checkedBy: "Secrétaire Général",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true },
+      { teacherId: "teacher-010", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dimanche 14 Juin",
+    checkedAt: "2026-06-14T13:15:00.000Z",
+    checkedBy: "Secrétaire Général",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true },
+      { teacherId: "teacher-002", isPresent: false }
+    ]
+  }
+]
+
+// Base de données simulée en mémoire
+export const mockAttendanceDb: AttendancePayload[] = [
+  // =========================================================================
+  // DIMANCHE 7 JUIN ("Dim 7 Juin")
+  // =========================================================================
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "Petit",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-07T09:15:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true },
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "Petit",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-07T10:30:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "Débutant",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-07T09:12:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "Débutant",
+    slotType: "DLT",
+    checkedAt: "2026-06-07T12:05:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: false } // Absent ce jour-là
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "Moyen",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-07T10:32:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "JuniorA",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-07T09:14:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: false } // Absent lors du premier dimanche
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 7 Juin",
+    className: "JuniorA",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-07T10:35:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+
+  // =========================================================================
+  // DIMANCHE 14 JUIN ("Dim 14 Juin")
+  // =========================================================================
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Petit",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-14T09:05:00.000Z",
+    checkedBy: "SuperAdmin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Petit",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-14T10:15:00.000Z",
+    checkedBy: "SuperAdmin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Petit",
+    slotType: "DLT",
+    checkedAt: "2026-06-14T12:00:00.000Z",
+    checkedBy: "SuperAdmin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Débutant",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-14T09:08:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Débutant",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-14T10:20:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Moyen",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-14T09:10:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "Moyen",
+    slotType: "DLT",
+    checkedAt: "2026-06-14T12:10:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "JuniorA",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-14T10:22:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "JuniorA",
+    slotType: "DLT",
+    checkedAt: "2026-06-14T12:12:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: false }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "JuniorB",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-14T09:12:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 14 Juin",
+    className: "JuniorB",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-14T10:25:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+
+  // =========================================================================
+  // DIMANCHE 21 JUIN ("Dim 21 Juin")
+  // =========================================================================
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Petit",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-21T09:11:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Petit",
+    slotType: "DLT",
+    checkedAt: "2026-06-21T12:02:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Débutant",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-21T09:15:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Débutant",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-21T10:30:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Moyen",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-21T09:16:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "Moyen",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-21T10:32:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "JuniorA",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-21T09:18:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "JuniorA",
+    slotType: "DLT",
+    checkedAt: "2026-06-21T12:05:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: false }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "JuniorB",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-21T10:35:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 21 Juin",
+    className: "JuniorB",
+    slotType: "DLT",
+    checkedAt: "2026-06-21T12:08:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+
+  // =========================================================================
+  // DIMANCHE 28 JUIN ("Dim 28 Juin")
+  // =========================================================================
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Petit",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-28T09:10:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Petit",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-28T10:20:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Petit",
+    slotType: "DLT",
+    checkedAt: "2026-06-28T12:01:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Débutant",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-28T10:22:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Débutant",
+    slotType: "DLT",
+    checkedAt: "2026-06-28T12:03:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Moyen",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-28T09:12:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "Moyen",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-28T10:25:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "JuniorA",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-28T09:14:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-002", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "JuniorA",
+    slotType: "SUNDAY_SCHOOL",
+    checkedAt: "2026-06-28T10:28:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-001", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "JuniorB",
+    slotType: "NORMAL",
+    checkedAt: "2026-06-28T09:16:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-004", isPresent: true }
+    ]
+  },
+  {
+    monthKey: "2026-06",
+    dateLabel: "Dim 28 Juin",
+    className: "JuniorB",
+    slotType: "DLT",
+    checkedAt: "2026-06-28T12:06:00.000Z",
+    checkedBy: "Admin",
+    assignments: [
+      { teacherId: "teacher-003", isPresent: false }
+    ]
+  }
+]
+
+// server/api/schedules/index.get.ts (ou dans votre fichier de données globales)
+export const mockSchedules = [
+  // Insertion de l'objet natif de Juin 2026 que vous avez fourni
+  {
+    monthKey: "2026-06",
+    status: "published",
+    rows: [
+      {
+        dateLabel: "Dim 7 Juin",
+        classes: {
+          Petit: { NORMAL: ["teacher-001", "teacher-002"], SUNDAY_SCHOOL: ["teacher-003"], DLT: [] },
+          Débutant: { NORMAL: ["teacher-004"], SUNDAY_SCHOOL: [], DLT: ["teacher-001"] },
+          Moyen: { NORMAL: [], SUNDAY_SCHOOL: ["teacher-002"], DLT: [] },
+          JuniorA: { NORMAL: ["teacher-003"], SUNDAY_SCHOOL: ["teacher-004"], DLT: [] },
+          JuniorB: { NORMAL: [], SUNDAY_SCHOOL: [], DLT: ["teacher-002"] }
+        }
+      },
+      {
+        dateLabel: "Dim 14 Juin",
+        classes: {
+          Petit: { NORMAL: ["teacher-002"], SUNDAY_SCHOOL: ["teacher-001"], DLT: ["teacher-003"] },
+          Débutant: { NORMAL: ["teacher-003"], SUNDAY_SCHOOL: ["teacher-002"], DLT: [] },
+          Moyen: { NORMAL: ["teacher-004"], SUNDAY_SCHOOL: [], DLT: ["teacher-001"] },
+          JuniorA: { NORMAL: [], SUNDAY_SCHOOL: ["teacher-003"], DLT: ["teacher-002"] },
+          JuniorB: { NORMAL: ["teacher-001"], SUNDAY_SCHOOL: ["teacher-004"], DLT: [] }
+        }
+      },
+      {
+        dateLabel: "Dim 21 Juin",
+        classes: {
+          Petit: { NORMAL: ["teacher-004"], SUNDAY_SCHOOL: [], DLT: ["teacher-001"] },
+          Débutant: { NORMAL: ["teacher-001"], SUNDAY_SCHOOL: ["teacher-003"], DLT: [] },
+          Moyen: { NORMAL: ["teacher-002"], SUNDAY_SCHOOL: ["teacher-004"], DLT: [] },
+          JuniorA: { NORMAL: ["teacher-003"], SUNDAY_SCHOOL: [], DLT: ["teacher-004"] },
+          JuniorB: { NORMAL: [], SUNDAY_SCHOOL: ["teacher-002"], DLT: ["teacher-001"] }
+        }
+      },
+      {
+        dateLabel: "Dim 28 Juin",
+        classes: {
+          Petit: { NORMAL: ["teacher-001"], SUNDAY_SCHOOL: ["teacher-002"], DLT: ["teacher-004"] },
+          Débutant: { NORMAL: [], SUNDAY_SCHOOL: ["teacher-004"], DLT: ["teacher-003"] },
+          Moyen: { NORMAL: ["teacher-003"], SUNDAY_SCHOOL: ["teacher-001"], DLT: [] },
+          JuniorA: { NORMAL: ["teacher-002"], SUNDAY_SCHOOL: ["teacher-001"], DLT: [] },
+          JuniorB: { NORMAL: ["teacher-004"], SUNDAY_SCHOOL: [], DLT: ["teacher-003"] }
+        }
       }
-    },
-    {
-      dateLabel: "Dim 14 Juin",
-      assignments: {
-        NORMAL: ["teacher-002"],
-        SUNDAY_SCHOOL: ["teacher-001", "teacher-004"],
-        DLT: ["teacher-003"]
-      }
-    },
-    {
-      dateLabel: "Dim 21 Juin",
-      assignments: {
-        NORMAL: ["teacher-004", "teacher-003"],
-        SUNDAY_SCHOOL: [],
-        DLT: ["teacher-001"]
-      }
-    },
-    {
-      dateLabel: "Dim 28 Juin",
-      assignments: {
-        NORMAL: ["teacher-001"],
-        SUNDAY_SCHOOL: ["teacher-002"],
-        DLT: ["teacher-004"]
-      }
-    }
-  ]
+    ]
+  }
+]
+
+// ~/data/mockData.ts
+// Boîte de stockage en mémoire partagée pour vos APIs
+// app/data/mockData.ts (ou ~/data/mockData.ts)
+
+export interface ScheduleClassAssignment {
+  NORMAL: string[]
+  SUNDAY_SCHOOL: string[]
+  DLT: string[]
+}
+
+export interface ScheduleRow {
+  dateLabel: string
+  classes: {
+    Petit?: ScheduleClassAssignment
+    Débutant?: ScheduleClassAssignment
+    Moyen?: ScheduleClassAssignment
+    JuniorA?: ScheduleClassAssignment
+    JuniorB?: ScheduleClassAssignment
+    [key: string]: ScheduleClassAssignment | undefined // Permet l'indexation par chaîne dynamique
+  }
+}
+
+export interface MonthlySchedule {
+  monthKey: string
+  status: string
+  rows: ScheduleRow[]
+}
+
+
+export const mockSchedulesStore: { schedules: MonthlySchedule[] } = {
+  schedules: [...mockSchedules]
 }
 
 export const mockUsers: User[] = [
@@ -1235,9 +1755,14 @@ export const mockSeance:Seance[]=[
 
 export const mockSupervisorSeance: SupervisorSeance[]=[
   {"id": "superv-seance-001", "seanceId": "seance-003","supervisorSeanceId": "teacher-002"},
+  {"id": "superv-seance-010", "seanceId": "seance-003","supervisorSeanceId": "teacher-005"},
+  {"id": "superv-seance-011", "seanceId": "seance-003","supervisorSeanceId": "teacher-009"},
+  {"id": "superv-seance-001", "seanceId": "seance-003","supervisorSeanceId": "teacher-012"},
   {"id": "superv-seance-002", "seanceId": "seance-010","supervisorSeanceId": "teacher-010"},
   {"id": "superv-seance-003", "seanceId": "seance-013","supervisorSeanceId": "teacher-011"},
-
+  {"id": "superv-seance-004", "seanceId": "seance-004","supervisorSeanceId": "teacher-004"},
+  {"id": "superv-seance-005", "seanceId": "seance-014","supervisorSeanceId": "teacher-008"},
+  {"id": "superv-seance-006", "seanceId": "seance-004","supervisorSeanceId": "teacher-002"},
 ]
 
 export const mockParticipantSeance: ParticipantSeance[]=[

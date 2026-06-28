@@ -1,78 +1,75 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-margin-mobile md:p-xl font-body-md text-on-surface">
+  <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 font-body text-on-surface">
     <div class="w-full max-w-[30rem]">
       <Transition name="auth-transition" mode="out-in">
-        <div class="auth-card rounded-xl p-md md:p-lg">
-          <header class="mb-lg">
-            <h2 class="font-h3 text-h3 text-on-surface">Mot de passe oublié?</h2>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">
-              Entre ton adresse email et nous vous enverrons le lien de réinitialisation.
+        <div class="auth-card rounded-xl p-6 sm:p-8 border border-outline-variant/30">
+          <header class="mb-6">
+            <h2 class="font-h1 text-xl sm:text-2xl font-bold text-on-surface">Mot de passe oublié ?</h2>
+            <p class="font-body text-xs sm:text-sm text-on-surface-variant mt-1">
+              Entrez votre adresse email et nous vous enverrons un lien de réinitialisation sécurisé.
             </p>
           </header>
 
           <div 
             v-if="isSubmittedSuccessfully" 
-            class="mb-md p-sm bg-green-500/10 border border-green-500/20 text-green-600 rounded-lg text-body-sm flex items-start gap-xs"
+            class="mb-6 p-4 bg-success/10 border border-success/20 text-success rounded-lg text-xs sm:text-sm flex items-start gap-2 animate-fade-in"
           >
-            <svg class="mt-[2px] shrink-0" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <span>Un email a été envoyé. Stp vérifie ton terminal pour ouvir ta boite de messagerie.</span>
+            <Icon name="check_circle" class="shrink-0 mt-[2px]" size="1.15rem" />
+            <span>Un email de récupération a été envoyé. Veuillez vérifier votre boîte de réception ainsi que vos spams.</span>
           </div>
 
           <div 
             v-if="apiErrorMessage" 
-            class="mb-md p-sm bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-body-sm flex items-center gap-xs"
+            class="mb-6 p-4 bg-error/10 border border-error/20 text-error rounded-lg text-xs sm:text-sm flex items-center gap-2 animate-fade-in"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            {{ apiErrorMessage }}
+            <Icon name="error" class="shrink-0" size="1.15rem" />
+            <span>{{ apiErrorMessage }}</span>
           </div>
 
-          <form v-if="!isSubmittedSuccessfully" class="space-y-md" @submit.prevent="handleEmailSubmit">
-            <div class="space-y-xs">
-              <label class="font-label-md text-label-md text-on-surface" for="forgot-email">
-                 Addresse Email
+          <form v-if="!isSubmittedSuccessfully" class="space-y-4" @submit.prevent="handleEmailSubmit">
+            <div class="space-y-1">
+              <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="forgot-email">
+                Adresse Email
               </label>
               <input
                 id="forgot-email"
                 v-model="emailInput"
-                class="w-full px-md py-sm rounded-lg border transition-all outline-none"
+                class="w-full px-3 py-2 rounded-lg border transition-all outline-none text-sm font-semibold bg-white"
                 :class="[
                   emailError
-                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/10'
-                    : 'border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/10'
+                    ? 'border-error focus:ring-2 focus:ring-error/10 focus:border-error'
+                    : 'border-outline-variant focus:ring-2 focus:ring-primary/10 focus:border-primary'
                 ]"
-                placeholder="name@church.org"
+                placeholder="nom@eglise.org"
                 type="email"
                 required
                 :disabled="isLoading"
                 @blur="validateEmail"
               />
-              <p v-if="emailError" class="text-xs font-body-xs text-red-500 mt-xs">
+              <p v-if="emailError" class="text-xs font-medium text-error mt-0.5">
                 {{ emailError }}
               </p>
             </div>
 
             <button
-              class="w-full bg-primary-container text-on-primary font-label-md text-label-md py-md rounded-lg hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-sm"
+              class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:opacity-95 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md text-sm"
               type="submit"
               :disabled="!isEmailValid || isLoading"
             >
-              <svg v-if="isLoading" class="animate-spin h-5 w-5 text-on-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>{{ isLoading ? 'Sending Link...' : 'Send Reset Link' }}</span>
+              <Icon v-if="isLoading" name="sync" class="animate-spin" size="1.15rem" />
+              <span>{{ isLoading ? 'Envoi du lien en cours...' : 'Envoyer le lien de récupération' }}</span>
             </button>
 
-            <p class="text-center font-body-sm text-body-sm text-on-surface-variant mt-md">
-              Se souvenir du mot de passe?
-              <NuxtLink to="/login" class="text-primary font-bold hover:underline">Se Connecter</NuxtLink>
+            <p class="text-center text-xs sm:text-sm text-on-surface-variant mt-4">
+              Se souvenir du mot de passe ?
+              <NuxtLink to="/login" class="text-primary font-bold hover:underline ml-1">Se connecter</NuxtLink>
             </p>
           </form>
 
-          <div v-else class="mt-md">
+          <div v-else class="mt-4">
             <NuxtLink 
               to="/login" 
-              class="w-full block text-center bg-outline-variant text-on-surface font-label-md text-label-md py-md rounded-lg hover:opacity-90 transition-all"
+              class="w-full block text-center bg-surface-container border border-outline-variant rounded-lg text-on-surface font-bold py-3 hover:bg-surface-container-high transition-all text-sm"
             >
               Retour à la page de Connexion
             </NuxtLink>
@@ -83,7 +80,7 @@
 
     <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
       <div class="absolute top-[10%] right-[10%] w-96 h-96 bg-primary/5 rounded-full blur-[80px]"></div>
-      <div class="absolute bottom-[10%] left-[5%] w-72 h-72 bg-secondary-container/5 rounded-full blur-[60px]"></div>
+      <div class="absolute bottom-[10%] left-[5%] w-72 h-72 bg-secondary/5 rounded-full blur-[60px]"></div>
     </div>
   </div>
 </template>
@@ -104,11 +101,11 @@ const isEmailValid = computed(() => EMAIL_REGEX.test(emailInput.value))
 function validateEmail(): void {
   emailError.value = ''
   if (!emailInput.value.trim()) {
-    emailError.value = 'Email is required'
+    emailError.value = 'L\'adresse email est requise.'
     return
   }
   if (!EMAIL_REGEX.test(emailInput.value)) {
-    emailError.value = 'Please enter a valid email address'
+    emailError.value = 'Veuillez entrer une adresse email valide.'
     return
   }
 }
@@ -121,14 +118,13 @@ async function handleEmailSubmit(): Promise<void> {
   apiErrorMessage.value = ''
 
   try {
-    // Connexion directe avec forgot-password.post.ts
     await $fetch('/api/auth/forgot-password', {
       method: 'POST',
-      body: { email: emailInput.value }
+      body: { email: emailInput.value.trim() }
     })
     isSubmittedSuccessfully.value = true
   } catch (error: any) {
-    apiErrorMessage.value = error.data?.statusMessage || 'An unexpected error occurred.'
+    apiErrorMessage.value = error.data?.statusMessage || 'Une erreur inattendue est survenue.'
   } finally {
     isLoading.value = false
   }
@@ -139,5 +135,5 @@ async function handleEmailSubmit(): Promise<void> {
 .auth-transition-enter-active, .auth-transition-leave-active { transition: all 0.4s ease-out; }
 .auth-transition-enter-from { opacity: 0; transform: translateY(10px); }
 .auth-transition-leave-to { opacity: 0; transform: translateY(-10px); }
-.auth-card { background: var(--surface, #fff); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+.auth-card { background: var(--md-sys-color-surface, #fff); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
 </style>

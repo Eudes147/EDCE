@@ -1,135 +1,91 @@
-// server/utils/scheduleStore.ts
-
-import { mockMonthlySchedule } from '~/data/mockData'
+import { ref } from 'vue'
 import { useToast } from '~/composables/useToast'
 
-/**
- * Store en mémoire pour les schedules (pour tests/développement)
- * Remplace temporairement la BD Prisma
- */
-const toast=useToast()
-interface ScheduleData {
-  monthKey: string
-  status: string
-  matrixData: string // JSON stringifié
-  createdAt: Date
-  updatedAt: Date
-}
+export const useSchedule = () => {
+  const toast = useToast()
+  const isLoading = ref(false)
+  const currentSchedule = ref<any>(null)
 
-// Map pour stocker les schedules en mémoire
-const scheduleStore = new Map<string, ScheduleData>()
-
-/**
- * Initialiser le store avec les données mockées
- */
-export const initializeScheduleStore = () => {
-  // Vider le store existant
-  scheduleStore.clear()
-
-  // Remplir avec les données mockées
-  if (mockMonthlySchedule && mockMonthlySchedule.monthKey) {
-    scheduleStore.set(mockMonthlySchedule.monthKey, {
-      monthKey: mockMonthlySchedule.monthKey,
-      status: mockMonthlySchedule.status =='published' ? 'published' : 'draft',
-      matrixData: JSON.stringify(mockMonthlySchedule.rows),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-
-    console.log(`[ScheduleStore] Initialisé avec ${scheduleStore.size} schedule(s) mockée(s)`)
-  }
-}
-
-/**
- * Créer ou mettre à jour un schedule (upsert)
- */
-export const upsertSchedule = (
-  monthKey: string,
-  status: string,
-  rows: any[]
-): ScheduleData => {
-  const now = new Date()
-  const existing = scheduleStore.get(monthKey)
-
-  const schedule: ScheduleData = {
-    monthKey,
-    status: status as 'draft' | 'published',
-    matrixData: JSON.stringify(rows),
-    createdAt: existing ? existing.createdAt : now,
-    updatedAt: now,
+  /**
+   * 🔍 Récupère le planning d'un mois et d'une classe spécifique via l'API GET
+   */
+  const getScheduleByMonthAndClass = async (monthKey: string, classe: string) => {
+    isLoading.value = true
+    try {
+      const data = await $fetch(`/api/schedules/${monthKey}`, {
+        method: 'GET',
+        query: { classe }
+      })
+      currentSchedule.value = data
+      console.log("DATA",data)
+      toast.success(`[Composable] Planning de ${monthKey} récupéré pour la classe ${classe}.`)
+      return data
+    } catch (error: any) {
+      console.error('[useSchedule GET Erreur]:', error)
+      toast.error(error.statusMessage || 'Impossible de charger le planning.')
+      return null
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  scheduleStore.set(monthKey, schedule)
-  toast.success(`[ScheduleStore] Upsert: ${monthKey}`)
+  /**
+   * 💾 Crée ou initialise un planning pour une classe via l'API POST
+   */
+  const createSchedule = async (monthKey: string, classe: string, rows: any[], status: 'draft' | 'published' = 'draft') => {
+    isLoading.value = true
+    try {
+      const response = await $fetch(`/api/schedules/${monthKey}`, {
+        method: 'POST',
+        body: {
+          classe,
+          rows,
+          status
+        }
+      })
 
-  return schedule
-}
-
-/**
- * Récupérer un schedule par monthKey
- */
-export const getSchedule = (monthKey: string): ScheduleData | null => {
-  const schedule = scheduleStore.get(monthKey)
-  if (schedule) {
-    toast.success(`[ScheduleStore] Get: ${monthKey} (trouvé)`)
-  } else {
-    toast.success(`[ScheduleStore] Get: ${monthKey} (non trouvé)`)
-  }
-  return schedule || null
-}
-
-/**
- * Mettre à jour un schedule (update)
- */
-export const updateSchedule = (
-  monthKey: string,
-  updates: { status?: string; rows?: any[] }
-): ScheduleData | null => {
-  const existing = scheduleStore.get(monthKey)
-
-  if (!existing) {
-    toast.success(`[ScheduleStore] Update: ${monthKey} (non trouvé)`)
-    return null
+      toast.success(`[Composable] Planning enregistré avec succès (POST).`)
+      return response
+    } catch (error: any) {
+      console.error('[useSchedule POST Erreur]:', error)
+      toast.error(error.statusMessage || 'Erreur lors de la création du planning.')
+      return null
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  const updated: ScheduleData = {
-    ...existing,
-    status: (updates.status as 'draft' | 'published') || existing.status,
-    matrixData: updates.rows ? JSON.stringify(updates.rows) : existing.matrixData,
-    updatedAt: new Date(),
+  /**
+   * 📝 Met à jour un planning existant pour une classe via l'API PUT
+   */
+  const updateSchedule = async (monthKey: string, classe: string, rows: any[], status?: 'draft' | 'published') => {
+    isLoading.value = true
+    try {
+      const response = await $fetch(`/api/schedules/${monthKey}`, {
+        method: 'PUT',
+        body: {
+          classe,
+          rows,
+          status
+        }
+      })
+
+      toast.success(`[Composable] Planning mis à jour avec succès (PUT).`)
+      return response
+    } catch (error: any) {
+      console.error('[useSchedule PUT Erreur]:', error)
+      toast.error(error.statusMessage || 'Erreur lors de la modification du planning.')
+      return null
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  scheduleStore.set(monthKey, updated)
-  toast.success(`[ScheduleStore] Update: ${monthKey}`)
-
-  return updated
-}
-
-/**
- * Supprimer un schedule (optionnel)
- */
-export const deleteSchedule = (monthKey: string): boolean => {
-  const deleted = scheduleStore.delete(monthKey)
-  if (deleted) {
-    toast.success(`[ScheduleStore] Delete: ${monthKey}`)
+  return {
+    isLoading,
+    currentSchedule,
+    getScheduleByMonthAndClass,
+    createSchedule,
+    updateSchedule
   }
-  return deleted
 }
-
-/**
- * Obtenir tous les schedules (optionnel)
- */
-export const getAllSchedules = (): ScheduleData[] => {
-  return Array.from(scheduleStore.values())
-}
-
-/**
- * Réinitialiser le store (optionnel)
- */
-export const resetScheduleStore = () => {
-  scheduleStore.clear()
-  toast.success(`[ScheduleStore] Reset complet`)
-}
-
-// Initialiser au démarrage
-initializeScheduleStore()

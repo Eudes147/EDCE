@@ -1,31 +1,45 @@
 <template>
   <div v-if="isLoadingSchedule"><Loader name="des plannings." /></div>
-  <div v-else-if="scheduleRows" class="p-3 sm:p-4 md:p-8 max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+  <div v-else class="p-3 sm:p-4 md:p-8 max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
     
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-outline-variant/30 pb-4">
       <div>
         <h2 class="font-h1 text-lg sm:text-xl md:text-2xl font-bold text-on-surface">Planning des Enseignants</h2>
         <p class="font-body text-[11px] sm:text-xs md:text-sm text-on-surface-variant mt-0.5">Consultez vos affectations officielles pour le mois en cours.</p>
       </div>
-      <div v-if="currentSchedule?.monthKey" class="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 self-stretch sm:self-auto justify-center">
-        <Icon name="calendar_month" size="1.15rem" />
-        <span>Période : {{ formatMonthKey(currentSchedule.monthKey) }}</span>
+      
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+        <!-- Sélecteur de classe intégré -->
+        <select 
+          v-model="selectedClass" 
+          @change="onClassChange"
+          class="bg-white border border-outline-variant rounded-lg px-3 py-2 text-xs md:text-sm font-semibold text-on-surface focus:ring-2 focus:ring-primary focus:outline-none"
+        >
+          <option v-for="c in classesList" :key="c" :value="c">{{ c }}</option>
+        </select>
+
+        <div v-if="currentMonthKey" class="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 justify-center">
+          <Icon name="calendar_month" size="1.15rem" />
+          <span>Période : {{ formatMonthKey(currentMonthKey) }}</span>
+        </div>
       </div>
     </div>
 
+    <!-- État de chargement secondaire -->
     <div v-if="isLoadingSchedule" class="p-8 sm:p-12 text-center bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
       <div class="animate-spin inline-block w-5 h-5 border-[2px] border-primary border-t-transparent rounded-full mb-2"></div>
       <p class="text-xs sm:text-sm text-on-surface-variant">Récupération du calendrier en cours...</p>
     </div>
 
-    <div v-else-if="scheduleRows.length === 0" class="text-center py-12 sm:py-16 bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl shadow-sm space-y-3">
+    <!-- Aucun planning disponible -->
+    <div v-else-if="localScheduleRows.length === 0" class="text-center py-12 sm:py-16 bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl shadow-sm space-y-3">
       <Icon name="event_busy" class="text-3xl sm:text-4xl text-outline mx-auto" />
       <h3 class="text-sm sm:text-base font-bold text-on-surface">Aucun planning publié</h3>
-      <p class="text-xs sm:text-sm text-on-surface-variant max-w-xs sm:max-w-md mx-auto">L'emploi du temps de ce mois n'a pas encore été validé par l'équipe administrative.</p>
+      <p class="text-xs sm:text-sm text-on-surface-variant max-w-xs sm:max-w-md mx-auto">L'emploi du temps pour la classe {{ selectedClass }} n'a pas encore été validé pour ce mois.</p>
     </div>
 
+    <!-- Grille Responsive Desktop -->
     <section v-else class="space-y-4 animate-fade-in">
-      
       <div class="hidden md:grid grid-cols-4 gap-1 bg-outline-variant/30 border border-outline-variant rounded-xl overflow-hidden shadow-sm">
         
         <div class="bg-surface-container-high p-4 font-bold text-on-surface text-center text-sm">Dates (Dimanches)</div>
@@ -33,8 +47,7 @@
         <div class="bg-surface-container-high p-4 font-bold text-secondary text-center text-sm">SUNDAY_SCHOOL</div>
         <div class="bg-surface-container-high p-4 font-bold text-tertiary text-center text-sm">DLT</div>
 
-        <template v-for="row in scheduleRows" :key="row.dateLabel">
-          
+        <template v-for="row in localScheduleRows" :key="row.dateLabel">
           <div class="bg-surface-container-low p-4 flex items-center justify-center font-bold text-on-surface text-sm border-r border-outline-variant/30 text-center">
             {{ row.dateLabel }}
           </div>
@@ -42,13 +55,13 @@
           <div 
             v-for="slotType in (['NORMAL', 'SUNDAY_SCHOOL', 'DLT'] as const)" 
             :key="slotType" 
-            class="p-4 bg-white min-h-[90px] flex flex-col justify-center gap-2 border-r border-b border-outline-variant/20 last:border-r-0"
+            class="p-4 bg-white min-h-[90px] flex flex-wrap content-center justify-center gap-1.5 border-r border-b border-outline-variant/20 last:border-r-0"
           >
             <span 
               v-for="teacherId in row.assignments[slotType]" 
               :key="teacherId"
               :class="[
-                'text-xs px-3 py-1.5 rounded-lg text-center font-semibold block truncate transition-transform hover:scale-[1.02]',
+                'text-xs px-3 py-1.5 rounded-lg text-center font-semibold block max-w-[150px] truncate transition-transform hover:scale-[1.02]',
                 slotType === 'NORMAL' ? 'bg-primary/10 text-primary border border-primary/10' : 
                 slotType === 'SUNDAY_SCHOOL' ? 'bg-secondary/10 text-secondary border border-secondary/10' : 
                 'bg-tertiary/10 text-tertiary border border-tertiary/10'
@@ -65,9 +78,10 @@
         </template>
       </div>
 
+      <!-- Grille Responsive Mobile -->
       <div class="block md:hidden space-y-4">
         <div 
-          v-for="row in scheduleRows" 
+          v-for="row in localScheduleRows" 
           :key="`mobile-${row.dateLabel}`" 
           class="bg-white border border-outline-variant/60 rounded-xl p-3.5 shadow-sm space-y-3.5"
         >
@@ -129,99 +143,92 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useTeacher } from '~/composables/useTeacher'
-import { useToast } from '~/composables/useToast'
+import { useSchedule } from '~/composables/useSchedule'
 import type { Teacher } from '~/types/teacher'
 
-const toast=useToast()
 definePageMeta({
   layout: 'dashboard'
 })
 
+interface LocalScheduleRow {
+  dateLabel: string
+  assignments: { NORMAL: string[]; SUNDAY_SCHOOL: string[]; DLT: string[] }
+}
+
+// Configuration des classes
+const classesList = ['Petit', 'Débutant', 'Moyen', 'JuniorA', 'JuniorB']
+const selectedClass = ref<string>('JuniorA') // JuniorA par défaut
+
 // Composables
 const { listTeachers, fetchAllTeachers } = useTeacher()
+const { isLoading: isLoadingSchedule, getScheduleByMonthAndClass,currentSchedule  } = useSchedule()
 
 // États réactifs locaux
-const scheduleRows = ref<any[]>([])
-const isLoadingSchedule = ref(true)
-const currentSchedule = ref<{ monthKey: string; status: string } | null>(null)
+const localScheduleRows = ref<LocalScheduleRow[]>([])
 
-// Format de clé dynamique pour cibler le mois actuel "YYYY-MM" (2026-06)
-const currentMonthKey = computed(() => {
+const currentMonthKey = computed<string>(() => {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  return `${year}-${month}`
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 })
-
-// --- 🛠️ RESOLUTION "ENSEIGNANT EXTERNE" ---
 const teachersMap = computed(() => {
   const map: Record<string, Teacher> = {}
   listTeachers.value.forEach((teacher: Teacher) => {
-    if (teacher.id) {
-      map[teacher.id] = teacher
-    }
+    if (teacher.id) map[teacher.id] = teacher
   })
   return map
 })
 
 onMounted(async () => {
-  // Chargement simultané des enseignants et de l'emploi du temps
   await fetchAllTeachers()
-  await Promise.all([
-    loadScheduleForCurrentMonth()
-  ])
+  await loadScheduleForCurrentMonth()
 })
 
-// Appel direct au endpoint GET de ton API
-const loadScheduleForCurrentMonth = async () => {
-  isLoadingSchedule.value = true
-  try {
-    const response = await $fetch<any>(`/api/schedules/${currentMonthKey.value}`, {
-      method: 'GET'
-    })
-
-    if (response && response.success) {
-      currentSchedule.value = {
-        monthKey: response.monthKey,
-        status: response.status
-      }
-      scheduleRows.value = response.rows || []
-    }
-  } catch (error: any) {
-    toast.error('[Vue Schedule GET] Erreur lors de la récupération du planning :', error)
-    // Réinitialisation si planning absent (ex: erreur 404)
-    currentSchedule.value = null
-    scheduleRows.value = []
-  } finally {
-    isLoadingSchedule.value = false
-  }
+const onClassChange = async () => {
+  await loadScheduleForCurrentMonth()
 }
 
-// --- RESOLUTION DES IDENTITES PEDAGOGIQUES AVEC FILTRE SÉCURISÉ ---
+// Récupération et extraction par classe via le composable
+const loadScheduleForCurrentMonth = async () => {
+ await getScheduleByMonthAndClass(currentMonthKey.value, selectedClass.value) as any
+  console.log("COURANT",currentSchedule.value)
+
+  if (currentSchedule.value) {
+    // Extraction ciblée sur la classe active depuis la structure globale
+    localScheduleRows.value = currentSchedule.value.rows.map((row: any) => {
+      const classData = row
+      return {
+        dateLabel: row.dateLabel,
+        assignments: {
+          NORMAL: classData.assignments?.NORMAL || [],
+          SUNDAY_SCHOOL: classData.assignments?.SUNDAY_SCHOOL || [],
+          DLT: classData.assignments?.DLT || []
+        }
+      }
+    }).filter((row: LocalScheduleRow) => 
+      // Optionnel : ne garde la ligne que s'il y a des assignations pour éviter les cases blanches inutiles
+      row.assignments.NORMAL.length > 0 || 
+      row.assignments.SUNDAY_SCHOOL.length > 0 || 
+      row.assignments.DLT.length > 0
+    )
+  } else {
+    localScheduleRows.value = []
+  }
+}
 const getTeacherFullName = (id: string | undefined): string => {
   if (!id) return 'Enseignant non assigné'
-  
-  let teacher = teachersMap.value[id]
-  
-  if (!teacher) {
-    teacher = listTeachers.value.find(t => t.id === id)
-  }
-  
+  const teacher = teachersMap.value[id] || listTeachers.value.find(t => t.id === id)
   if (!teacher) return 'Enseignant externe'
   return `${teacher.first_name} ${teacher.last_name}`
 }
 
-// Formatage de la période
 const formatMonthKey = (monthKey: string): string => {
-  if (!monthKey) return '-'
+  if (!monthKey || !monthKey.includes('-')) return monthKey
   
-  if (monthKey.includes('-')) {
-    const [year, month] = monthKey.split('-')
-    const date = new Date(parseInt(year), parseInt(month) - 1, 1)
-    const monthName = date.toLocaleString('fr-FR', { month: 'long' })
-    return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`
-  }
+  // Correction ici : Affectation de chaînes vides par défaut pour garantir le type 'string'
+  const [year = '', month = ''] = monthKey.split('-')
   
-  return monthKey.charAt(0).toUpperCase() + monthKey.slice(1)
+  const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1)
+  const monthName = date.toLocaleString('fr-FR', { month: 'long' })
+  return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`
 }
 </script>

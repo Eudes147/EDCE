@@ -111,6 +111,7 @@ import type { MeetingTeacherAttendance,MeetingAttendancePayload } from '~/types/
 import { useTeacher } from '~/composables/useTeacher'
 import { useGlobalAttendance } from '~/composables/useGlobalAttendance'
 import {useToast} from '~/composables/useToast'
+import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
   layout: 'dashboard'
@@ -118,6 +119,7 @@ definePageMeta({
 
 // Accès aux services réactifs
 const toast=useToast()
+const authStore=useAuthStore()
 const { listTeachers, fetchAllTeachers, isLoading: isLoadingTeachers } = useTeacher()
 const { isLoading, isSaving, activeMeetingSheet, fetchSpecificMeetingSheet, saveMeetingAttendance } = useGlobalAttendance()
 
@@ -225,7 +227,7 @@ const submitMeetingAttendance = async (): Promise<void> => {
     monthKey: currentMonthKey.value,
     dateLabel: selectedSunday.value,
     checkedAt: new Date().toISOString(),
-    checkedBy: "Secrétariat EDCE",
+    checkedBy: authStore.fullName,
     assignments: assignmentsPayload
   }
 

@@ -115,12 +115,14 @@ import { useSchedule } from '~/composables/useSchedule'
 import { useAttendance } from '~/composables/useAttendance'
 import { useToast } from '~/composables/useToast'
 import type { TeacherAttendance, AttendancePayload } from '~/types/attendance'
+import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
 // Composables de l'écosystème
+const authStore=useAuthStore()
 const toast = useToast()
 const { listTeachers, fetchAllTeachers } = useTeacher()
 const { isLoading: isLoadingSchedule, getScheduleByMonthAndClass, currentSchedule } = useSchedule()
@@ -255,7 +257,7 @@ const handleSaveAttendance = async () => {
     className: selectedClass.value,
     slotType: selectedSlot.value,
     checkedAt: new Date().toISOString(),
-    checkedBy: 'Responsable de Séance',
+    checkedBy: authStore.fullName,
     assignments: formattedAssignments
   }
 

@@ -27,7 +27,7 @@ export const mockGlobalAttendanceDb: MeetingAttendancePayload[] = [
     monthKey: "2026-06",
     dateLabel: "Dimanche 07 Juin",
     checkedAt: "2026-06-07T13:00:00.000Z",
-    checkedBy: "Secrétaire Général",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true },
       { teacherId: "teacher-010", isPresent: true }
@@ -37,7 +37,7 @@ export const mockGlobalAttendanceDb: MeetingAttendancePayload[] = [
     monthKey: "2026-06",
     dateLabel: "Dimanche 14 Juin",
     checkedAt: "2026-06-14T13:15:00.000Z",
-    checkedBy: "Secrétaire Général",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true },
       { teacherId: "teacher-002", isPresent: false }
@@ -90,7 +90,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "DLT",
     checkedAt: "2026-06-07T12:05:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: false } // Absent ce jour-là
     ]
@@ -101,7 +101,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-07T10:32:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -112,7 +112,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "NORMAL",
     checkedAt: "2026-06-07T09:14:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: false } // Absent lors du premier dimanche
     ]
@@ -123,7 +123,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-07T10:35:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -138,7 +138,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "NORMAL",
     checkedAt: "2026-06-14T09:05:00.000Z",
-    checkedBy: "SuperAdmin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -149,7 +149,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-14T10:15:00.000Z",
-    checkedBy: "SuperAdmin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -160,7 +160,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "DLT",
     checkedAt: "2026-06-14T12:00:00.000Z",
-    checkedBy: "SuperAdmin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -171,7 +171,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "NORMAL",
     checkedAt: "2026-06-14T09:08:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -182,7 +182,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-14T10:20:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -193,7 +193,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "NORMAL",
     checkedAt: "2026-06-14T09:10:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -204,7 +204,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "DLT",
     checkedAt: "2026-06-14T12:10:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -215,7 +215,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-14T10:22:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -226,7 +226,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "DLT",
     checkedAt: "2026-06-14T12:12:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: false }
     ]
@@ -237,7 +237,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "NORMAL",
     checkedAt: "2026-06-14T09:12:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -248,7 +248,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-14T10:25:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -263,7 +263,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "NORMAL",
     checkedAt: "2026-06-21T09:11:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -274,7 +274,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "DLT",
     checkedAt: "2026-06-21T12:02:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -285,7 +285,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "NORMAL",
     checkedAt: "2026-06-21T09:15:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -296,7 +296,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-21T10:30:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -307,7 +307,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "NORMAL",
     checkedAt: "2026-06-21T09:16:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -318,7 +318,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-21T10:32:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -329,7 +329,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "NORMAL",
     checkedAt: "2026-06-21T09:18:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -340,7 +340,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "DLT",
     checkedAt: "2026-06-21T12:05:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: false }
     ]
@@ -351,7 +351,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-21T10:35:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -362,7 +362,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "DLT",
     checkedAt: "2026-06-21T12:08:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -377,7 +377,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "NORMAL",
     checkedAt: "2026-06-28T09:10:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -388,7 +388,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-28T10:20:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -399,7 +399,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Petit",
     slotType: "DLT",
     checkedAt: "2026-06-28T12:01:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -410,7 +410,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-28T10:22:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -421,7 +421,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Débutant",
     slotType: "DLT",
     checkedAt: "2026-06-28T12:03:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -432,7 +432,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "NORMAL",
     checkedAt: "2026-06-28T09:12:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: true }
     ]
@@ -443,7 +443,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "Moyen",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-28T10:25:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -454,7 +454,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "NORMAL",
     checkedAt: "2026-06-28T09:14:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-002", isPresent: true }
     ]
@@ -465,7 +465,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorA",
     slotType: "SUNDAY_SCHOOL",
     checkedAt: "2026-06-28T10:28:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-001", isPresent: true }
     ]
@@ -476,7 +476,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "NORMAL",
     checkedAt: "2026-06-28T09:16:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-004", isPresent: true }
     ]
@@ -487,7 +487,7 @@ export const mockAttendanceDb: AttendancePayload[] = [
     className: "JuniorB",
     slotType: "DLT",
     checkedAt: "2026-06-28T12:06:00.000Z",
-    checkedBy: "Admin",
+    checkedBy: "Jean-Pierre Kouassi",
     assignments: [
       { teacherId: "teacher-003", isPresent: false }
     ]

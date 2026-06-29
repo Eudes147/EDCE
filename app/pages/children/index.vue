@@ -227,7 +227,7 @@
       </div>
 
       <div class="py-1">
-        <button v-if="authStore.isAdmin || permissionsLocal.canCreateChild"
+        <button
           class="w-full border border-dashed border-outline-variant hover:border-primary hover:text-primary text-outline rounded-lg py-2 flex flex-col items-center gap-0.5 transition-all bg-doomu-bg/20" 
           @click="activeParentModal = true" type="button"
         >

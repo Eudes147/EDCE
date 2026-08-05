@@ -1,3 +1,5 @@
+
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -15,7 +17,7 @@ export default defineNuxtConfig({
       '~/assets/css/tailwind.css',  
   ],
   $fetch: {
-    baseURL: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000'
+    baseURL: process.env.NUXT_PUBLIC_API_BASE_URL
   },
 
   // Configuration du module google-fonts pour des polices locales / téléchargées

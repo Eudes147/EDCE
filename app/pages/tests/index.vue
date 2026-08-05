@@ -120,10 +120,10 @@
               <td class="px-4 py-2.5">
                 <div class="flex items-center gap-2">
                   <div class="w-5 h-5 rounded-full bg-surface-container text-[9px] font-bold uppercase text-on-surface border border-outline-variant flex items-center justify-center shrink-0">
-                    {{ getTeacherById(test.authorId)?.first_name?.charAt(0) || '?' }}
+                    {{ getModeratorById(test.authorId)?.first_name?.charAt(0) || '?' }}
                   </div>
                   <span class="text-xs font-medium text-on-surface truncate max-w-[100px]">
-                    {{ getTeacherById(test.authorId) ? (getTeacherById(test.authorId)?.first_name + ' ' + getTeacherById(test.authorId)?.last_name?.substring(0,1) + '.') : '--' }}
+                    {{ getModeratorById(test.authorId) ? (getModeratorById(test.authorId)?.first_name + ' ' + getModeratorById(test.authorId)?.last_name?.substring(0,1) + '.') : '--' }}
                   </span>
                 </div>
               </td>
@@ -132,7 +132,7 @@
                 <div class="flex items-center justify-end gap-px sm:gap-0.5 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                   <button @click="openViewModal(test)" class="p-1 text-on-surface-variant hover:text-primary rounded transition-colors" title="Voir"><Icon size="1.1rem" name="visibility" /></button>
                   <button v-if="authStore.isAdmin || permissionsLocal.canEditTest" @click="openEditModal(test)" class="p-1 text-on-surface-variant hover:text-secondary rounded transition-colors" title="Éditer"><Icon size="1.1rem" name="edit" /></button>
-                  <button  class="p-1 text-on-surface-variant hover:text-tertiary rounded transition-colors" title="Télécharger"><Icon size="1.1rem" name="download" /></button>
+                  <button class="p-1 text-on-surface-variant hover:text-tertiary rounded transition-colors" title="Télécharger"><Icon size="1.1rem" name="download" /></button>
                   <button v-if="authStore.isAdmin" @click="openDeleteModal(test)" class="p-1 text-error hover:bg-error/5 rounded transition-colors" title="Supprimer"><Icon size="1.1rem" name="delete" /></button>
                 </div>
               </td>
@@ -207,20 +207,20 @@
 
         <div>
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5"> Lien Drive du test (URL)</label>
-          <textarea 
+          <textarea :disabled="!isEditMode"
             v-model="sujetTest" 
             rows="3"
-            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium disabled:border-error"
             placeholder="Ex: https://drive.google.com/..."
           ></textarea>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wide mb-1.5"> Lien Drive du corrigé (URL)</label>
-          <textarea 
+          <textarea :disabled="!isEditMode"
             v-model="correctionTest" 
             rows="2"
-            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium"
+            class="w-full bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none text-on-surface font-medium disabled:border-error"
             placeholder="Ex: https://drive.google.com/..."
           ></textarea>
         </div>
@@ -314,6 +314,7 @@ const toast = useToast()
 const authStore = useAuthStore()
 const { totalTests, getTestbyType, createTest, updateTest, deleteTest, fetchAllTests, isTestLoading: isLoadingTests } = useTest()
 const { getTeacherById, fetchAllTeachers } = useTeacher()
+const {getModeratorById,fetchAllModerators}=useModerator()
 
 // Contrôleurs d'états pour les ouvertures de fenêtres modales
 const activeTestModal = ref(false)
@@ -352,6 +353,7 @@ if(authStore.userStatus && permissions){
 onMounted(async () => {
   await Promise.all([
     fetchAllTeachers(),
+    fetchAllModerators(),
     fetchAllTests()
   ])
   authStore.initializeFromCookies()
@@ -425,18 +427,17 @@ const openDeleteModal = (test: Test) => {
 // Traitement unifié d'écriture (POST / PUT)
 const handleSubmitForm = async () => {
   if (!titleTest.value.trim()) {
-    toast.warning('Donnée manquante', 'Le titre de l\'épreuve ne peut pas être vide.')
+    toast.warning("Donnée manquante', 'Le titre de l\'épreuve ne peut pas être vide.")
     return
   }
-  else if(!sujetTest.value.trim().startsWith("https://drive.google.com") || !correctionTest.value.trim().startsWith("https://drive.google.com")){
-    toast.warning("Copié le bon lien drive du drive et de son corrigé.")
-    return
-  }
-
 
   try {
     if (isEditMode.value && selectedTest.value) {
       // 📝 Mode Modification (PUT)
+      if(!sujetTest.value.startsWith('https://drive.google.com/') || !correctionTest.value.startsWith('https://drive.google.com/')){
+        toast.warning("Lien drive Google (de test ou de correction) invalide.")
+        return
+      }
       isCreateLoading.value=true
       await updateTest(selectedTest.value.id, {
         titleTest: titleTest.value,
@@ -454,8 +455,8 @@ const handleSubmitForm = async () => {
         titleTest: titleTest.value,
         classe: classe.value,
         typeTest: typeTest.value,
-        sujetTest: sujetTest.value,
-        correctionTest: correctionTest.value,
+        sujetTest: '',
+        correctionTest: "",
         authorId: authStore.user?.id || ""
       })
       isCreateLoading.value=false

@@ -103,7 +103,7 @@
           </span>
         </div>
         <div class="space-y-3">
-          <div v-if="isLoading" class="w-full flex justify-center items-center">
+          <div v-if="isNotesLoading" class="w-full flex justify-center items-center">
             <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 24 24"
@@ -216,7 +216,7 @@
             <Icon name="workspace_premium" size="1.1rem" /> Registre complet
           </span>
         </div>
-        <div v-if="isLoading" class="w-full p-4 space-y-3 flex justify-center items-center">
+        <div v-if="isNotesLoading" class="w-full p-4 space-y-3 flex justify-center items-center">
             <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 24 24"
@@ -377,7 +377,7 @@ const {
   getNamebyId, 
   percentSuccessbyClasse, 
   fetchAllNotesData,
-  isLoading,
+  isNotesLoading,
   getPassageDeliberation,
   notesbyYear,
 } = useNote()

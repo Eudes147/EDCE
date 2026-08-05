@@ -17,7 +17,7 @@ export const useNote = () => {
   const { listTests, fetchAllTests } = useTest()
   
   const listNotes = ref<Note[]>([])
-  const isLoading = ref(true)
+  const isNotesLoading = ref(true)
   const actualYear = computed(() => new Date().getFullYear().toString())
 
 
@@ -27,7 +27,7 @@ export const useNote = () => {
   }
   // 🔄 Charger toutes les notes et dépendances depuis le serveur
   const fetchAllNotesData = async () => {
-    isLoading.value = true
+    isNotesLoading.value = true
     try {
       // Chargement simultané des dépendances enfants et tests
       await Promise.all([fetchAllChildren?.(), fetchAllTests?.()])
@@ -37,14 +37,14 @@ export const useNote = () => {
     } catch (error) {
       console.error('Erreur lors du chargement des notes:', error)
     } finally {
-      isLoading.value = false
+      isNotesLoading.value = false
     }
   }
 
   // ➕ Ajouter une note (Action Réseau)
   const createNote = async (notePayload: Omit<Note, 'id' | 'created_at'>) => {
     try {
-      isLoading.value=true
+      isNotesLoading.value=true
       await $fetch('/api/notes', { method: 'POST', body: notePayload })
       await fetchAllNotesData() // Rafraîchissement
       toast.success(`Note de ${notePayload.note} enegistré avec succès pour ${getNamebyId(notePayload.childId)}`)
@@ -52,14 +52,14 @@ export const useNote = () => {
       toast.error(`${error}`)
     }
     finally{
-      isLoading.value=false
+      isNotesLoading.value=false
 
     }
   }
   // Mettre a jour la note
   const updateNote= async (notePayload: Omit<Note,'created_at'>)=>{
     try {
-      isLoading.value=true
+      isNotesLoading.value=true
       await $fetch(`/api/notes/${notePayload.id}`,{method: 'PUT', body: notePayload})
       await fetchAllNotesData() // Rafraîchissement
       toast.success(`Note de ${notePayload.note} mis à jour avec succès pour ${getNamebyId(notePayload.childId)}`)
@@ -157,7 +157,7 @@ export const useNote = () => {
   return {
     notesbyYear,
     listNotes,
-    isLoading,
+    isNotesLoading,
     fetchAllNotesData, // À appeler à l'initialisation de ta page de notes / bulletins
     createNote,
     getNote,

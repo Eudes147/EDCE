@@ -8,7 +8,7 @@
     </p>
   </div>
 </div>
-<div v-if="isLoading || isTestLoading ">
+<div v-if="isNotesLoading || isTestLoading || isLoading">
   <Loader name="des enfants..." />
 </div>
 
@@ -164,7 +164,7 @@
               <div class="flex-1 sm:w-32">
                 <button 
                   class="w-full bg-primary text-white hover:opacity-90 transition-all text-xs font-semibold py-1.5 rounded-lg shadow-sm disabled:bg-primary/10" 
-                  @click="saveNote(attributeChild.id, testSelectedId)" :disabled="isNoteLoading"
+                  @click="saveNote(attributeChild.id, testSelectedId)" :disabled="isNoteLoading || !updatePrivilege"
                 >
                 {{isNoteLoading?'Enregistrement':'Enregistrer'}}
                 </button>
@@ -221,9 +221,37 @@
         <label class="block font-caption text-[11px] text-outline mb-1">Téléphone Personnel</label>
         <input v-model="formChild.tel" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" placeholder="Ex: 0198564789" type="text" />
       </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-caption text-[11px] text-outline mb-1">Département<span class="text-error">*</span></label>
+          <select v-model="deptSelected" :disabled="isGeoLoading" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none disabled:border-error" required>
+            <option v-for="departement in departements" :key="departement.code" :value="{code:departement.code,nom:departement.nom}">{{ departement.nom }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-caption text-[11px] text-outline mb-1">Commune <span class="text-error">*</span></label>
+          <select :disabled="isGeoLoading" v-model="communeSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none disabled:border-error " required>
+            <option v-for="commune in communesByDept[deptSelected.code]" :key="commune.code" :value="{code: commune.code, nom: commune.nom}">{{ commune.nom }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block font-caption text-[11px] text-outline mb-1">Arrondissement<span class="text-error">*</span></label>
+          <select :disabled="isGeoLoading" v-model="arrondSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none disabled:border-error" required>
+            <option v-for="arrondissement in arrondissementsByCommune[communeSelected.code]" :key="arrondissement.code" :value="{code: arrondissement.code, nom: arrondissement.nom}">{{ arrondissement.nom }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-caption text-[11px] text-outline mb-1">Quartier <span class="text-error">*</span></label>
+          <select :disabled="isGeoLoading" v-model="quarterSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none disabled:border-error" required>
+            <option v-for="quarter in quartiersByArrondissement[arrondSelected.code]" :key="quarter.code" :value="{code: quarter.code, nom: quarter.nom}">{{ quarter.nom }}</option>
+          </select>
+        </div>
+      </div>
       <div>
-        <label class="block font-caption text-[11px] text-outline mb-1">Quartier <span class="text-error"></span></label>
-        <input v-model="formChild.quarter" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: Yénawa 2e Von..." type="text" />
+        <label class="block font-caption text-[11px] text-outline mb-1">Précision <span class="text-error"></span></label>
+        <input v-model="formChild.quarter" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-primary text-doomu-text focus:outline-none" placeholder="Ex: Vons ..." type="text" />
       </div>
 
       <div class="py-1">
@@ -249,58 +277,201 @@
   </div>
 </div>
 
-<!-- Section Événements Dynamisée -->
+
+<!-- ======================================================== -->
+<!-- SECTION ÉVÉNEMENTS (Arbre de Noël / Soirée récréative)   -->
+<!-- ======================================================== -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 space-y-2 md:space-y-4">
   <div 
-    v-for="activityName in ['Arbre de noël', 'Soirée récréative des enfants']" 
+    v-for="activityName in (['Arbre de noël', 'Soirée récréative des enfants'] as EventType[])" 
     :key="activityName"
     class="bg-white border border-outline-variant/40 rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all group my-2 md:my-4"
   >
-    <div v-for="(children, activityTitle) in getLimitedActivitiesWithChildren(activityName)" :key="activityTitle" class="space-y-4">
+    <div class="space-y-4 w-full">
       
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-outline-variant/20 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
-          <h4 class="font-bold font-h3 text-on-surface text-sm sm:text-base group-hover:text-primary transition-colors">
-            {{ activityTitle }}
-          </h4>
+      <!-- En-tête avec bouton de configuration de la vue -->
+      <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3 mb-2">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-outline">{{ activityName }}</h3>
+        <button 
+          @click="openVisualSelectionModal(activityName)"
+          class="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/5 hover:bg-primary/10 px-2.5 py-1 rounded-lg transition-colors border border-primary/10"
+        >
+          <Icon name="tune" size="0.9rem" /> Ajouter une activité
+        </button>
+      </div>
+
+      <!-- Liste des activités calculée dynamiquement -->
+      <div v-if="Object.keys(allVisibleActivities[activityName]).length > 0" class="space-y-6">
+        <div 
+          v-for="(children, activityTitle) in allVisibleActivities[activityName]" 
+          :key="activityTitle" 
+          class="space-y-4 border-b border-outline-variant/10 pb-4 last:border-none last:pb-0"
+        >
+          <!-- Nom de l'activité -->
+          <div class="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
+            <span class="w-2 h-2 rounded-full bg-primary" :class="children.length > 0 ? 'animate-ping' : ''"></span>
+            <h4 class="font-bold font-h3 text-on-surface text-sm sm:text-base group-hover:text-primary transition-colors">
+              {{ activityTitle }}
+            </h4>
+          </div>
+
+          <!-- Aperçu des enfants -->
+          <div>
+            <ul class="space-y-1.5">
+              <li v-if="!children || children.length === 0" class="text-xs text-on-surface-variant/70 italic pl-1 bg-surface-container-low px-3 py-2 rounded-lg border border-dashed border-outline-variant/60">
+                Aucun enfant disponible pour '{{ activityTitle }}' en '{{ activityName }}'
+              </li>
+              
+              <li 
+                v-for="child in children.slice(0, 2)" :key="child.id"
+                class="flex items-center gap-2 text-xs text-on-surface bg-surface-container-low px-3 py-1.5 rounded-lg"
+              >
+                <Icon name="person" class="text-outline text-[13px]" />
+                {{ child.name }}
+              </li>
+              
+              <li v-if="children && children.length > 2" class="text-[10px] text-primary font-semibold pl-1 italic">
+                + {{ children.length - 2 }} autre(s) enfant(s) inscrit(s)
+              </li>
+            </ul>
+          </div>
+
+          <!-- Actions de l'activité -->
+          <div class="grid grid-cols-2 gap-2">
+            <button 
+              @click="openViewParticipantsModal(activityTitle)"
+              class="bg-secondary/5 hover:bg-secondary hover:text-white text-secondary font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1 text-xs border border-secondary/10"
+            >
+              <Icon name="visibility" size="1rem"/> Voir la liste
+            </button>
+            <button 
+              @click="openAssociationModal(activityTitle)"
+              class="bg-primary/5 hover:bg-primary text-primary hover:text-white font-bold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1 text-xs border border-primary/10"
+            >
+              <Icon name="person_add" size="1rem"/> Inscrire
+            </button>
+          </div>
+
         </div>
-        
-        <!-- Badges spécifiques pour identifier clairement l'EventType d'appartenance -->
-        <span :class="[
-          'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border w-fit',
-          activityName.includes('noël') ? 'bg-primary/5 text-primary border-primary/15' : 'bg-secondary/5 text-secondary border-secondary/15'
-        ]">
-          Catégorie : {{ activityName }}
-        </span>
       </div>
 
-      <div>
-        <p class="text-[11px] text-on-surface-variant mb-2">Participants récents :</p>
-        <ul class="space-y-1.5">
-          <li v-if="children?.length === 0" class="text-xs text-on-surface-variant/70 italic pl-1">Aucun participant enregistré</li>
-          <li 
-            v-for="child in children.slice(0, 3)" :key="child.id"
-            class="flex items-center gap-2 text-xs text-on-surface bg-surface-container-low px-3 py-1.5 rounded-lg"
-          >
-            <Icon name="person" class="text-outline text-[13px]" />
-            {{ child.name }}
-          </li>
-          <li v-if="children.length > 3" class="text-[10px] text-primary font-semibold pl-1 italic">
-            + {{ children.length - 3 }} autre(s) enfant(s) inscrit(s)
-          </li>
-        </ul>
+      <!-- Aucun affichage actif -->
+      <div v-else class="w-full py-6 flex flex-col items-center justify-center">
+        <h2 class="text-center text-xs sm:text-sm text-outline italic">
+          Aucune activité affichée pour cette section.
+        </h2>
       </div>
 
-      <button 
-        @click="openAssociationModal(activityTitle)"
-        class="w-full bg-primary/5 hover:bg-primary text-primary hover:text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center gap-1.5 border border-primary/10 text-xs"
-      >
-        <Icon name="person_add" size="1.05rem"/> Inscrire un enfant
-      </button>
     </div>
   </div>
 </div>
+
+<!-- ======================================================== -->
+<!-- MODAL A : LISTE DES PARTICIPANTS À L'ACTIVITÉ            -->
+<!-- ======================================================== -->
+<Modal v-model="isViewParticipantsModalOpen" :title="`Participants inscrits : ${selectedActivityTitle}`" size="md">
+  <div class="space-y-3 py-2">
+    <div v-if="currentModalParticipants.length > 0" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+      <div 
+        v-for="(child, idx) in currentModalParticipants" 
+        :key="child.id" 
+        class="flex items-center justify-between bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-2.5"
+      >
+        <div class="flex items-center gap-2.5">
+          <span class="text-[10px] font-bold text-outline bg-surface-container-high w-5 h-5 rounded-full flex items-center justify-center">
+            {{ idx + 1 }}
+          </span>
+          <span class="text-xs font-semibold text-on-surface">{{ child.name }}</span>
+        </div>
+        <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-outline-variant/30 text-outline">
+          Classe {{ child.classe }}
+        </span>
+      </div>
+    </div>
+    <div v-else class="py-8 text-center text-xs text-outline italic">
+      Aucun participant n'est encore enregistré pour cette activité.
+    </div>
+  </div>
+  <template #footer>
+    <div class="flex justify-end w-full">
+      <button class="px-4 py-2 bg-outline text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all" @click="isViewParticipantsModalOpen = false">
+        Fermer
+      </button>
+    </div>
+  </template>
+</Modal>
+
+<!-- ======================================================== -->
+<!-- MODAL B : ASSOCIER UN ENFANT À L'ACTIVITÉ                -->
+<!-- ======================================================== -->
+<Modal v-model="isModalOpen" :title="`Inscrire un enfant : ${selectedActivityTitle}`" size="md">
+  <div class="space-y-4 py-2">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-outline uppercase tracking-wide">Sélectionner l'élève</label>
+      <select 
+        v-model="selectedChildId" 
+        class="w-full bg-surface border border-outline-variant rounded-xl px-3 py-2.5 text-xs text-on-surface focus:border-primary outline-none transition-colors"
+      >
+        <option value="" disabled selected>-- Choisir un enfant de la classe {{ classeSelected }} --</option>
+        <option v-for="child in filteredChildren" :key="child.id" :value="child.id">
+          {{ child.name }}
+        </option>
+      </select>
+    </div>
+    <p class="text-[11px] text-outline italic">
+      Seuls les élèves de la classe sélectionnée dans votre filtre de gauche (Classe actuelle : {{ classeSelected }}) sont listés.
+    </p>
+  </div>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <button class="px-4 py-2 bg-surface hover:bg-surface-container border border-outline-variant text-on-surface text-xs font-bold rounded-lg transition-all" @click="isModalOpen = false">
+        Annuler
+      </button>
+      <button :disabled="!selectedChildId" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all" @click="submitAssociation">
+        Valider l'inscription
+      </button>
+    </div>
+  </template>
+</Modal>
+
+<!-- ======================================================== -->
+<!-- MODAL C : SÉLECTION DU CATALOGUE COMPLET DES ACTIVITÉS   -->
+<!-- ======================================================== -->
+<Modal v-model="isVisualModalOpen" :title="`Gérer l'affichage : ${selectedCategory}`" size="md">
+  <div class="space-y-4 py-2">
+    <p class="text-xs text-on-surface-variant">
+      Sélectionnez les activités du catalogue pour forcer leur affichage (les masquer retirera uniquement la vue tableau de bord, pas les participants).
+    </p>
+    
+    <div v-if="currentCategoryActivitiesFromEvent.length > 0" class="flex flex-wrap gap-2 pt-2">
+      <button 
+        v-for="act in currentCategoryActivitiesFromEvent" 
+        :key="act.id"
+        @click="toggleVisualActivity(act.title)"
+        :class="[
+          'px-4 py-2.5 rounded-xl font-medium text-xs border transition-all flex items-center gap-2',
+          forcedVisualActivities[selectedCategory].includes(act.title) || (allVisibleActivities[selectedCategory][act.title] && allVisibleActivities[selectedCategory][act.title].length > 0)
+            ? 'bg-primary text-white border-primary shadow-sm font-semibold'
+            : 'bg-surface hover:bg-surface-container border-outline-variant text-on-surface'
+        ]"
+      >
+        <Icon :name="forcedVisualActivities[selectedCategory].includes(act.title) || (allVisibleActivities[selectedCategory][act.title] && allVisibleActivities[selectedCategory][act.title].length > 0) ? 'visibility' : 'visibility_off'" size="1rem" />
+        {{ act.title }}
+      </button>
+    </div>
+    
+    <div v-else class="py-4 text-center text-xs text-outline italic">
+      Aucune activité enregistrée pour la catégorie {{ selectedCategory }} en {{ actualYear }}.
+    </div>
+  </div>
+  <template #footer>
+    <div class="flex justify-end w-full">
+      <button class="px-5 py-2 bg-primary text-white font-bold rounded-xl text-xs hover:opacity-90 transition-all" @click="isVisualModalOpen = false">
+        Fermer
+      </button>
+    </div>
+  </template>
+</Modal>
 </div>
 
 
@@ -388,7 +559,15 @@
         <p class="font-medium text-doomu-text">{{ childSelected.telParent || 'Non défini' }}</p>
       </div>
       <div>
-        <p class="text-xs text-doomu-text-muted">Quartier</p>
+        <p class="text-xs text-doomu-text-muted">ARRONDISSEMENT</p>
+        <p class="font-medium text-primary/30">{{ childSelected.adresse.split('---')[5] ? childSelected.adresse.split('---')[5]: 'Non défini' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-doomu-text-muted">QUARTIER</p>
+        <p class="font-medium text-tertiary">{{ childSelected.adresse.split('---')[7] ? childSelected.adresse.split('---')[7] : 'Non défini' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-doomu-text-muted">Adresse (Précsion)</p>
         <p class="font-medium text-doomu-text">{{ childSelected.quarter || 'Non défini' }}</p>
       </div>
     </div>
@@ -433,13 +612,46 @@
           </select>
         </div>
       </div>
+      <div v-if="childSelected.classe.includes('Junior')">
+        <label class="block font-caption text-xs text-outline mb-1.5">Téléphone</label>
+        <input v-model="childSelected.tel" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" />
+      </div>
       <div>
         <label class="block font-caption text-xs text-outline mb-1.5">Téléphone Parent</label>
         <input v-model="childSelected.telParent" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" required />
       </div>
+      <!-- Adresse -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-caption text-xs text-outline mb-1.5">Département</label>
+          <select v-model="editdeptSelected" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none">
+            <option v-for="departement in departements" :key="departement.code" :value="{code: departement.code,nom:departement.nom}">{{ departement.nom }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-caption text-xs text-outline mb-1.5">Commune</label>
+          <select v-model="editcommuneSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" required>
+            <option v-if="editdeptSelected.code" v-for="commune in communesByDept[editdeptSelected.code]" :key="commune.code" :value="{code: commune.code,nom: commune.nom}">{{ commune.nom }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-caption text-xs text-outline mb-1.5">Arrondissement</label>
+          <select v-model="editarrondSelected" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none">
+            <option v-if="editcommuneSelected.code" v-for="arrondissement in arrondissementsByCommune[editcommuneSelected.code]" :key="arrondissement.code" :value="{code: arrondissement.code,nom:arrondissement.nom}">{{ arrondissement.nom }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-caption text-xs text-outline mb-1.5">Quartier</label>
+          <select v-model="editquarterSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" required>
+            <option v-if="editarrondSelected.code" v-for="quarter in quartiersByArrondissement[editarrondSelected.code]" :key="quarter.code" :value="{code: quarter.code,nom: quarter.nom}">{{ quarter.nom }}</option>
+          </select>
+        </div>
+      </div>
       <div>
-        <label class="block font-caption text-xs text-outline mb-1.5">Quartier</label>
-        <input v-model="childSelected.quarter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" required />
+        <label class="block font-caption text-xs text-outline mb-1.5">Adresse Précision</label>
+        <input v-model="childSelected.quarter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" />
       </div>
     </form>
   </div>
@@ -477,13 +689,14 @@ import { useChildren } from '~/composables/useChild'
 import { useNote } from '~/composables/useNote'
 import { useTest } from '~/composables/useTest'
 import { useToast } from '~/composables/useToast'
+import { useActivities } from '~/composables/useActivity'
+import { useParticipantEventActivity } from '~/composables/useParticipant'
 import { useAuthStore } from '~/stores/auth'
 import { classes, nivScolaireClasse } from "~/stores/child"
 import type { EventType } from '~/types/activity'
 import type { Child, childSubmit } from '~/types/child'
 import type { ClasseType } from '~/types/classe'
 import type { Note } from '~/types/test'
-//Utils
 import { validateFormTel } from '~/utils/validateFormatTel'
 
 definePageMeta({
@@ -491,38 +704,48 @@ definePageMeta({
 })
 
 // --- COMPOSABLES GENERAUX ---
-
-const authStore=useAuthStore()
-const permissionsLocal=ref()
-const permissions=authStore.permissions
-if(authStore.userStatus && permissions){
-  permissionsLocal.value=permissions[authStore.userStatus]
+const authStore = useAuthStore()
+const permissionsLocal = ref()
+const permissions = authStore.permissions
+if (authStore.userStatus && permissions) {
+  permissionsLocal.value = permissions[authStore.userStatus]
 } 
 const actualYear = computed(() => new Date().getFullYear().toString())
+const {isLoading: isGeoLoading,departements, communesByDept,arrondissementsByCommune, quartiersByArrondissement,...fetchs }=useGeoBJ()
 const toast = useToast()
 const { childrenPerClass, getFullName, fetchAllChildren, createChild, updateChild, deleteChild, isLoading } = useChildren()
 const { getTestbyClasse, fetchAllTests, isTestLoading } = useTest()
-const { createNote, updateNote, fetchAllNotesData, isExistNotebyTestAndChildIds, getNote } = useNote() 
+const { createNote, updateNote, fetchAllNotesData, isExistNotebyTestAndChildIds, getNote,isNotesLoading } = useNote() 
 
-// --- INSTANCIATION DU STORE DES PARTICIPANTS (Résout l'erreur 7022 & 2769) ---
+// --- INSTANCIATION DES COMPOSABLES D'ACTIVITÉS ET PARTICIPANTS ---
+const activitiesStore = useActivities()
 const participantEventStore = useParticipantEventActivity()
 
-// Extraction des refs réactives et méthodes nécessaires
+// Extraction des refs réactives et méthodes nécessaires de useParticipantEventActivity
 const listEventActivity = participantEventStore.listEventActivity
 const listActivities = participantEventStore.listActivities
 const createParticipantEventActivity = participantEventStore.createParticipantEventActivity
 const fetchAllEventData = participantEventStore.fetchAllEventData
 const isEventLoading = participantEventStore.isLoading
-const isCreateLoading=ref(false)
+const isCreateLoading = ref(false)
 
 // --- ETATS DE NAVIGATION / SELECTION ---
 const activeParentModal = ref(false)
-const searchChildQuery=ref('')
+const searchChildQuery = ref('')
 const child_classes = ref(classes)
 const classeSelected = ref<ClasseType>('Petit')
 const attributeChild = ref<Child | null>(null)
 const childSelected = ref<Child | null>(null)
-
+  // Adresse Create
+const deptSelected=ref({code: 'BEN-DEP-08', nom: 'LITTORAL'})
+const communeSelected=ref({code: 'BEN-COM-048', nom: 'COTONOU'})
+const arrondSelected=ref({code: 'BEN-ARR-0343', nom: '2EME ARRONDISSEMENT'})
+const quarterSelected=ref({code: 'BEN-QRT-03388', nom: 'YENAWA'})
+// Adresse update
+const editdeptSelected=ref<{code: String|undefined, nom: String|undefined}>({code: '', nom: ''})
+const editcommuneSelected=ref<{code: String|undefined, nom: String|undefined}>({code: '', nom: ''})
+const editarrondSelected=ref<{code: String|undefined, nom: String|undefined}>({code: '', nom: ''})
+const editquarterSelected=ref<{code: String|undefined, nom: String|undefined}>({code: '', nom: ''})
 // --- VISIBILITE DES MODALES ---
 const showViewModal = ref(false)
 const showEditModal = ref(false)
@@ -536,11 +759,7 @@ const editDateSelected = ref<string|undefined>("")
 const note = ref<number | null>(null)
 const testSelectedId = ref("")
 const isNoteLoading = ref(false)
-
-// Variables
-const noteFound=ref<Note>()
-// AuthStore
-
+const noteFound = ref<Note>()
 
 // --- FORMULAIRE REACTIF D'INSCRIPTION ---
 const formChild = ref<childSubmit>({
@@ -553,25 +772,48 @@ const formChild = ref<childSubmit>({
   tel: '',
   telParent: '',
   quarter: '',
+  adresse: `${deptSelected.value.code}---${deptSelected.value.nom}---${communeSelected.value.code}---${communeSelected.value.nom}---${arrondSelected.value.code}---${arrondSelected.value.nom}---${quarterSelected.value.code}---${quarterSelected.value.nom}`
 })
 
-const nivScolaireByClasse=computed(()=>{
+const nivScolaireByClasse = computed(() => {
   return nivScolaireClasse[formChild.value?.classe]
 })
 
-const nivScolaireByChild=computed(()=>{
-  if(childSelected) return nivScolaireClasse[childSelected?.value.classe]
+const nivScolaireByChild = computed(() => {
+  if (childSelected.value) return nivScolaireClasse[childSelected.value.classe]
 })
+
 // --- ETATS LOCAUX COMPOSANTE PARTICIPANTS / EVENT ---
 const isModalOpen = ref(false)
+const isViewParticipantsModalOpen = ref(false)
 const selectedActivityTitle = ref('')
 const selectedChildId = ref('')
+const updatePrivilege = ref(true)
+
+// --- ÉTATS EXCLUSIFS : SÉLECTION ET PERSISTANCE VISUELLE ---
+const isVisualModalOpen = ref(false)
+const selectedCategory = ref<EventType>('Arbre de noël')
+
+// Tableau persistant local indexé par type d'événement
+const forcedVisualActivities = ref<Record<EventType, string[]>>({
+  'Arbre de noël': [],
+  'Soirée récréative des enfants': []
+})
 
 // --- CHARGEMENT INITIAL GLOBAL ---
 onMounted(async () => {
+  await fetchs.fetchDepartements()
+  await fetchs.fetchCommunesByDepartement(deptSelected.value.code)
+  // await fetchs.fetchCommuneByCode(communeSelected.value)
+  await fetchs.fetchArrondissementsByCommune(communeSelected.value.code)
+  // await fetchs.fetchArrondissementByCode()
+  // await fetchs.fetchQuartierByCode()
+  await fetchs.fetchQuartiersByArrondissement(arrondSelected.value.code)
+
   await fetchAllTests()
   await fetchAllChildren()
   await fetchAllEventData()
+  await activitiesStore.fetchAllData() // Chargement du groupActivityperEvent global
   await fetchAllNotesData()
   resetTestSelection()
 })
@@ -583,62 +825,83 @@ watch(dateSelected, (newDate) => {
 
 const resetTestSelection = () => {
   const availableTests = getTestbyClasse.value(classeSelected.value)
-  
   if (availableTests && availableTests?.length > 0) {
-    // Si on a des tests, on prend l'ID du premier (on sait qu'il existe, pas besoin de ?.id)
     testSelectedId.value = availableTests[0]?.id || ""
   } else {
-    // Sinon, on remet à vide
     testSelectedId.value = ""
   }
 }
+watch(deptSelected,async (newDept)=>{
+  await fetchs.fetchCommunesByDepartement(newDept.code)
+})
+watch(editdeptSelected,async (newDept)=>{
+  await fetchs.fetchCommunesByDepartement(newDept.code)
+})
+
+watch(communeSelected,async(newCommune)=>{
+  await fetchs.fetchArrondissementsByCommune(newCommune.code)
+})
+watch(editcommuneSelected,async(newCommune)=>{
+  await fetchs.fetchArrondissementsByCommune(newCommune.code)
+})
+
+watch(arrondSelected,async(newArrondissement)=>{
+  await fetchs.fetchQuartiersByArrondissement(newArrondissement.code)
+})
+watch(editarrondSelected,async(newArrondissement)=>{
+  await fetchs.fetchQuartiersByArrondissement(newArrondissement.code)
+})
 
 watch(classeSelected, () => {
   resetTestSelection()
   attributeChild.value = null
 })
 
-
-
-const getLimitedActivitiesWithChildren = (eventType: EventType) => {
-  // 1. Appel du store
-  const fullCrossedData = participantEventStore.getChildrenByActivityTitle(actualYear.value, eventType)
-  
-  // 2. Vérification de sécurité (si fullCrossedData est null/undefined)
-  if (!fullCrossedData) return {}
-
-  // 3. Transformation
-  return Object.fromEntries(
-    Object.entries(fullCrossedData).slice(0, 2)
-  )
-}
-
-
 // --- ACTIONS METIERS : ENFANTS ---
 const attribute = (child: Child) => {
   attributeChild.value = child
+  
+  if(attributeChild.value){
+    if (isExistNotebyTestAndChildIds(testSelectedId.value, attributeChild.value.id)) {
+      updatePrivilege.value = !(authStore.userStatus == 'teacher')
+      noteFound.value = getNote(testSelectedId.value, attributeChild.value.id)
+      note.value = Number(noteFound.value?.note || 0)
+      console.log("EXISTE")
+    } 
+    else {
+      updatePrivilege.value = true
+      note.value = Number(0)
+      console.log("N'EXISTE PAS")
+    }
+    //NivScolaire
+    if(attributeChild.value.nivScolaire) childSelected.value.nivScolaire=attributeChild.value.nivScolaire
+    // Département
+    editdeptSelected.value.code=attributeChild.value.adresse?.split('---')[0]
+    editdeptSelected.value.nom=attributeChild.value.adresse?.split('---')[1]
 
-  if(isExistNotebyTestAndChildIds(testSelectedId.value, child.id)){
-    noteFound.value=getNote(testSelectedId.value, child.id)
-    note.value=Number(noteFound.value?.note||0)
-  }
-  else{
-    note.value=Number(0)
-  }
+    // Commune
+    editcommuneSelected.value.code=attributeChild.value.adresse?.split('---')[2]
+    editcommuneSelected.value.nom=attributeChild.value.adresse?.split('---')[3]
 
+    // Arrondissement
+    editarrondSelected.value.code=attributeChild.value.adresse?.split('---')[4]
+    editarrondSelected.value.nom=attributeChild.value.adresse?.split('---')[5]
+    // Quarter
+    editquarterSelected.value.code=attributeChild.value.adresse?.split('---')[6]
+    editquarterSelected.value.nom=attributeChild.value.adresse?.split('---')[7]
+  }
 }
 
-watch(testSelectedId,(newTestId)=>{
-  if(attributeChild.value && newTestId && isExistNotebyTestAndChildIds(newTestId, attributeChild.value.id)){
-    noteFound.value=getNote(newTestId,attributeChild.value.id)
-    note.value=Number(noteFound.value?.note||0)
+watch(testSelectedId, (newTestId) => {
+  if (attributeChild.value && newTestId && isExistNotebyTestAndChildIds(newTestId, attributeChild.value.id)) {
+    updatePrivilege.value = !(authStore.userStatus == 'teacher')
+    noteFound.value = getNote(newTestId, attributeChild.value.id)
+    note.value = Number(noteFound.value?.note || 0)
+  } else {
+    updatePrivilege.value = true
+    note.value = Number(0)
   }
-  else{
-    note.value=Number(0)
-  }
-
- }
-)
+})
 
 const validateParent = () => {
   if (!formChild.value.telParent || formChild.value.telParent.includes('x') || !validateFormTel(formChild.value.telParent)) {
@@ -662,13 +925,18 @@ const handleSubmit = async () => {
     toast.warning("Parent manquant", "Veuillez associer un numéro de parent avant de valider.")
     return
   }
-  if(formChild.value.tel && !validateFormTel(formChild.value.tel)){
-    toast.warning(`Le numéro de téléphone de  ${formChild.value.name} ne respecte pas les normes.`)
+  if (formChild.value.tel && !validateFormTel(formChild.value.tel)) {
+    toast.warning(`Le numéro de téléphone de ${formChild.value.name} ne respecte pas les normes.`)
     return
   }
 
   try {
-    isCreateLoading.value=true
+    isCreateLoading.value = true
+    deptSelected.value = ({code: 'BEN-DEP-08', nom: 'LITTORAL'})
+      communeSelected.value = ({code: 'BEN-COM-048', nom: 'COTONOU'})
+      arrondSelected.value=({code: 'BEN-ARR-0343', nom: '2EME ARRONDISSEMENT'})
+      quarterSelected.value=({code: 'BEN-QRT-03388', nom: 'YENAWA'})
+
     await createChild({
       name: formChild.value.name,
       sexe: formChild.value.sexe,
@@ -676,13 +944,14 @@ const handleSubmit = async () => {
       classe: formChild.value.classe,
       nivScolaire: formChild.value.nivScolaire,
       sexeParent: formChild.value.sexeParent,
-      quarter: formChild.value.quarter||'Non défini',
+      quarter: formChild.value.quarter || 'Non défini',
       tel: formChild.value.tel || 'Aucun',
-      telParent: formChild.value.telParent
+      telParent: formChild.value.telParent,
+      adresse: `${deptSelected.value.code}---${deptSelected.value.nom}---${communeSelected.value.code}---${communeSelected.value.nom}---${arrondSelected.value.code}---${arrondSelected.value.nom}---${quarterSelected.value.code}---${quarterSelected.value.nom}`
     })
     
     toast.success('Inscription validée', `${formChild.value.name} a été inscrit en classe ${formChild.value.classe}.`)
-    isCreateLoading.value=false
+    isCreateLoading.value = false
     
     formChild.value = {
       classe: classeSelected.value,
@@ -693,8 +962,11 @@ const handleSubmit = async () => {
       sexeParent: 'Masculin',
       tel: '',
       telParent: '',
-      quarter: ''
+      quarter: '',
+      adresse: `${deptSelected.value.code}---${deptSelected.value.nom}---${communeSelected.value.code}---${communeSelected.value.nom}---${arrondSelected.value.code}---${arrondSelected.value.nom}---${quarterSelected.value.code}---${quarterSelected.value.nom}`
     }
+
+
     dateSelected.value = ""
   } catch (err) {
     toast.error("Échec de l'inscription", "Le serveur a renvoyé une erreur lors du traitement.")
@@ -703,7 +975,11 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   if (!childSelected.value) return
-  
+
+  if (childSelected.value.tel && !validateFormTel(childSelected.value.tel)) {
+    toast.warning(`Le numéro de téléphone de ${formChild.value.name} ou du parent ne respecte pas les normes.`)
+    return
+  }
   try {
     const payload: Partial<Child> = {
       name: childSelected.value.name,
@@ -711,7 +987,9 @@ const handleUpdate = async () => {
       classe: childSelected.value.classe,
       nivScolaire: childSelected.value.nivScolaire,
       telParent: childSelected.value.telParent,
-      quarter: childSelected.value.quarter
+      tel: childSelected.value.tel,
+      quarter: childSelected.value.quarter,
+      adresse: `${editdeptSelected.value.code}---${editdeptSelected.value.nom}---${editcommuneSelected.value.code}---${editcommuneSelected.value.nom}---${editarrondSelected.value.code}---${editarrondSelected.value.nom}---${editquarterSelected.value.code}---${editquarterSelected.value.nom}`
     }
     
     if (editDateSelected.value) {
@@ -754,26 +1032,24 @@ const saveNote = async (childId: string, testId: string | undefined) => {
 
   isNoteLoading.value = true
   try {
-    if(isExistNotebyTestAndChildIds(testId, childId)){
-      if(noteFound.value)
+    if (isExistNotebyTestAndChildIds(testId, childId)) {
+      if (noteFound.value && updatePrivilege.value)
       await updateNote({
         id: noteFound.value?.id,
         testId: testId,
         childId: childId,
         note: Number(note.value)
       })
-    }
-    else{
+    } else {
       if (createNote) {
-      await createNote({
-        childId,
-        testId: testId as string, // Cast explicite pour résoudre l'erreur 2322 🎯
-        note: note.value
-      })
-      note.value = null 
+        await createNote({
+          childId,
+          testId: testId as string,
+          note: note.value
+        })
+        note.value = null 
+      }
     }
-    }
-    
   } catch (err) {
     toast.error('Erreur', "La note n'a pas pu être sauvegardée.")
   } finally {
@@ -788,6 +1064,11 @@ const openAssociationModal = (activityTitle: string) => {
   isModalOpen.value = true
 }
 
+const openViewParticipantsModal = (activityTitle: string) => {
+  selectedActivityTitle.value = activityTitle
+  isViewParticipantsModalOpen.value = true
+}
+
 const submitAssociation = async () => {
   if (!selectedChildId.value) return
 
@@ -797,7 +1078,7 @@ const submitAssociation = async () => {
   )
 
   if (!associatedEvent || !associatedEvent.id) {
-    alert(`Impossible de procéder à l'inscription : aucun événement correspondant trouvé pour ${actualYear.value}.`)
+    toast.error("Erreur", `Aucun événement annuel initialisé pour l'activité : ${selectedActivityTitle.value}`)
     return
   }
 
@@ -808,10 +1089,69 @@ const submitAssociation = async () => {
   }
 
   await createParticipantEventActivity(newParticipant)
-  
+  toast.success("Inscription réussie", "L'enfant a été ajouté à l'activité.")
   isModalOpen.value = false
   selectedChildId.value = ''
 }
+
+// --- GESTION DE LA NOUVELLE MODAL DE SÉLECTION D'AFFICHAGE ---
+const openVisualSelectionModal = (eventType: EventType) => {
+  selectedCategory.value = eventType
+  isVisualModalOpen.value = true
+}
+
+const toggleVisualActivity = (activityTitle: string) => {
+  const currentList = forcedVisualActivities.value[selectedCategory.value]
+  const index = currentList.indexOf(activityTitle)
+  
+  if (index > -1) {
+    currentList.splice(index, 1)
+  } else {
+    currentList.push(activityTitle)
+  }
+}
+
+// Récupération dynamique depuis groupActivityperEvent (provenant de useActivities)
+const currentCategoryActivitiesFromEvent = computed(() => {
+  return activitiesStore.groupActivityperEvent.value?.[selectedCategory.value] || []
+})
+
+// --- SOURCE DE VÉRITÉ COMPLÈTE & ULTRA-RÉACTIVE POUR L'AFFICHAGE ---
+const allVisibleActivities = computed(() => {
+  const categories: EventType[] = ['Arbre de noël', 'Soirée récréative des enfants']
+  const result: Record<EventType, Record<string, Child[]>> = {
+    'Arbre de noël': {},
+    'Soirée récréative des enfants': {}
+  }
+
+  categories.forEach((category) => {
+    // 1. Récupérer l'état complet du croisement de données du store de participants
+    const realCrossedData = participantEventStore.getChildrenByActivityTitle(actualYear.value, category) || {}
+    
+    // Limitation aux 2 premières lignes d'activités avec participants réels
+    const activeRealTitles = Object.keys(realCrossedData).slice(0, 2)
+    activeRealTitles.forEach((title) => {
+      result[category][title] = realCrossedData[title]
+    })
+
+    // 2. Injecter les activités cochées à la main si absentes
+    const forcedTitles = forcedVisualActivities.value[category] || []
+    forcedTitles.forEach((title) => {
+      if (!result[category][title]) {
+        result[category][title] = realCrossedData[title] || []
+      }
+    })
+  })
+
+  return result
+})
+
+// Récupère la liste complète des enfants pour la modal de consultation active
+const currentModalParticipants = computed(() => {
+  return allVisibleActivities.value['Arbre de noël'][selectedActivityTitle.value] || 
+         allVisibleActivities.value['Soirée récréative des enfants'][selectedActivityTitle.value] || 
+         []
+})
 
 // --- CONTRÔLEURS DE VISIBILITÉ ---
 const view = (child: Child) => {
@@ -821,7 +1161,15 @@ const view = (child: Child) => {
 
 const edit = (child: Child) => {
   childSelected.value = { ...child }
-  if (child.birth_date && editDateSelected.value) {
+  if(child.adresse){
+    editdeptSelected.value={code:child.adresse.split('---')[0],nom: child.adresse.split('---')[1]}
+    editcommuneSelected.value={code:child.adresse.split('---')[2],nom: child.adresse.split('---')[3]}
+    editarrondSelected.value={code:child.adresse.split('---')[4],nom: child.adresse.split('---')[5]}
+    editquarterSelected.value={code:child.adresse.split('---')[6],nom: child.adresse.split('---')[7]}
+  }
+
+  
+  if (child.birth_date) {
     editDateSelected.value = new Date(child.birth_date).toISOString().split('T')[0]
   } else {
     editDateSelected.value = ""
@@ -836,20 +1184,13 @@ const supprimer = (child: Child) => {
 
 // --- COMPUTED: FILTRAGE DES ENFANTS ---
 const filteredChildren = computed(() => {
-  // 1. Récupère la liste complète pour la classe sélectionnée
   const childrenList = childrenPerClass.value[classeSelected.value] || [];
-  
-  // 2. Si la barre de recherche est vide, on retourne toute la liste
   if (!searchChildQuery.value || searchChildQuery.value.trim() === '') {
     return childrenList;
   }
-  
-  // 3. Sinon, on filtre en comparant le nom (insensible à la casse)
   const query = searchChildQuery.value.toLowerCase();
   return childrenList.filter(child => 
     child.name.toLowerCase().includes(query)
   );
 });
 </script>
-
-

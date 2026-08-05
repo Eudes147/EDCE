@@ -54,7 +54,7 @@
               :key="seance.id" 
               class="hover:bg-surface-container-low/50 transition-colors group">
               <td class="px-5 py-5 md:px-6 align-middle">
-                <div class="inline-block bg-primary/5 text-primary px-3 py-2 rounded-lg font-semibold text-xs md:text-sm border border-primary/10 leading-snug">
+                <div :class="['inline-block px-3 py-2 rounded-lg font-semibold text-xs md:text-sm border border-primary/10 leading-snug', seance.type == 'NORMAL' ? 'bg-primary/5 text-primary':(seance.type == 'SUNDAY_SCHOOL'? 'bg-secondary/5 text-secondary': 'bg-tertiary/5 text-tertiary')]">
                   {{ seance.title }}
                 </div>
               </td>

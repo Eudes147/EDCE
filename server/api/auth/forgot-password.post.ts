@@ -18,7 +18,8 @@ export default defineEventHandler(async (event) => {
   const fakeToken = `tok_${Math.random().toString(36).substring(2, 15)}`
   
   // CORRECTION : Le chemin pointe vers /auth/reset-password
-  const resetLink = `http://localhost:3000/auth/reset-password?token=${fakeToken}`
+  const config = useRuntimeConfig()
+  const resetLink = `httpreset-password?token=${fakeToken}`
 
   try {
     // Création du compte éphémère gratuit sur Ethereal

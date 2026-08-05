@@ -19,7 +19,6 @@ export const useActivities = () => {
         $fetch<Activity[]>('/api/activities'),
         $fetch<any>('/api/events')
       ])
-
       listActivities.value = activitiesData || []
       listActivityAtEvent.value = eventsData.listActivityAtEvent || []
       listEvent.value = eventsData.listEvent || []

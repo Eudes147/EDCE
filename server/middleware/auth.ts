@@ -1,17 +1,16 @@
+// server/middleware/auth.ts
 import { defineEventHandler, createError, getHeader } from 'h3'
 
 export default defineEventHandler((event) => {
   const authHeader = getHeader(event, 'authorization')
 
-  // Récupération sécurisée des variables d'environnement
   const config = useRuntimeConfig(event)
   const USERNAME = config.basicAuthUser
   const PASSWORD = config.basicAuthPass
 
-  // Sécurité : Si les variables ne sont pas configurées, on bloque par précaution
   if (!USERNAME || !PASSWORD) {
     event.node.res.setHeader('WWW-Authenticate', 'Basic realm="Configuration Manquante"')
-    throw createError({ statusCode: 401, statusMessage: 'Serveur non configuré' })
+    throw createError({ statusCode: 401, message: 'Serveur non configuré' })
   }
 
   if (authHeader && authHeader.startsWith('Basic ')) {
@@ -27,6 +26,6 @@ export default defineEventHandler((event) => {
   event.node.res.setHeader('WWW-Authenticate', 'Basic realm="Zone Protegee Nuxt"')
   throw createError({
     statusCode: 401,
-    statusMessage: 'Accès non autorisé'
+    message: 'Accès non autorisé'
   })
 })

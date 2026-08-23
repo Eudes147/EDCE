@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
 
-    // Exécution des requêtes en parallèle pour optimiser les performances
     const [seancesRes, participantsRes, childrenRes, teachersRes] = await Promise.all([
       client.from('seances').select('*'),
       client.from('participant_seance').select('*'),
@@ -23,7 +22,6 @@ export default defineEventHandler(async (event) => {
     if (childrenRes.error) throw createError({ statusCode: 400, statusMessage: childrenRes.error.message })
     if (teachersRes.error) throw createError({ statusCode: 400, statusMessage: teachersRes.error.message })
 
-    // Normalisation des champs snake_case vers camelCase si nécessaire pour les participants
     const listParticipantSeance: ParticipantSeance[] = (participantsRes.data || []).map((p: any) => ({
       id: p.id,
       childId: p.child_id,

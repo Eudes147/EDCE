@@ -8,14 +8,17 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
 
-    if (!body.childId || !body.testId || body.note === undefined) {
+    const childId = body.childId || body.child_id
+    const testId = body.testId || body.test_id
+
+    if (!childId || !testId || body.note === undefined) {
       throw createError({ statusCode: 400, message: 'Champs requis manquants (childId, testId, note)' })
     }
 
     const payload = {
       ...(body.id ? { id: body.id } : {}),
-      child_id: body.childId,
-      test_id: body.testId,
+      child_id: childId,
+      test_id: testId,
       note: Number(body.note),
       created_at: new Date().toISOString()
     }
@@ -30,13 +33,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: error.message })
     }
 
-    const newNote: Note = {
+    const newNote: Note = data ? {
       id: data.id,
       childId: data.child_id,
       testId: data.test_id,
       note: Number(data.note),
       created_at: data.created_at
-    }
+    } : null
 
     return { success: true, data: newNote }
 

@@ -12,12 +12,12 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Event relation ID is required' })
     }
 
-    const payload = { ...body }
-    delete payload.id // On évite d'écraser l'ID
-
-    if (payload.year) {
-      payload.year = String(payload.year)
-    }
+    const payload: any = {}
+    if (body.activityId !== undefined) payload.activity_id = body.activityId
+    if (body.activity_id !== undefined) payload.activity_id = body.activity_id
+    if (body.eventType !== undefined) payload.event_type = body.eventType
+    if (body.event_type !== undefined) payload.event_type = body.event_type
+    if (body.year !== undefined) payload.year = String(body.year)
 
     const { data, error } = await client
       .from('event_activities')
@@ -34,7 +34,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Event relation not found' })
     }
 
-    return { success: true, data }
+    const formattedData = {
+      id: data.id,
+      activityId: data.activity_id,
+      eventType: data.event_type,
+      year: data.year
+    }
+
+    return { success: true, data: formattedData }
 
   } catch (error: any) {
     throw createError({

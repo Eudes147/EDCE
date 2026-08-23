@@ -1,6 +1,7 @@
 // server/api/notes/[id].put.ts
 import { defineEventHandler, getRouterParam, readBody, createError } from 'h3'
 import { serverSupabaseClient } from '#supabase/server'
+import type { Note } from '~/types/test'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -14,8 +15,10 @@ export default defineEventHandler(async (event) => {
 
     const updatePayload: any = {}
     if (body.childId !== undefined) updatePayload.child_id = body.childId
+    if (body.child_id !== undefined) updatePayload.child_id = body.child_id
     if (body.testId !== undefined) updatePayload.test_id = body.testId
-    if (body.testid !== undefined) updatePayload.test_id = body.testid // Gestion de la petite faute de frappe éventuelle
+    if (body.test_id !== undefined) updatePayload.test_id = body.test_id
+    if (body.testid !== undefined) updatePayload.test_id = body.testid
     if (body.note !== undefined) updatePayload.note = Number(body.note)
 
     const { data, error } = await client
@@ -33,7 +36,15 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, message: 'Note introuvable.' })
     }
 
-    return { success: true, data }
+    const formattedData: Note = {
+      id: data.id,
+      childId: data.child_id,
+      testId: data.test_id,
+      note: Number(data.note),
+      created_at: data.created_at
+    }
+
+    return { success: true, data: formattedData }
 
   } catch (error: any) {
     throw createError({

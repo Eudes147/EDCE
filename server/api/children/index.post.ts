@@ -11,9 +11,18 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Fields name and classe are required' })
     }
 
+    // Conversion du payload CamelCase (front) vers Snake_case (base de données)
     const payload = {
-      ...body,
+      ...(body.id ? { id: body.id } : {}), // L'ID est optionnel, généré automatiquement par la BD si absent
+      classe: body.classe,
+      name: body.name,
       birth_date: body.birth_date ? new Date(body.birth_date).toISOString() : null,
+      tel: body.tel || null,
+      tel_parent: body.telParent || body.tel_parent,
+      sexe: body.sexe,
+      niv_scolaire: body.nivScolaire || body.niv_scolaire,
+      sexe_parent: body.sexeParent || body.sexe_parent,
+      adresse: body.adresse || null,
       created_at: new Date().toISOString()
     }
 

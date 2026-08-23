@@ -1,4 +1,5 @@
 // server/api/auth/login.post.ts
+import { defineEventHandler, readBody, createError } from 'h3'
 import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event) => {
     if (!email || !password) {
       throw createError({ statusCode: 400, message: 'Email et mot de passe requis.' })
     }
-    // 1. Connexion via Supabase Auth
+
     const { data: authData, error: authError } = await client.auth.signInWithPassword({
       email,
       password
@@ -21,7 +22,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, message: 'Identifiants invalides.' })
     }
 
-    // 2. Récupérer les informations du profil dans public.users (rôle, nom, prénom, etc.)
     const { data: userData, error: userError } = await client
       .from('users')
       .select('*')

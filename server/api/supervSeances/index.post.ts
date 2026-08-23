@@ -7,14 +7,17 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
 
-    if (!body.seanceId || !body.supervisorSeanceId) {
+    const sId = body.seanceId || body.seance_id
+    const supId = body.supervisorSeanceId || body.supervisor_seance_id
+
+    if (!sId || !supId) {
       throw createError({ statusCode: 400, message: 'Champs (seanceId et supervisorSeanceId) requis.' })
     }
 
     const payload = {
       ...(body.id ? { id: body.id } : {}),
-      seance_id: body.seanceId,
-      supervisor_seance_id: body.supervisorSeanceId
+      seance_id: sId,
+      supervisor_seance_id: supId
     }
 
     const { data, error } = await client
@@ -27,11 +30,11 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: error.message })
     }
 
-    const newSupervisor = {
+    const newSupervisor = data ? {
       id: data.id,
       seanceId: data.seance_id,
       supervisorSeanceId: data.supervisor_seance_id
-    }
+    } : null
 
     return {
       success: true, 

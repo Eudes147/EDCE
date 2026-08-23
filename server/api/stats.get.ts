@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
       client.from('activities').select('*')
     ])
 
-    // Vérification des erreurs éventuelles
     if (childrenRes.error) throw createError({ statusCode: 400, statusMessage: childrenRes.error.message })
     if (classesRes.error) throw createError({ statusCode: 400, statusMessage: classesRes.error.message })
     if (teachersRes.error) throw createError({ statusCode: 400, statusMessage: teachersRes.error.message })
@@ -40,10 +39,15 @@ export default defineEventHandler(async (event) => {
 
     const listChildren = childrenRes.data || []
     const listClasses = classesRes.data || []
-    const listTeachers = teachersRes.data || []
-    const listModerators = moderatorsRes.data || []
+    const listTeachers = (teachersRes.data || []).map((t: any) => ({
+      ...t,
+      isAvailable: t.is_available ?? t.isAvailable
+    }))
+    const listModerators = (moderatorsRes.data || []).map((m: any) => ({
+      ...m,
+      isAvailable: m.is_available ?? m.isAvailable
+    }))
     
-    // Normalisation snake_case -> camelCase pour les tests et notes si nécessaire
     const listTests = (testsRes.data || []).map((t: any) => ({
       id: t.id,
       titleTest: t.title_test,
@@ -73,9 +77,10 @@ export default defineEventHandler(async (event) => {
       created_at: s.created_at
     }))
 
+    // Utilisation directe des activités sans modification inutile
     const listActivities = activitiesRes.data || []
 
-    // 2. STATS GLOBALES TOTALEMENT DYNAMIQUES
+    // 2. STATS GLOBALES
     const totalStats = {
       totalLengthChildren: listChildren.length,
       totalLengthClasses: listClasses.length,
@@ -86,7 +91,6 @@ export default defineEventHandler(async (event) => {
       totalLengthActivities: listActivities.length
     }
 
-    // Renvoi des listes à jour
     const listStats = {
       listChildren,
       listClasses,
@@ -163,14 +167,13 @@ export default defineEventHandler(async (event) => {
       testSundaySchool: { liste: testSundaySchool, count: testSundaySchool.length }
     }
 
-    // 7. STATS NOTES PROPULSÉES PAR LES GRILLES DE NOTES
+    // 7. STATS NOTES
     const notesStats = {
       evaluations: processNotesAndAverages('EVALUATION', listNotes, listTests),
       sundaySchool: processNotesAndAverages('SUNDAY_SCHOOL', listNotes, listTests),
       concours: processNotesAndAverages('CONCOURS', listNotes, listTests)
     }
 
-    // Envoi de la charge utile calculée à partir de Supabase
     return {
       totalStats,
       listStats,

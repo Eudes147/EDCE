@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
 
-    // Préparation du payload de mise à jour (conversion en snake_case pour la BDD)
     const updatePayload: any = {}
     if (body.titleTest !== undefined) updatePayload.title_test = body.titleTest
     if (body.classe !== undefined) updatePayload.classe = body.classe
@@ -40,10 +39,21 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: "Test introuvable." })
     }
 
+    const formattedData = {
+      id: data.id,
+      titleTest: data.title_test,
+      classe: data.classe,
+      typeTest: data.type_test,
+      sujetTest: data.sujet_test,
+      correctionTest: data.correction_test,
+      authorId: data.author_id,
+      created_at: data.created_at
+    }
+
     return {
       success: true,
       message: `Le test avec l'ID ${testId} a été modifié avec succès.`,
-      data
+      data: formattedData
     }
   } catch (error: any) {
     throw createError({

@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: error.message })
     }
 
-    // Normalisation des champs snake_case vers camelCase si nécessaire
     const notes: Note[] = (listNotes || []).map((n: any) => ({
       id: n.id,
       childId: n.child_id,

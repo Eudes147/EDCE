@@ -18,7 +18,6 @@ export default defineEventHandler(async (event) => {
     const { rows, classe, status } = body
     const classeName = classe as string
 
-    // 1. Récupérer le schedule associé
     const { data: schedule, error: schedErr } = await client
       .from('schedules')
       .select('id, status')
@@ -39,7 +38,6 @@ export default defineEventHandler(async (event) => {
         .eq('id', scheduleId)
     }
 
-    // 2. Mise à jour des lignes et de leurs relations
     for (const incomingRow of rows) {
       const dateLabel = incomingRow.dateLabel
       const assignments = incomingRow.assignments || { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }

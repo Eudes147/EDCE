@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
     const monthKey = getRouterParam(event, 'monthKey')
     const body = await readBody(event)
     
-    // Validation stricte des données requises
     if (!monthKey || !body || !body.dateLabel || !Array.isArray(body.assignments)) {
       throw createError({
         statusCode: 400,
@@ -16,8 +15,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // ÉTAPE 1 : Insérer ou récupérer l'en-tête dans `global_attendances`
-    // On cherche d'abord si une feuille existe déjà pour ce mois et cette date
     const { data: existingRecord, error: fetchError } = await client
       .from('global_attendances')
       .select('id')
@@ -29,10 +26,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: fetchError.message })
     }
 
-    let attendanceId: string
+    let attendanceId: any
 
     if (existingRecord) {
-      // Si l'en-tête existe, on met à jour ses métadonnées
       attendanceId = existingRecord.id
       const { error: updateError } = await client
         .from('global_attendances')
@@ -46,7 +42,6 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: updateError.message })
       }
     } else {
-      // Sinon, on crée un nouvel en-tête
       const { data: newRecord, error: insertError } = await client
         .from('global_attendances')
         .insert({
@@ -64,17 +59,14 @@ export default defineEventHandler(async (event) => {
       attendanceId = newRecord.id
     }
 
-    // ÉTAPE 2 : Gérer les lignes de détails dans `global_attendance_assignments`
-    // Pour éviter les doublons ou nettoyer les anciennes lignes avant de réinsérer les nouvelles du formulaire :
     await client
       .from('global_attendance_assignments')
       .delete()
       .eq('global_attendance_id', attendanceId)
 
-    // Préparation des nouvelles lignes à insérer en masse (bulk insert)
     const assignmentsToInsert = body.assignments.map((assignment: any) => ({
       global_attendance_id: attendanceId,
-      teacher_id: assignment.teacherId || assignment.id, // Adapte selon la structure exacte de ton type
+      teacher_id: assignment.teacherId || assignment.id,
       is_present: assignment.isPresent ?? assignment.is_present ?? false
     }))
 

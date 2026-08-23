@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 1. Cascade manuelle : Suppression des notes associées (si non gérée par la BDD en ON DELETE CASCADE)
     const { error: notesError } = await client
       .from('notes')
       .delete()
@@ -24,7 +23,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: notesError.message })
     }
 
-    // 2. Suppression du test lui-même
     const { error: testError } = await client
       .from('tests')
       .delete()

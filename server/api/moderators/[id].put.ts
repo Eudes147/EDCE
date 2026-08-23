@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const id = getRouterParam(event, 'id')
-    const body = await readBody(event) // Peut contenir: { isAvailable, quarter, tel, status, etc. }
+    const body = await readBody(event)
 
     if (!id) {
       throw createError({ statusCode: 400, statusMessage: 'Moderator ID is required' })
@@ -36,7 +36,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Moderator not found' })
     }
 
-    return { success: true, message: 'Moderator updated successfully', data }
+    const formattedData = {
+      id: data.id,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      sexe: data.sexe,
+      tel: data.tel,
+      quarter: data.quarter,
+      isAvailable: data.is_available
+    }
+
+    return { success: true, message: 'Moderator updated successfully', data: formattedData }
 
   } catch (error: any) {
     throw createError({

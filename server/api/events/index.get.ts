@@ -7,9 +7,9 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
 
-    // 1. Récupération des relations events et des activités depuis Supabase
+    // 1. Récupération des relations event_activities et des activités depuis Supabase
     const { data: listActivityAtEvent, error: eventsError } = await client
-      .from('event_activities') // Nom de table suggéré pour les relations
+      .from('event_activities')
       .select('*')
 
     if (eventsError) {
@@ -24,7 +24,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: activitiesError.message })
     }
 
-    const events = (listActivityAtEvent || []) as EventActivity[]
+    // Mapping BDD -> Front pour event_activities
+    const events: EventActivity[] = (listActivityAtEvent || []).map((e: any) => ({
+      id: e.id,
+      activityId: e.activity_id,
+      eventType: e.event_type,
+      year: e.year
+    }))
+
     const activities = (listActivities || []) as Activity[]
 
     // 2. Liste unique des types d'événements

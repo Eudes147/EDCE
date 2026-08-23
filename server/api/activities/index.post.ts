@@ -1,6 +1,5 @@
 // server/api/activities/index.post.ts
 import { serverSupabaseClient } from '#supabase/server'
-import type { Activity } from '~/types/activity'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -11,7 +10,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Activity title is required' })
     }
 
-    // Insertion directe dans Supabase (l'ID et la date de création sont généralement gérés par la base)
+    // L'ID est désormais généré automatiquement par la base de données par défaut
     const { data, error } = await client
       .from('activities')
       .insert({

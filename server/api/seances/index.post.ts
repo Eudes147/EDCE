@@ -12,18 +12,14 @@ export default defineEventHandler(async (event) => {
     }
 
     const payload = {
+      ...(body.id ? { id: body.id } : {}), // L'ID est optionnel, généré automatiquement par la BD si absent
       title: body.title,
       type: body.type,
       classe: body.classe,
-      author_id: body.authorId,
-      supervisor_id: body.supervisorId,
-      created_at: new Date().toISOString(),
-      ...body // Permet de passer d'autres champs optionnels s'il y en a
+      author_id: body.authorId || body.author_id,
+      supervisor_id: body.supervisorId || body.supervisor_id,
+      created_at: new Date().toISOString()
     }
-    
-    // On nettoie pour éviter les doublons de clés camelCase vs snake_case si présents dans le body
-    delete payload.authorId
-    delete payload.supervisorId
 
     const { data, error } = await client
       .from('seances')
@@ -35,7 +31,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: error.message })
     }
 
-    return { success: true, data }
+    const formattedData = data ? {
+      id: data.id,
+      title: data.title,
+      type: data.type,
+      classe: data.classe,
+      authorId: data.author_id,
+      supervisorId: data.supervisor_id,
+      created_at: data.created_at
+    } : null
+
+    return { success: true, data: formattedData }
 
   } catch (error: any) {
     throw createError({

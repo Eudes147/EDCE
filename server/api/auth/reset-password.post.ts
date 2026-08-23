@@ -1,4 +1,5 @@
 // server/api/auth/reset-password.post.ts
+import { defineEventHandler, readBody, createError } from 'h3'
 import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +12,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: "Le nouveau mot de passe est requis." })
     }
 
-    // Si on passe le token d'accès temporaire de la session de récupération
     if (accessToken) {
       await client.auth.setSession({ access_token: accessToken, refresh_token: '' })
     }

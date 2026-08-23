@@ -11,13 +11,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Event relation ID is required' })
     }
 
-    // Cascade manuelle sur les participants aux events (si non gérée par la BDD)
+    // Cascade manuelle sur la table participant_event_activities avec la colonne event_activity_id
     await client
-      .from('participant_events')
+      .from('participant_event_activities')
       .delete()
-      .eq('eventActivityId', id)
+      .eq('event_activity_id', id)
 
-    // Suppression de la relation event
+    // Suppression de la relation event_activities
     const { error } = await client
       .from('event_activities')
       .delete()

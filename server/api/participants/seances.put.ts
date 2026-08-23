@@ -5,7 +5,7 @@ import { serverSupabaseClient } from '#supabase/server'
 export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
-    const body = readBody(event) instanceof Promise ? await readBody(event) : readBody(event)
+    const body = await readBody(event)
 
     if (!body.id) {
       throw createError({ statusCode: 400, message: "L'identifiant du participant est requis." })
@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
 
     const updatePayload: any = {}
     if (body.childId !== undefined) updatePayload.child_id = body.childId
+    if (body.child_id !== undefined) updatePayload.child_id = body.child_id
     if (body.seanceId !== undefined) updatePayload.seance_id = body.seanceId
+    if (body.seance_id !== undefined) updatePayload.seance_id = body.seance_id
 
     const { data, error } = await client
       .from('participant_seance')

@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody<AttendancePayload>(event)
     
-    // Validation stricte
     if (!body.monthKey || !body.dateLabel || !body.className || !body.slotType || !Array.isArray(body.assignments)) {
       throw createError({
         statusCode: 400,
@@ -16,7 +15,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // ÉTAPE 1 : Chercher si l'en-tête existe déjà
     const { data: existingRecord, error: fetchError } = await client
       .from('attendances')
       .select('id')
@@ -30,16 +28,15 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: fetchError.message })
     }
 
-    let attendanceId: string
+    let attendanceId: any
 
     if (existingRecord) {
-      // Mise à jour de l'en-tête existant
       attendanceId = existingRecord.id
       const { error: updateError } = await client
         .from('attendances')
         .update({
           checked_at: new Date().toISOString(),
-          checked_by: "Responsable de Séance"
+          checked_by: body.checkedBy || "Responsable de Séance"
         })
         .eq('id', attendanceId)
 
@@ -47,7 +44,6 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: updateError.message })
       }
     } else {
-      // Création d'un nouvel en-tête
       const { data: newRecord, error: insertError } = await client
         .from('attendances')
         .insert({
@@ -56,7 +52,7 @@ export default defineEventHandler(async (event) => {
           class_name: body.className,
           slot_type: body.slotType,
           checked_at: new Date().toISOString(),
-          checked_by: "Responsable de Séance"
+          checked_by: body.checkedBy || "Responsable de Séance"
         })
         .select('id')
         .single()
@@ -67,15 +63,15 @@ export default defineEventHandler(async (event) => {
       attendanceId = newRecord.id
     }
 
-    // ÉTAPE 2 : Nettoyer et réinsérer les lignes de détails dans la table enfant (`attendance_assignments`)
     await client
       .from('attendance_assignments')
       .delete()
       .eq('attendance_id', attendanceId)
 
+    // Mapping de teacherId vers teacher_id pour la base de données
     const assignmentsToInsert = body.assignments.map((assignment: any) => ({
       attendance_id: attendanceId,
-      child_id: assignment.childId || assignment.id,
+      teacher_id: assignment.teacherId || assignment.teacher_id,
       is_present: assignment.isPresent ?? assignment.is_present ?? false
     }))
 

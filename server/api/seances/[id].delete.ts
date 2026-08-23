@@ -11,9 +11,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Seance ID is required' })
     }
 
-    // 1. Cascade manuelle : Suppression des participants à la séance
+    // 1. Suppression des participants à la séance
     const { error: partError } = await client
-      .from('participants_seances')
+      .from('participant_seance')
       .delete()
       .eq('seance_id', id)
 
@@ -21,9 +21,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: partError.message })
     }
 
-    // 2. Cascade manuelle : Suppression des superviseurs / moniteurs associés à la séance
+    // 2. Suppression des superviseurs / moniteurs associés à la séance (supervisor_seance)
     const { error: supervError } = await client
-      .from('supervisors_seances') // ou le nom exact de ta table de liaison
+      .from('supervisor_seance')
       .delete()
       .eq('seance_id', id)
 

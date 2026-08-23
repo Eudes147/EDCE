@@ -1,4 +1,5 @@
 // server/api/auth/register.post.ts
+import { defineEventHandler, readBody, createError } from 'h3'
 import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
@@ -14,13 +15,12 @@ export default defineEventHandler(async (event) => {
     const sexe = body.sexe
     const birthDate = body.birthDate || body.birth_date
     const quarter = body.quarter
-    const now = new Date().toISOString() // La date actuelle au format ISO
+    const now = new Date().toISOString()
 
     if (!firstName || !lastName || !email || !password || !sexe) {
       throw createError({ statusCode: 400, message: 'Tous les champs requis ne sont pas remplis.' })
     }
 
-    // 1. Inscription dans Supabase Auth
     const { data: authData, error: authError } = await client.auth.signUp({
       email,
       password,
@@ -42,7 +42,6 @@ export default defineEventHandler(async (event) => {
     const userId = authData.user?.id
 
     if (userId) {
-      // 2. Insertion dans la table `users` avec le `created_at`
       const { error: userTableError } = await client
         .from('users')
         .upsert({
@@ -55,14 +54,13 @@ export default defineEventHandler(async (event) => {
           birth_date: birthDate || '2000-01-01',
           status: 'teacher',
           password: 'SUPABASE_AUTH_MANAGED',
-          created_at: now // Ajouté ici pour respecter la contrainte NOT NULL
+          created_at: now
         })
 
       if (userTableError) {
         console.warn("Avertissement lors de l'insertion dans users :", userTableError.message)
       }
 
-      // 3. Insertion dans la table `teachers`
       const { error: teacherError } = await client
         .from('teachers')
         .upsert({
@@ -80,8 +78,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 4. Récupération du profil utilisateur depuis `users`
-    const { data: userData, error: userFetchError } = await client
+    const { data: userData } = await client
       .from('users')
       .select('*')
       .eq('id', userId)

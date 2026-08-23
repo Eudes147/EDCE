@@ -12,13 +12,27 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Child ID is required' })
     }
 
-    const payload = {
-      ...body,
-      birth_date: body.birth_date ? new Date(body.birth_date).toISOString() : undefined
-    }
+    // Mapping sécurisé vers le format Snake_case de la BDD
+    const payload: Record<string, any> = {}
 
-    // On retire l'ID du payload de mise à jour pour éviter les conflits
-    delete payload.id
+    if (body.classe !== undefined) payload.classe = body.classe
+    if (body.name !== undefined) payload.name = body.name
+    if (body.birth_date !== undefined || body.birthDate !== undefined) {
+      const bDate = body.birth_date || body.birthDate
+      payload.birth_date = bDate ? new Date(bDate).toISOString() : null
+    }
+    if (body.tel !== undefined) payload.tel = body.tel
+    if (body.telParent !== undefined || body.tel_parent !== undefined) {
+      payload.tel_parent = body.telParent || body.tel_parent
+    }
+    if (body.sexe !== undefined) payload.sexe = body.sexe
+    if (body.nivScolaire !== undefined || body.niv_scolaire !== undefined) {
+      payload.niv_scolaire = body.nivScolaire || body.niv_scolaire
+    }
+    if (body.sexeParent !== undefined || body.sexe_parent !== undefined) {
+      payload.sexe_parent = body.sexeParent || body.sexe_parent
+    }
+    if (body.adresse !== undefined) payload.adresse = body.adresse
 
     const { data, error } = await client
       .from('children')

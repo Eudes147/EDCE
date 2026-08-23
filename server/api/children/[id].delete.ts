@@ -11,9 +11,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Child ID is required' })
     }
 
-    // Cascade manuelle si non gérée par la BDD (tables de liaisons)
-    await client.from('participants_seances').delete().eq('childId', id)
-    await client.from('participants_events').delete().eq('childId', id)
+    // Utilisation des exacts noms de tables de ta base de données
+    await client.from('participant_seance').delete().eq('child_id', id)
+    await client.from('participant_event_activities').delete().eq('child_id', id)
 
     // Suppression de l'enfant
     const { error } = await client

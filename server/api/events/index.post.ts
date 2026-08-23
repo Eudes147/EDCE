@@ -7,14 +7,19 @@ export default defineEventHandler(async (event) => {
     const client = await serverSupabaseClient(event)
     const body = await readBody(event)
 
-    if (!body.activityId || !body.eventType || !body.year) {
+    const activityId = body.activityId || body.activity_id
+    const eventType = body.eventType || body.event_type
+    const year = body.year
+
+    if (!activityId || !eventType || !year) {
       throw createError({ statusCode: 400, statusMessage: 'Missing fields: activityId, eventType, and year are required' })
     }
 
     const payload = {
-      activityId: body.activityId,
-      eventType: body.eventType,
-      year: String(body.year)
+      ...(body.id ? { id: body.id } : {}),
+      activity_id: activityId,
+      event_type: eventType,
+      year: String(year)
     }
 
     const { data, error } = await client
@@ -27,7 +32,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: error.message })
     }
 
-    return { success: true, data }
+    const formattedData = data ? {
+      id: data.id,
+      activityId: data.activity_id,
+      eventType: data.event_type,
+      year: data.year
+    } : null
+
+    return { success: true, data: formattedData }
 
   } catch (error: any) {
     throw createError({

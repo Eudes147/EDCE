@@ -3,6 +3,23 @@ import { defineEventHandler, getQuery, createError } from 'h3'
 import { serverSupabaseClient } from '#supabase/server'
 import type { Child } from '~/types/child'
 
+// Fonction utilitaire de mapping Snake_case -> CamelCase
+const mapChildFromDb = (c: any): Child => ({
+  id: c.id,
+  classe: c.classe,
+  nivScolaire: c.niv_scolaire,
+  name: c.name,
+  birth_date: c.birth_date ? new Date(c.birth_date) : undefined,
+  tel: c.tel,
+  telParent: c.tel_parent,
+  sexeParent: c.sexe_parent,
+  adresse: c.adresse,
+  sexe: c.sexe,
+  quarter: c.quarter,
+  created_at: c.created_at,
+  updated_at: c.updated_at
+})
+
 export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
@@ -19,7 +36,7 @@ export default defineEventHandler(async (event) => {
       if (error || !child) {
         throw createError({ statusCode: 404, statusMessage: 'Child not found' })
       }
-      return child
+      return mapChildFromDb(child)
     }
 
     // Récupération de tous les enfants depuis Supabase
@@ -31,14 +48,14 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: childrenError.message })
     }
 
-    // Récupération des classes depuis Supabase (ou liste fixe si gérée en dur)
-    const { data: classes, error: classesError } = await client
+    // Récupération des classes depuis Supabase
+    const { data: classes } = await client
       .from('classes')
       .select('*')
 
-    // Si la table classes n'existe pas encore, on peut basculer sur un tableau vide ou une liste de secours
     const classList = classes || []
-    const allChildren = (children || []) as Child[]
+    // On mappe les données de la BDD vers le format CamelCase du front
+    const allChildren = (children || []).map(mapChildFromDb)
 
     const examClasses = ['CM2', '3e', 'Tle']
     
@@ -48,7 +65,7 @@ export default defineEventHandler(async (event) => {
     }, {})
 
     const childrenExamClass = examClasses.reduce((acc: Record<string, Child[]>, classe) => {
-      acc[classe] = allChildren.filter(c => c.nivScolaire == classe)
+      acc[classe] = allChildren.filter(c => c.nivScolaire === classe)
       return acc
     }, {})
 

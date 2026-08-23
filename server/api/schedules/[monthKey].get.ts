@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 1. Récupérer le schedule pour ce month_key
     const { data: schedule, error: schedError } = await client
       .from('schedules')
       .select('id, month_key, status')
@@ -34,7 +33,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 2. Récupérer toutes les lignes (schedule_rows) associées à ce schedule
     const { data: rows, error: rowsError } = await client
       .from('schedule_rows')
       .select('id, date_label')
@@ -56,7 +54,6 @@ export default defineEventHandler(async (event) => {
 
     const rowIds = rows.map((r: any) => r.id)
 
-    // 3. Récupérer les schedule_row_classes correspondants pour la classe demandée
     const { data: rowClasses, error: rcError } = await client
       .from('schedule_row_classes')
       .select('id, schedule_row_id, class_name')
@@ -67,7 +64,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: rcError.message })
     }
 
-    const rowClassMap = new Map() // schedule_row_id -> schedule_row_class object
+    const rowClassMap = new Map()
     const rowClassIds: string[] = []
 
     if (rowClasses) {
@@ -77,7 +74,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 4. Récupérer les slots enseignants (schedule_slot_teachers) pour ces classes
     let slots: any[] = []
     if (rowClassIds.length > 0) {
       const { data: slotData, error: slotError } = await client
@@ -91,7 +87,6 @@ export default defineEventHandler(async (event) => {
       slots = slotData || []
     }
 
-    // 5. Reconstitution de la structure attendue par le front
     const formattedRows = rows.map((row: any) => {
       const rcId = rowClassMap.get(row.id)
       const assignments: Record<string, string[]> = { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }

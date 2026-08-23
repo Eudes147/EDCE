@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
     const classeName = classe as string
     const targetStatus = status || 'draft'
 
-    // 1. Gérer la table parente 'schedules' (Upsert basé sur month_key)
     let { data: schedule, error: schedErr } = await client
       .from('schedules')
       .select('id, status')
@@ -49,12 +48,10 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 2. Traitement ligne par ligne pour insérer/mettre à jour la hiérarchie
     for (const incomingRow of rows) {
       const dateLabel = incomingRow.dateLabel
       const assignments = incomingRow.assignments || { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }
 
-      // A. Trouver ou créer le schedule_row
       let { data: dbRow, error: rowErr } = await client
         .from('schedule_rows')
         .select('id')
@@ -77,7 +74,6 @@ export default defineEventHandler(async (event) => {
         rowId = dbRow.id
       }
 
-      // B. Trouver ou créer le schedule_row_classe pour cette classe spécifique
       let { data: dbRowClass, error: rcErr } = await client
         .from('schedule_row_classes')
         .select('id')
@@ -98,14 +94,12 @@ export default defineEventHandler(async (event) => {
         rowClassId = newRc.id
       } else {
         rowClassId = dbRowClass.id
-        // Nettoyer les anciens slots pour cette classe et cette ligne avant de réinsérer
         await client
           .from('schedule_slot_teachers')
           .delete()
           .eq('schedule_row_class_id', rowClassId)
       }
 
-      // C. Insérer les nouveaux slots enseignants (schedule_slot_teachers)
       const slotInserts: any[] = []
       for (const [slotType, teacherIds] of Object.entries(assignments)) {
         if (Array.isArray(teacherIds)) {

@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: 'Accès interdit. Admin requis.' })
     }
 
-    // 3. Récupération des utilisateurs depuis la table Supabase (ex: 'users')
+    // 3. Récupération des utilisateurs depuis la table Supabase
     const { data: users, error } = await client
       .from('users')
       .select('*')
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: error.message })
     }
 
-    // 4. Par sécurité, on s'assure de ne jamais renvoyer de champ sensible s'il y en a
+    // 4. On s'assure de ne jamais renvoyer le mot de passe
     const sanitizedUsers = (users || []).map((u: any) => {
       const { password, ...userWithoutPassword } = u
       return userWithoutPassword

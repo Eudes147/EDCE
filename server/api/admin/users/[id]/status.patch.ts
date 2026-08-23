@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
 
-    // 1. Récupération de l'ID cible depuis l'URL de la requête
+    // 1. Récupération de l'ID cible depuis l'URL
     const targetUserId = event.context.params?.id
 
     if (!targetUserId) {
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: 'Action réservée aux administrateurs.' })
     }
 
-    // 3. Récupération de l'ancien statut et du nouveau rôle demandé
+    // 3. Récupération de l'ancien statut
     const { data: existingUser, error: fetchError } = await client
       .from('users')
       .select('*')
@@ -60,15 +60,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: updateError.message })
     }
 
-    // 5. Gestion des tables spécifiques aux rôles (teachers / moderators / admins)
-    // Si le statut change, on nettoie l'ancienne table de rôle
+    // 5. Gestion des tables spécifiques aux rôles (teachers / moderators)
     if (oldStatus === 'teacher') {
       await client.from('teachers').delete().eq('id', targetUserId)
     } else if (oldStatus === 'moderator') {
       await client.from('moderators').delete().eq('id', targetUserId)
     }
 
-    // Et on insère dans la nouvelle table de rôle correspondante
     if (newStatus === 'teacher') {
       await client.from('teachers').upsert({
         id: updatedUser.id,
@@ -90,12 +88,14 @@ export default defineEventHandler(async (event) => {
         is_available: true
       })
     }
-    // Si le statut devient 'admin', il n'a pas forcément de table dédiée, ou tu peux en créer une si besoin.
+
+    // Retrait sécurisé du password dans la réponse
+    const { password, ...sanitizedUpdatedUser } = updatedUser
 
     return { 
       success: true, 
-      message: `Le statut de ${updatedUser.first_name || 'l\'utilisateur'} a été modifié en ${newStatus} avec succès.`,
-      data: updatedUser
+      message: `Le statut de ${sanitizedUpdatedUser.first_name || 'l\'utilisateur'} a été modifié en ${newStatus} avec succès.`,
+      data: sanitizedUpdatedUser
     }
 
   } catch (error: any) {

@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'MonthKey is required' })
     }
 
-    // On utilise la jointure Supabase pour récupérer l'en-tête ET ses lignes enfants en une seule requête
     let queryBuilder = client
       .from('global_attendances')
       .select(`
@@ -33,10 +32,9 @@ export default defineEventHandler(async (event) => {
       `)
       .eq('month_key', monthKey)
 
-    // Si on cible un dimanche spécifique (Vue de saisie terrain)
     if (dateLabel) {
       const { data, error } = await queryBuilder
-        .ilike('date_label', dateLabel) // Insensible à la casse pour le libellé de la date
+        .ilike('date_label', dateLabel)
         .maybeSingle()
 
       if (error) {
@@ -45,33 +43,35 @@ export default defineEventHandler(async (event) => {
 
       if (!data) return null
 
-      // Transformation optionnelle pour correspondre à ton type front-end si nécessaire 
-      // (par exemple, renommer global_attendance_assignments en assignments)
-      const formattedData = {
+      const formattedData: MeetingAttendancePayload = {
         monthKey: data.month_key,
         dateLabel: data.date_label,
         checkedAt: data.checked_at,
         checkedBy: data.checked_by,
-        assignments: data.global_attendance_assignments || []
+        assignments: (data.global_attendance_assignments || []).map((a: any) => ({
+          teacherId: a.teacher_id,
+          isPresent: a.is_present
+        }))
       }
 
-      return formattedData as MeetingAttendancePayload
+      return formattedData
     }
 
-    // Sinon, renvoi complet de l'historique mensuel (Vue Administration)
     const { data, error } = await queryBuilder
 
     if (error) {
       throw createError({ statusCode: 400, statusMessage: error.message })
     }
 
-    // Formatage de la liste pour l'administration
     const formattedList = (data || []).map((item: any) => ({
       monthKey: item.month_key,
       dateLabel: item.date_label,
       checkedAt: item.checked_at,
       checkedBy: item.checked_by,
-      assignments: item.global_attendance_assignments || []
+      assignments: (item.global_attendance_assignments || []).map((a: any) => ({
+        teacherId: a.teacher_id,
+        isPresent: a.is_present
+      }))
     }))
 
     return formattedList as MeetingAttendancePayload[]

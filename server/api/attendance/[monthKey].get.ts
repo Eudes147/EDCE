@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'MonthKey is required' })
     }
 
-    // Requête de base avec jointure sur la table enfant des assignations (ex: attendance_assignments)
+    // Correction de la sélection de la table enfant : utilisation de teacher_id au lieu de child_id
     let queryBuilder = client
       .from('attendances')
       .select(`
@@ -31,13 +31,12 @@ export default defineEventHandler(async (event) => {
         attendance_assignments (
           id,
           attendance_id,
-          child_id,
+          teacher_id,
           is_present
         )
       `)
       .eq('month_key', monthKey)
 
-    // Si on demande un émargement ultra-précis (Saisie terrain)
     if (className && slotType && dateLabel) {
       const { data, error } = await queryBuilder
         .eq('class_name', className)
@@ -51,7 +50,6 @@ export default defineEventHandler(async (event) => {
 
       if (!data) return null
 
-      // Formatage pour correspondre au type AttendancePayload
       const formattedData: AttendancePayload = {
         monthKey: data.month_key,
         dateLabel: data.date_label,
@@ -59,13 +57,15 @@ export default defineEventHandler(async (event) => {
         slotType: data.slot_type,
         checkedAt: data.checked_at,
         checkedBy: data.checked_by,
-        assignments: data.attendance_assignments || []
+        assignments: (data.attendance_assignments || []).map((a: any) => ({
+          teacherId: a.teacher_id,
+          isPresent: a.is_present
+        }))
       }
 
       return formattedData
     }
 
-    // Sinon, renvoie tout le mois (Dashboard Admin)
     const { data, error } = await queryBuilder
 
     if (error) {
@@ -79,7 +79,10 @@ export default defineEventHandler(async (event) => {
       slotType: item.slot_type,
       checkedAt: item.checked_at,
       checkedBy: item.checked_by,
-      assignments: item.attendance_assignments || []
+      assignments: (item.attendance_assignments || []).map((a: any) => ({
+        teacherId: a.teacher_id,
+        isPresent: a.is_present
+      }))
     }))
 
     return formattedList as AttendancePayload[]

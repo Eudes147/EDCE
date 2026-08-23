@@ -16,8 +16,12 @@ export default defineEventHandler(async (event) => {
     if (body.title !== undefined) updatePayload.title = body.title
     if (body.type !== undefined) updatePayload.type = body.type
     if (body.classe !== undefined) updatePayload.classe = body.classe
-    if (body.authorId !== undefined) updatePayload.author_id = body.authorId
-    if (body.supervisorId !== undefined) updatePayload.supervisor_id = body.supervisorId
+    if (body.authorId !== undefined || body.author_id !== undefined) {
+      updatePayload.author_id = body.authorId || body.author_id
+    }
+    if (body.supervisorId !== undefined || body.supervisor_id !== undefined) {
+      updatePayload.supervisor_id = body.supervisorId || body.supervisor_id
+    }
 
     const { data, error } = await client
       .from('seances')
@@ -34,7 +38,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Seance not found' })
     }
 
-    return { success: true, data }
+    const formattedData = {
+      id: data.id,
+      title: data.title,
+      type: data.type,
+      classe: data.classe,
+      authorId: data.author_id,
+      supervisorId: data.supervisor_id,
+      created_at: data.created_at
+    }
+
+    return { success: true, data: formattedData }
 
   } catch (error: any) {
     throw createError({

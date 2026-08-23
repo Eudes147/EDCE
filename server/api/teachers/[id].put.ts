@@ -7,13 +7,13 @@ export default defineEventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient(event)
     const id = getRouterParam(event, 'id')
-    const body = await readBody(event) // Peut contenir { status, isAvailable, quarter, tel, first_name, last_name, sexe }
+    const body = await readBody(event)
 
     if (!id) {
       throw createError({ statusCode: 400, statusMessage: 'Teacher ID is required' })
     }
 
-    // 1. Si le corps de la requête demande un changement de statut global (vers un autre rôle)
+    // 1. Si le corps de la requête demande un changement de statut global
     if (body.status) {
       const { error: statusError } = await client
         .from('users')
@@ -46,7 +46,18 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: teacherError.message })
       }
 
-      return { success: true, message: 'Teacher updated successfully', data }
+      // Formatage du retour en camelCase pour le front
+      const formattedData = data ? {
+        id: data.id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        sexe: data.sexe,
+        tel: data.tel,
+        quarter: data.quarter,
+        isAvailable: data.is_available
+      } : null
+
+      return { success: true, message: 'Teacher updated successfully', data: formattedData }
     }
 
     return { success: true, message: 'Teacher updated successfully' }

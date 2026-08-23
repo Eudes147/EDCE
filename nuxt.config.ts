@@ -46,6 +46,8 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    basicAuthUser: '', // Valeur par défaut vide, surchargée par le .env
+    basicAuthPass: '',
     public: {
       motion:{
         directives:{

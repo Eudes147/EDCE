@@ -1,15 +1,27 @@
-import { mockTests } from '~/data/mockData'
+// server/api/tests/index.get.ts
+import { defineEventHandler, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { Test } from '~/types/test'
 
-// State unique et persistant pour les tests sur le serveur Nitro
-export const testsState = {
-  tests: [...mockTests] as unknown as Test[] 
-}
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
 
-export default defineEventHandler(() => {
-  // Le serveur renvoie simplement la liste brute complète.
-  // Les filtrages par mois/classe/type se feront côté client pour maximiser les performances.
-  return {
-    listTests: testsState.tests
+    const { data: listTests, error } = await client
+      .from('tests')
+      .select('*')
+
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
+    }
+
+    return {
+      listTests: (listTests || []) as Test[]
+    }
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des tests.",
+    })
   }
 })

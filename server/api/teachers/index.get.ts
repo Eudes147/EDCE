@@ -1,48 +1,41 @@
-import { mockTeachers } from '~/data/mockData'
-import type { User } from '~/types/auth'
+// server/api/teachers/index.get.ts
+import { defineEventHandler, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { Teacher } from '~/types/teacher'
-import {usersState} from '../admin/users.get'
 
-// Les états serveur persistent en mémoire vive
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
 
-export const usersTeachersState=usersState
+    // 1. Récupération directe de tous les enseignants depuis la table dédiée 'teachers'
+    const { data: listTeachers, error } = await client
+      .from('teachers')
+      .select('*')
 
-export const teachersState = {
-  teachers: [...mockTeachers] as Teacher[]
-}
-
-export default defineEventHandler(() => {
-  // 1. Filtrer les utilisateurs qui ont le statut 'teacher'
-  const activeUserTeachers = usersTeachersState.users.filter(u => u.status === 'teacher')
-
-  // 2. Construire la liste complète des Teacher en combinant l'User et son état de disponibilité
-  const listTeachers: Teacher[] = activeUserTeachers.map(user => {
-    // On cherche si on a déjà un état étendu (isAvailable) pour cet ID
-    const extendedInfo = teachersState.teachers.find(t => t.id === user.id)
-    
-    return {
-      id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      sexe: user.sexe,
-      tel: user.tel,
-      quarter: user.quarter,
-      // Si aucune info de dispo n'existe encore (ex: nouvel upgradé), on met true par défaut
-      isAvailable: extendedInfo ? extendedInfo.isAvailable : true
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
     }
-  })
 
-  // 3. Calculer les propriétés filtrées directement sur le serveur
-  const teachersAvailable = listTeachers.filter(t => t.isAvailable)
-  const teachersUnavailable = listTeachers.filter(t => !t.isAvailable)
-  const teacherMasculin = listTeachers.filter(t => t.sexe === 'Masculin')
-  const teacherFeminin = listTeachers.filter(t => t.sexe === 'Feminin')
+    const teachers = (listTeachers || []) as Teacher[]
 
-  return {
-    listTeachers,
-    teachersAvailable,
-    teachersUnavailable,
-    teacherMasculin,
-    teacherFeminin
+    // 2. Calculer les propriétés filtrées directement sur le serveur
+    const teachersAvailable = teachers.filter(t => t.isAvailable)
+    const teachersUnavailable = teachers.filter(t => !t.isAvailable)
+    const teacherMasculin = teachers.filter(t => t.sexe === 'Masculin')
+    const teacherFeminin = teachers.filter(t => t.sexe === 'Feminin')
+
+    return {
+      listTeachers: teachers,
+      teachersAvailable,
+      teachersUnavailable,
+      teacherMasculin,
+      teacherFeminin
+    }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des enseignants.",
+    })
   }
 })

@@ -1,51 +1,46 @@
-import { usersState } from '../admin/users.get' 
+// server/api/auth/login.post.ts
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
+    const client = await serverSupabaseClient(event)
+
     const { email, password } = body
 
-    // 1. Validation basique des champs reçus
     if (!email || !password) {
-      throw createError({
-        statusCode: 400,
-        message: 'Veuillez fournir un e-mail et un mot de passe.',
-      })
+      throw createError({ statusCode: 400, message: 'Email et mot de passe requis.' })
+    }
+    // 1. Connexion via Supabase Auth
+    const { data: authData, error: authError } = await client.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (authError || !authData.user) {
+      throw createError({ statusCode: 401, message: 'Identifiants invalides.' })
     }
 
-    // 2. Recherche de l'utilisateur (insensible à la casse)
-    const user = usersState.users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+    // 2. Récupérer les informations du profil dans public.users (rôle, nom, prénom, etc.)
+    const { data: userData, error: userError } = await client
+      .from('users')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single()
 
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        message: 'Identifiants incorrects (E-mail introuvable).',
-      })
+    if (userError || !userData) {
+      throw createError({ statusCode: 404, message: 'Profil utilisateur introuvable.' })
     }
 
-    // 3. Vérification du mot de passe
-    // En développement, on accepte le mot de passe générique ou "password123"
-    if (password !== 'password123' && password !== user.password) {
-      throw createError({
-        statusCode: 401,
-        message: 'Identifiants incorrects (Mot de passe invalide).',
-      })
-    }
-
-    // 4. Extraction du mot de passe par sécurité avant de renvoyer le profil
-    const { password: _, ...userWithoutPassword } = user
-
-    // 5. Envoi de la réponse structurée attendue par ton store
     return {
-      token: `mock-jwt-token-${user.id}-${user.status}-${Date.now()}`,
-      user: userWithoutPassword
+      token: authData.session.access_token,
+      user: userData
     }
 
   } catch (error: any) {
-    // On propage l'erreur interceptée ou on applique une erreur 500 par défaut
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || 'Une erreur interne est survenue lors de la connexion.',
+      message: error.message || "Échec de la connexion."
     })
   }
 })

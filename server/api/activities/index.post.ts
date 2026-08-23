@@ -1,19 +1,35 @@
-import { state } from './index.get'
+// server/api/activities/index.post.ts
+import { serverSupabaseClient } from '#supabase/server'
 import type { Activity } from '~/types/activity'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
+  try {
+    const body = await readBody(event)
+    const client = await serverSupabaseClient(event)
 
-  if (!body.title) {
-    throw createError({ statusCode: 400, statusMessage: 'Activity title is required' })
+    if (!body.title) {
+      throw createError({ statusCode: 400, statusMessage: 'Activity title is required' })
+    }
+
+    // Insertion directe dans Supabase (l'ID et la date de création sont généralement gérés par la base)
+    const { data, error } = await client
+      .from('activities')
+      .insert({
+        title: body.title
+      })
+      .select()
+      .single()
+
+    if (error) {
+      throw createError({ statusCode: 400, message: error.message })
+    }
+
+    return { success: true, data }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      message: error.message || "Erreur lors de la création de l'activité.",
+    })
   }
-
-  // Simulation d'un ID auto-incrémenté unique
-  const newActivity: Activity = {
-    id: `activity-${String(state.activities.length + 1).padStart(3, '0')}-${Math.random().toString(36).substring(2, 5)}`,
-    title: body.title
-  }
-
-  state.activities.push(newActivity)
-  return { success: true, data: newActivity }
 })

@@ -1,19 +1,36 @@
-import { childrenState } from './index.get'
-import {participantSeanceState} from "../participants/seances.get"
-import {participantEventState} from "../participants/events.get"
-
+// server/api/children/[id].delete.ts
+import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  try {
+    const client = await serverSupabaseClient(event)
+    const id = getRouterParam(event, 'id')
 
-  const index = childrenState.children.findIndex(c => c.id === id)
-  if (index === -1) {
-    throw createError({ statusCode: 404, statusMessage: 'Child not found' })
+    if (!id) {
+      throw createError({ statusCode: 400, statusMessage: 'Child ID is required' })
+    }
+
+    // Cascade manuelle si non gérée par la BDD (tables de liaisons)
+    await client.from('participants_seances').delete().eq('childId', id)
+    await client.from('participants_events').delete().eq('childId', id)
+
+    // Suppression de l'enfant
+    const { error } = await client
+      .from('children')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
+    }
+
+    return { success: true, message: 'Child deleted successfully' }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la suppression de l'enfant.",
+    })
   }
-  // Suppression du child
-  childrenState.children.splice(index, 1)
-  //Cascade suppression participantSeance,Event
-  participantSeanceState.participants=participantSeanceState.participants.filter(participant=>participant.childId !== id)
-  participantEventState.participantEvents=participantEventState.participantEvents.filter(participant=>participant.childId !== id)
-  return { success: true, message: 'Child deleted successfully' }
 })

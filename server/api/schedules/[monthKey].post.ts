@@ -1,8 +1,10 @@
+// server/api/schedules/[monthKey].post.ts
 import { defineEventHandler, readBody, createError, getRouterParam } from 'h3'
-import { mockSchedulesStore, type ScheduleRow } from '~/data/mockData'
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   try {
+    const client = await serverSupabaseClient(event)
     const monthKey = getRouterParam(event, 'monthKey')
     const body = await readBody(event)
 
@@ -15,61 +17,126 @@ export default defineEventHandler(async (event) => {
 
     const { rows, classe, status } = body
     const classeName = classe as string
+    const targetStatus = status || 'draft'
 
-    // 1. Recherche sécurisée de l'index dans le store
-    const scheduleIndex = mockSchedulesStore.schedules.findIndex(s => s.monthKey === monthKey)
-    
-    // Récupération sécurisée sans chaînage optionnel conflictuel
-// 1. On récupère l'élément du tableau s'il existe
-const currentSchedule = scheduleIndex !== -1 ? mockSchedulesStore.schedules[scheduleIndex] : null
+    // 1. Gérer la table parente 'schedules' (Upsert basé sur month_key)
+    let { data: schedule, error: schedErr } = await client
+      .from('schedules')
+      .select('id, status')
+      .eq('month_key', monthKey)
+      .maybeSingle()
 
-// 2. On extrait les lignes en s'assurant que l'objet ET ses lignes sont bien définis
-const existingRows: ScheduleRow[] = (currentSchedule && currentSchedule.rows) ? currentSchedule.rows : []
+    if (schedErr) throw createError({ statusCode: 400, statusMessage: schedErr.message })
 
-    // 2. Fusion native strictement typée grâce à ScheduleRow[]
-    const updatedGlobalRows: ScheduleRow[] = rows.map((incomingRow: any) => {
-      const existingRow = existingRows.find((r) => r.dateLabel === incomingRow.dateLabel)
+    let scheduleId: string
+
+    if (!schedule) {
+      const { data: newSched, error: insSchedErr } = await client
+        .from('schedules')
+        .insert({ month_key: monthKey, status: targetStatus })
+        .select()
+        .single()
       
-      // On extrait ou on initialise l'objet des classes
-      const currentClassesData = existingRow?.classes ? { ...existingRow.classes } : {}
-
-      // Assignation de l'index dynamique
-      currentClassesData[classeName] = incomingRow.assignments
-
-      return {
-        dateLabel: incomingRow.dateLabel as string,
-        classes: currentClassesData
-      }
-    })
-
-    // 3. Persistence (Upsert) sécurisée via stockage de la référence
-    if (scheduleIndex !== -1) {
-      const currentSchedule = mockSchedulesStore.schedules[scheduleIndex]
-      if (currentSchedule) {
-        currentSchedule.status = status || currentSchedule.status
-        currentSchedule.rows = updatedGlobalRows
-      }
+      if (insSchedErr) throw createError({ statusCode: 400, statusMessage: insSchedErr.message })
+      scheduleId = newSched.id
     } else {
-      mockSchedulesStore.schedules.push({
-        monthKey,
-        status: status || 'draft',
-        rows: updatedGlobalRows
-      })
+      scheduleId = schedule.id
+      if (status) {
+        await client
+          .from('schedules')
+          .update({ status: targetStatus })
+          .eq('id', scheduleId)
+      }
+    }
+
+    // 2. Traitement ligne par ligne pour insérer/mettre à jour la hiérarchie
+    for (const incomingRow of rows) {
+      const dateLabel = incomingRow.dateLabel
+      const assignments = incomingRow.assignments || { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }
+
+      // A. Trouver ou créer le schedule_row
+      let { data: dbRow, error: rowErr } = await client
+        .from('schedule_rows')
+        .select('id')
+        .eq('schedule_id', scheduleId)
+        .eq('date_label', dateLabel)
+        .maybeSingle()
+
+      if (rowErr) throw createError({ statusCode: 400, statusMessage: rowErr.message })
+
+      let rowId: string
+      if (!dbRow) {
+        const { data: newRow, error: insRowErr } = await client
+          .from('schedule_rows')
+          .insert({ schedule_id: scheduleId, date_label: dateLabel })
+          .select()
+          .single()
+        if (insRowErr) throw createError({ statusCode: 400, statusMessage: insRowErr.message })
+        rowId = newRow.id
+      } else {
+        rowId = dbRow.id
+      }
+
+      // B. Trouver ou créer le schedule_row_classe pour cette classe spécifique
+      let { data: dbRowClass, error: rcErr } = await client
+        .from('schedule_row_classes')
+        .select('id')
+        .eq('schedule_row_id', rowId)
+        .eq('class_name', classeName)
+        .maybeSingle()
+
+      if (rcErr) throw createError({ statusCode: 400, statusMessage: rcErr.message })
+
+      let rowClassId: string
+      if (!dbRowClass) {
+        const { data: newRc, error: insRcErr } = await client
+          .from('schedule_row_classes')
+          .insert({ schedule_row_id: rowId, class_name: classeName })
+          .select()
+          .single()
+        if (insRcErr) throw createError({ statusCode: 400, statusMessage: insRcErr.message })
+        rowClassId = newRc.id
+      } else {
+        rowClassId = dbRowClass.id
+        // Nettoyer les anciens slots pour cette classe et cette ligne avant de réinsérer
+        await client
+          .from('schedule_slot_teachers')
+          .delete()
+          .eq('schedule_row_class_id', rowClassId)
+      }
+
+      // C. Insérer les nouveaux slots enseignants (schedule_slot_teachers)
+      const slotInserts: any[] = []
+      for (const [slotType, teacherIds] of Object.entries(assignments)) {
+        if (Array.isArray(teacherIds)) {
+          for (const teacherId of teacherIds) {
+            slotInserts.push({
+              schedule_row_class_id: rowClassId,
+              slot_type: slotType,
+              teacher_id: teacherId
+            })
+          }
+        }
+      }
+
+      if (slotInserts.length > 0) {
+        const { error: slotInsErr } = await client
+          .from('schedule_slot_teachers')
+          .insert(slotInserts)
+        if (slotInsErr) throw createError({ statusCode: 400, statusMessage: slotInsErr.message })
+      }
     }
 
     return {
       success: true,
       monthKey,
       classe: classeName,
-      status: status || 'draft',
-      rows: updatedGlobalRows.map((r) => ({
-        dateLabel: r.dateLabel,
-        assignments: r.classes[classeName] || { NORMAL: [], SUNDAY_SCHOOL: [], DLT: [] }
-      }))
+      status: targetStatus,
+      rows
     }
 
   } catch (error: any) {
     if (error.statusCode) throw error
-    throw createError({ statusCode: 500, statusMessage: 'Erreur lors du POST du planning.' })
+    throw createError({ statusCode: 500, statusMessage: error.message || 'Erreur lors de l\'enregistrement du planning.' })
   }
 })

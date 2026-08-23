@@ -1,15 +1,37 @@
-import { state } from './index.get'
+// server/api/activities/[id].put.ts
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  const body = await readBody(event)
+  try {
+    const id = getRouterParam(event, 'id')
+    const body = await readBody(event)
+    const client = await serverSupabaseClient(event)
 
-  const index = state.activities.findIndex(a => a.id === id)
-  if (index === -1) {
-    throw createError({ statusCode: 404, statusMessage: 'Activity not found' })
+    if (!id) {
+      throw createError({ statusCode: 400, statusMessage: 'Activity ID is required' })
+    }
+
+    const { data, error } = await client
+      .from('activities')
+      .update(body)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
+    }
+
+    if (!data) {
+      throw createError({ statusCode: 404, statusMessage: 'Activity not found' })
+    }
+
+    return { success: true, data }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      message: error.message || "Erreur lors de la mise à jour de l'activité.",
+    })
   }
-
-  state.activities[index] = { ...state.activities[index], ...body, id }
-  return { success: true, data: state.activities[index] }
 })
-

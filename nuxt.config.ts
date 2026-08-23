@@ -1,5 +1,3 @@
-
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -11,14 +9,12 @@ export default defineNuxtConfig({
       '@nuxt/image',
       '@nuxt/icon',
       '@vueuse/motion/nuxt',
+      '@nuxtjs/supabase', // <-- Ajout indispensable du module Supabase officiel
   ],
   css: [
       '~/assets/css/main.css',  
       '~/assets/css/tailwind.css',  
   ],
-  $fetch: {
-    baseURL: process.env.NUXT_PUBLIC_API_BASE_URL
-  },
 
   // Configuration du module google-fonts pour des polices locales / téléchargées
   googleFonts: {
@@ -51,7 +47,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
       motion:{
         directives:{
           "pop-bottom":{
@@ -65,6 +60,10 @@ export default defineNuxtConfig({
         },
       },
     },
+  },
+  supabase: {
+    // Options de configuration du module Supabase si nécessaire (redirige automatiquement vers le .env)
+    redirect: false // On gère les redirections manuellement via le store / middleware si besoin
   },
   typescript: {
     strict: true,

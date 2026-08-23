@@ -16,6 +16,7 @@
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.3",
+    "@supabase/supabase-js": "^2.112.3",
     "@vueuse/core": "^14.3.0",
     "@vueuse/motion": "^3.0.3",
     "axios": "^1.18.0",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@iconify-json/material-symbols": "^1.2.76",
     "@iconify-json/material-symbols-light": "^1.2.76",
+    "@nuxtjs/supabase": "^2.0.10",
     "@types/nodemailer": "^8.0.1"
   }
 }

@@ -1,27 +1,45 @@
-import { testsState } from './index.get'
+// server/api/tests/index.post.ts
+import { defineEventHandler, readBody, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { Test } from '~/types/test'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
+  try {
+    const client = await serverSupabaseClient(event)
+    const body = await readBody(event)
 
-  if (!body.titleTest || !body.classe || !body.typeTest || !body.authorId) {
-    throw createError({ 
-      statusCode: 400, 
-      statusMessage: 'Champs obligatoires manquants (titleTest, classe, typeTest, authorId).' 
+    if (!body.titleTest || !body.classe || !body.typeTest || !body.authorId) {
+      throw createError({ 
+        statusCode: 400, 
+        statusMessage: 'Champs obligatoires manquants (titleTest, classe, typeTest, authorId).' 
+      })
+    }
+
+    const newTestPayload = {
+      title_test: body.titleTest,
+      classe: body.classe,
+      type_test: body.typeTest,
+      sujet_test: body.sujetTest || '',
+      correction_test: body.correctionTest || '',
+      author_id: body.authorId,
+      created_at: new Date().toISOString()
+    }
+
+    const { data, error } = await client
+      .from('tests')
+      .insert(newTestPayload)
+      .select()
+      .single()
+
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la création du test.",
     })
   }
-
-  const newTest: Test = {
-    id: `test-${Math.random().toString(36).substring(2, 11)}`,
-    titleTest: body.titleTest,
-    classe: body.classe,
-    typeTest: body.typeTest,
-    sujetTest: body.sujetTest || '', // Reçoit un lien Google Drive (string)
-    correctionTest: body.correctionTest || '', // Reçoit un lien Google Drive (string)
-    authorId: body.authorId,
-    created_at: new Date().toISOString()
-  }
-
-  testsState.tests.push(newTest)
-  return { success: true, data: newTest }
 })

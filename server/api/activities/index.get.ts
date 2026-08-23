@@ -1,13 +1,22 @@
-import { mockActivities, mockActivityatEvent } from '~/data/mockData'
-import type { Activity, EventActivity } from '~/types/activity'
+import { serverSupabaseClient } from '#supabase/server'
 
-// Ces variables globales en mémoire persistent tant que le serveur tourne !
-export const state = {
-  activities: [...mockActivities] as Activity[],
-  events: [...mockActivityatEvent] as EventActivity[]
-}
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
 
-export default defineEventHandler(() => {
-  // Retourne la liste complète des activités
-  return state.activities
+    const { data, error } = await client
+      .from('activities')
+      .select('*')
+
+    if (error) {
+      throw createError({ statusCode: 400, message: error.message })
+    }
+
+    return data
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      message: error.message || "Erreur lors de la récupération des activités."
+    })
+  }
 })

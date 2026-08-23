@@ -1,41 +1,69 @@
-import { state } from '../activities/index.get'
-import type { Activity } from '~/types/activity'
+// server/api/events/index.get.ts
+import { defineEventHandler, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
+import type { Activity, EventActivity } from '~/types/activity'
 
-export default defineEventHandler(() => {
-  const listActivityAtEvent = state.events
-  const listActivities = state.activities
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
 
-  // 1. Liste unique des types d'événements
-  const listEvent = [...new Set(listActivityAtEvent.map(event => event.eventType))]
+    // 1. Récupération des relations events et des activités depuis Supabase
+    const { data: listActivityAtEvent, error: eventsError } = await client
+      .from('event_activities') // Nom de table suggéré pour les relations
+      .select('*')
 
-  // 2. Regroupement des activités par Année
-  const groupActivityperYear = listActivityAtEvent.reduce((acc, event) => {
-    const activityFound = listActivities.find(a => a.id === event.activityId)
-    if (activityFound) {
-      if (!acc[event.year]) acc[event.year] = []
-      if (!acc[event.year]?.some(a => a.id === activityFound.id)) {
-        acc[event.year]?.push(activityFound)
-      }
+    if (eventsError) {
+      throw createError({ statusCode: 400, statusMessage: eventsError.message })
     }
-    return acc
-  }, {} as Record<string, Activity[]>)
 
-  // 3. Regroupement des activités par Type d'Événement
-  const groupActivityperEvent = listEvent.reduce((acc, eventType) => {
-    const eventsFound = listActivityAtEvent.filter(ea => ea.eventType === eventType)
-    const activities = eventsFound
-      .map(ea => listActivities.find(a => a.id === ea.activityId))
-      .filter((a): a is Activity => !!a)
+    const { data: listActivities, error: activitiesError } = await client
+      .from('activities')
+      .select('*')
 
-    acc[eventType] = activities
-    return acc
-  }, {} as Record<string, Activity[]>)
+    if (activitiesError) {
+      throw createError({ statusCode: 400, statusMessage: activitiesError.message })
+    }
 
-  // On renvoie la liste brute ET les structures calculées prêtes à l'emploi
-  return {
-    listActivityAtEvent,
-    listEvent,
-    groupActivityperYear,
-    groupActivityperEvent
+    const events = (listActivityAtEvent || []) as EventActivity[]
+    const activities = (listActivities || []) as Activity[]
+
+    // 2. Liste unique des types d'événements
+    const listEvent = [...new Set(events.map(ev => ev.eventType))]
+
+    // 3. Regroupement des activités par Année
+    const groupActivityperYear = events.reduce((acc: Record<string, Activity[]>, ev) => {
+      const activityFound = activities.find(a => a.id === ev.activityId)
+      if (activityFound) {
+        if (!acc[ev.year]) acc[ev.year] = []
+        if (!acc[ev.year]?.some(a => a.id === activityFound.id)) {
+          acc[ev.year]?.push(activityFound)
+        }
+      }
+      return acc
+    }, {})
+
+    // 4. Regroupement des activités par Type d'Événement
+    const groupActivityperEvent = listEvent.reduce((acc: Record<string, Activity[]>, eventType) => {
+      const eventsFound = events.filter(ea => ea.eventType === eventType)
+      const matchedActivities = eventsFound
+        .map(ea => activities.find(a => a.id === ea.activityId))
+        .filter((a): a is Activity => !!a)
+
+      acc[eventType] = matchedActivities
+      return acc
+    }, {})
+
+    return {
+      listActivityAtEvent: events,
+      listEvent,
+      groupActivityperYear,
+      groupActivityperEvent
+    }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des événements.",
+    })
   }
 })

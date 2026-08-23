@@ -1,31 +1,47 @@
-import { defineEventHandler, createError } from 'h3'
-import { testsState } from './index.get'
-import { notesState } from '../notes/index.get'
+// server/api/tests/[id].delete.ts
+import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  // 1. Récupérer l'ID passé dans l'URL
-  const testId = event.context.params?.id
-  const index=testsState.tests.findIndex(test=>test.id == testId)
-  if (!testId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "L'identifiant du test est manquant.",
-    })
-  }
-
   try {
-    // Suppression du test
-    testsState.tests.splice(index,1)
-    // Suppression des notes associées
-    notesState.notes=notesState.notes.filter(note=>note.testId !== testId)
+    const client = await serverSupabaseClient(event)
+    const testId = getRouterParam(event, 'id')
+
+    if (!testId) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "L'identifiant du test est manquant.",
+      })
+    }
+
+    // 1. Cascade manuelle : Suppression des notes associées (si non gérée par la BDD en ON DELETE CASCADE)
+    const { error: notesError } = await client
+      .from('notes')
+      .delete()
+      .eq('test_id', testId)
+
+    if (notesError) {
+      throw createError({ statusCode: 400, statusMessage: notesError.message })
+    }
+
+    // 2. Suppression du test lui-même
+    const { error: testError } = await client
+      .from('tests')
+      .delete()
+      .eq('id', testId)
+
+    if (testError) {
+      throw createError({ statusCode: 400, statusMessage: testError.message })
+    }
+
     return {
       success: true,
-      message: `Le test avec l'ID ${testId} a été supprimé avec succès et les notes associés`
+      message: `Le test avec l'ID ${testId} a été supprimé avec succès ainsi que les notes associées.`
     }
   } catch (error: any) {
     throw createError({
-      statusCode: 500,
-      statusMessage: error.message || "Erreur lors de la suppression du test sur le serveur.",
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la suppression du test sur le serveur.",
     })
   }
 })

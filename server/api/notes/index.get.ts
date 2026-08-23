@@ -1,15 +1,37 @@
-import { mockNotes, mockTests } from '~/data/mockData'
+// server/api/notes/index.get.ts
+import { defineEventHandler, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { Note } from '~/types/test'
 
-// State persistant des notes en mémoire vive
-export const notesState = {
-  notes: [...mockNotes] as Note[]
-}
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
 
-export default defineEventHandler(() => {
-  // On renvoie la liste globale des notes à jour.
-  // Note: Pour les tests, on va croiser avec le state des tests du serveur s'il existe
-  return {
-    listNotes: notesState.notes
+    const { data: listNotes, error } = await client
+      .from('notes')
+      .select('*')
+
+    if (error) {
+      throw createError({ statusCode: 400, statusMessage: error.message })
+    }
+
+    // Normalisation des champs snake_case vers camelCase si nécessaire
+    const notes: Note[] = (listNotes || []).map((n: any) => ({
+      id: n.id,
+      childId: n.child_id,
+      testId: n.test_id,
+      note: Number(n.note),
+      created_at: n.created_at
+    }))
+
+    return {
+      listNotes: notes
+    }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des notes.",
+    })
   }
 })

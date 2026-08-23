@@ -1,41 +1,60 @@
-import { usersTeachersState, teachersState } from './index.get'
+// server/api/teachers/[id].put.ts
+import { defineEventHandler, getRouterParam, readBody, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { UserStatus } from '~/types/auth'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  const body = await readBody(event) // Peut contenir { status, isAvailable, quarter, tel }
+  try {
+    const client = await serverSupabaseClient(event)
+    const id = getRouterParam(event, 'id')
+    const body = await readBody(event) // Peut contenir { status, isAvailable, quarter, tel, first_name, last_name, sexe }
 
-  // 1. Mettre à jour l'utilisateur dans le state User (Option B: Changement de statut)
-  const userIndex = usersTeachersState.users.findIndex(u => u.id === id)
-  if (userIndex !== -1) {
-    if (body.status && usersTeachersState.users[userIndex]) {
-      usersTeachersState.users[userIndex].status = body.status as UserStatus
+    if (!id) {
+      throw createError({ statusCode: 400, statusMessage: 'Teacher ID is required' })
     }
-    if (body.quarter && usersTeachersState.users[userIndex]) usersTeachersState.users[userIndex].quarter = body.quarter
-    if (body.tel && usersTeachersState.users[userIndex]) usersTeachersState.users[userIndex].tel = body.tel
-  }
 
-  // 2. Mettre à jour ou initialiser l'état spécifique au Teacher (Disponibilité)
-  const teacherIndex = teachersState.teachers.findIndex(t => t.id === id)
-  if (body.isAvailable !== undefined) {
-    if (teacherIndex !== -1 && teachersState.teachers[teacherIndex]) {
-      teachersState.teachers[teacherIndex].isAvailable = body.isAvailable
-    } else {
-      // Si l'enseignant n'existait pas encore dans la table étendue, on l'ajoute
-      const user = usersTeachersState.users.find(u => u.id === id)
-      if (user) {
-        teachersState.teachers.push({
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          sexe: user.sexe,
-          tel: user.tel,
-          quarter: user.quarter,
-          isAvailable: body.isAvailable
-        })
+    // 1. Si le corps de la requête demande un changement de statut global (vers un autre rôle)
+    if (body.status) {
+      const { error: statusError } = await client
+        .from('users')
+        .update({ status: body.status as UserStatus })
+        .eq('id', id)
+
+      if (statusError) {
+        throw createError({ statusCode: 400, statusMessage: statusError.message })
       }
     }
-  }
 
-  return { success: true, message: 'Teacher updated successfully' }
+    // 2. Préparation de la mise à jour pour la table 'teachers'
+    const updatePayload: any = {}
+    if (body.isAvailable !== undefined) updatePayload.is_available = body.isAvailable
+    if (body.quarter !== undefined) updatePayload.quarter = body.quarter
+    if (body.tel !== undefined) updatePayload.tel = body.tel
+    if (body.first_name !== undefined) updatePayload.first_name = body.first_name
+    if (body.last_name !== undefined) updatePayload.last_name = body.last_name
+    if (body.sexe !== undefined) updatePayload.sexe = body.sexe
+
+    if (Object.keys(updatePayload).length > 0) {
+      const { data, error: teacherError } = await client
+        .from('teachers')
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (teacherError) {
+        throw createError({ statusCode: 400, statusMessage: teacherError.message })
+      }
+
+      return { success: true, message: 'Teacher updated successfully', data }
+    }
+
+    return { success: true, message: 'Teacher updated successfully' }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la mise à jour de l'enseignant.",
+    })
+  }
 })

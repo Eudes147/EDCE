@@ -1,28 +1,52 @@
-import { seancesState } from './index.get'
-import { participantSeanceState } from '../participants/seances.get'
-// Importation du state des superviseurs de séances pour le nettoyage en cascade
-import { supervSeancesState } from '../supervSeances/index.get' 
+// server/api/seances/[id].delete.ts
+import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  try {
+    const client = await serverSupabaseClient(event)
+    const id = getRouterParam(event, 'id')
 
-  const index = seancesState.seances.findIndex(s => s.id === id)
-  if (index === -1) {
-    throw createError({ statusCode: 404, statusMessage: 'Seance not found' })
+    if (!id) {
+      throw createError({ statusCode: 400, statusMessage: 'Seance ID is required' })
+    }
+
+    // 1. Cascade manuelle : Suppression des participants à la séance
+    const { error: partError } = await client
+      .from('participants_seances')
+      .delete()
+      .eq('seance_id', id)
+
+    if (partError) {
+      throw createError({ statusCode: 400, statusMessage: partError.message })
+    }
+
+    // 2. Cascade manuelle : Suppression des superviseurs / moniteurs associés à la séance
+    const { error: supervError } = await client
+      .from('supervisors_seances') // ou le nom exact de ta table de liaison
+      .delete()
+      .eq('seance_id', id)
+
+    if (supervError) {
+      throw createError({ statusCode: 400, statusMessage: supervError.message })
+    }
+
+    // 3. Suppression de la séance elle-même
+    const { error: seanceError } = await client
+      .from('seances')
+      .delete()
+      .eq('id', id)
+
+    if (seanceError) {
+      throw createError({ statusCode: 400, statusMessage: seanceError.message })
+    }
+
+    return { success: true, message: 'Seance and all relations deleted successfully' }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la suppression de la séance.",
+    })
   }
-
-  // 1. Séance supprimée
-  seancesState.seances.splice(index, 1)
-
-  // 2. Participants séance supprimés en cascade
-  participantSeanceState.participants = participantSeanceState.participants.filter(
-    participant => participant.seanceId !== id
-  )
-
-  // 3. Superviseurs et moniteurs de la séance supprimés en cascade 🟢
-  supervSeancesState.supervisors = supervSeancesState.supervisors.filter(
-    superv => superv.seanceId !== id
-  )
-
-  return { success: true, message: 'Seance and all relations deleted successfully' }
 })

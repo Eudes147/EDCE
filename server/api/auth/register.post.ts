@@ -1,68 +1,101 @@
-import { usersState } from '../admin/users.get' // Importation du state persistant en mémoire
-import type { User } from '~/types/auth'
+// server/api/auth/register.post.ts
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-    
-    // Harmonisation : Accepte le camelCase du front ou le snake_case
-    const first_name = body.firstName || body.first_name
-    const last_name = body.lastName || body.last_name
+    const client = await serverSupabaseClient(event)
+
+    const firstName = body.firstName || body.first_name
+    const lastName = body.lastName || body.last_name
     const email = body.email
-    const sexe = body.sexe
     const password = body.password
-    
-    // Récupération des nouveaux champs (flexibilité camelCase / snake_case)
-    const tel = body.tel
-    const birth_date = body.birthDate || body.birth_date
+    const tel = body.tel || '+229 00 00 00 00'
+    const sexe = body.sexe
+    const birthDate = body.birthDate || body.birth_date
+    const quarter = body.quarter
+    const now = new Date().toISOString() // La date actuelle au format ISO
 
-    // 1. Validation des champs obligatoires
-    if (!first_name || !last_name || !email || !sexe || !password) {
-      throw createError({
-        statusCode: 400,
-        message: 'Tous les champs requis doivent être remplis (Nom, Prénom, Genre, E-mail, Mot de passe).',
-      })
+    if (!firstName || !lastName || !email || !password || !sexe) {
+      throw createError({ statusCode: 400, message: 'Tous les champs requis ne sont pas remplis.' })
     }
 
-    // 2. Vérification si l'adresse e-mail est déjà prise
-    const emailExists = usersState.users.some((u) => u.email.toLowerCase() === email.toLowerCase())
-    if (emailExists) {
-      throw createError({
-        statusCode: 409,
-        message: 'Cette adresse e-mail est déjà utilisée par un autre compte.',
-      })
+    // 1. Inscription dans Supabase Auth
+    const { data: authData, error: authError } = await client.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          sexe: sexe,
+          tel: tel,
+          birth_date: birthDate
+        }
+      }
+    })
+
+    if (authError) {
+      throw createError({ statusCode: 400, message: authError.message })
     }
 
-    // 3. Construction du nouvel utilisateur
-    const newUser: User = {
-      id: `user-${Math.random().toString(36).substring(2, 11)}`,
-      first_name,
-      last_name,
-      email: email.toLowerCase(),
-      password: password, 
-      tel: tel || '+225 00 00 00 00', // Valeur par défaut si non renseigné
-      sexe: sexe,
-      status: 'teacher', 
-      quarter: body.quarter || undefined, 
-      birth_date: birth_date ? new Date(birth_date) : new Date('2000-01-01'), // Conversion si renseigné
-      created_at: new Date().toISOString()
+    const userId = authData.user?.id
+
+    if (userId) {
+      // 2. Insertion dans la table `users` avec le `created_at`
+      const { error: userTableError } = await client
+        .from('users')
+        .upsert({
+          id: userId,
+          email: email,
+          first_name: firstName,
+          last_name: lastName,
+          sexe: sexe,
+          tel: tel,
+          birth_date: birthDate || '2000-01-01',
+          status: 'teacher',
+          password: 'SUPABASE_AUTH_MANAGED',
+          created_at: now // Ajouté ici pour respecter la contrainte NOT NULL
+        })
+
+      if (userTableError) {
+        console.warn("Avertissement lors de l'insertion dans users :", userTableError.message)
+      }
+
+      // 3. Insertion dans la table `teachers`
+      const { error: teacherError } = await client
+        .from('teachers')
+        .upsert({
+          id: userId,
+          first_name: firstName,
+          last_name: lastName,
+          sexe: sexe,
+          tel: tel,
+          quarter: quarter,
+          is_available: true
+        })
+
+      if (teacherError) {
+        console.warn("Avertissement lors de l'insertion dans teachers :", teacherError.message)
+      }
     }
 
-    // 4. On pousse dans le tableau centralisé
-    usersState.users.push(newUser)
-
-    // 5. On extrait le mot de passe avant de renvoyer le résultat
-    const { password: _, ...userWithoutPassword } = newUser
+    // 4. Récupération du profil utilisateur depuis `users`
+    const { data: userData, error: userFetchError } = await client
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
 
     return {
-      token: `mock-jwt-token-${newUser.id}-${newUser.status}-${Date.now()}`,
-      user: userWithoutPassword
+      token: authData.session?.access_token,
+      user: userData || authData.user
     }
 
   } catch (error: any) {
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || "Une erreur est survenue lors de l'inscription.",
+      message: error.message || "Une erreur est survenue lors de l'inscription."
     })
   }
 })

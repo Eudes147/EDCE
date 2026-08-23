@@ -1,27 +1,53 @@
-import { mockSupervisorSeance } from "~/data/mockData";
-import type { SupervisorSeance } from "~/types/seance";
-import { seancesState } from "../seances/index.get";
-import { teachersState } from "../teachers/index.get";
-import type { Teacher } from "~/types/teacher";
+// server/api/supervSeances/index.get.ts
+import { defineEventHandler, getQuery, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
+import type { Teacher } from '~/types/teacher'
 
-export const supervSeancesState={
-  supervisors: [...mockSupervisorSeance] as SupervisorSeance[]
-}
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
+    const query = getQuery(event)
+    const seanceId = query.seanceId as string
 
-export default defineEventHandler((event)=>{
-  const query=getQuery(event)
+    if (!seanceId) {
+      throw createError({ statusCode: 400, statusMessage: 'SeanceId est requis.' })
+    }
 
-  // Pour le chemin API /api/supervSeances?seanceId=XYZ
-  const seanceId=query.seanceId
-  // Retourner la liste des superviseurs pour une seanceId donnée
+    // 1. Récupérer les lignes de liaison pour cette séance
+    const { data: relations, error: relError } = await client
+      .from('supervisor_seance')
+      .select('supervisor_seance_id')
+      .eq('seance_id', seanceId)
 
-  const supervSeancesFound= supervSeancesState.supervisors.filter(supervSeance=>supervSeance.seanceId == seanceId)
-  const listTeachers:Teacher[]=teachersState.teachers
-  // Retourner la liste des teachers correspondants.
-  return {
-    teachers: supervSeancesFound.map(supervSeanceFound=>{
-      return listTeachers.find(teacher=>teacher.id == supervSeanceFound.supervisorSeanceId)
+    if (relError) {
+      throw createError({ statusCode: 400, statusMessage: relError.message })
+    }
+
+    if (!relations || relations.length === 0) {
+      return { teachers: [] }
+    }
+
+    // Extraire les IDs des superviseurs
+    const supervisorIds = relations.map((r: any) => r.supervisor_seance_id)
+
+    // 2. Récupérer les profils complets des teachers correspondants
+    const { data: teachers, error: teacherError } = await client
+      .from('teachers')
+      .select('*')
+      .in('id', supervisorIds)
+
+    if (teacherError) {
+      throw createError({ statusCode: 400, statusMessage: teacherError.message })
+    }
+
+    return {
+      teachers: (teachers || []) as Teacher[]
+    }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des superviseurs.",
     })
   }
-  
 })

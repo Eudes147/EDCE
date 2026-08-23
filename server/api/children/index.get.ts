@@ -1,45 +1,73 @@
-import { mockChildren, mockClasses } from '~/data/mockData'
+// server/api/children/index.get.ts
+import { defineEventHandler, getQuery, createError } from 'h3'
+import { serverSupabaseClient } from '#supabase/server'
 import type { Child } from '~/types/child'
 
-// State en mémoire vive côté serveur
-export const childrenState = {
-  children: [...mockChildren] as Child[],
-  classes: [...mockClasses]
-}
+export default defineEventHandler(async (event) => {
+  try {
+    const client = await serverSupabaseClient(event)
+    const query = getQuery(event)
+    
+    // Si on cherche un enfant spécifique par son ID
+    if (query.id) {
+      const { data: child, error } = await client
+        .from('children')
+        .select('*')
+        .eq('id', query.id)
+        .single()
 
-export default defineEventHandler((event) => {
-  const query = getQuery(event)
-  
-  // Permet de chercher un enfant spécifique par son ID via /api/children?id=child-001
-  if (query.id) {
-    const child = childrenState.children.find(c => c.id === query.id)
-    if (!child) throw createError({ statusCode: 404, statusMessage: 'Child not found' })
-    return child
-  }
+      if (error || !child) {
+        throw createError({ statusCode: 404, statusMessage: 'Child not found' })
+      }
+      return child
+    }
 
-  // Logique des anciennes propriétés calculées déplacée côté serveur pour plus de légèreté
-  const examClasses = ['CM2', '3e', 'Tle']
-  
-  const childrenPerClass = childrenState.classes.reduce((acc, classe) => {
-    acc[classe.classe] = childrenState.children.filter(c => c.classe === classe.classe)
-    return acc
-  }, {} as Record<string, Child[]>)
+    // Récupération de tous les enfants depuis Supabase
+    const { data: children, error: childrenError } = await client
+      .from('children')
+      .select('*')
 
-  const childrenExamClass = examClasses.reduce((acc, classe) => {
-    acc[classe] = childrenState.children.filter(c => c.nivScolaire == classe)
-    return acc
-  }, {} as Record<string, Child[]>)
+    if (childrenError) {
+      throw createError({ statusCode: 400, statusMessage: childrenError.message })
+    }
 
-  const totalBoy = childrenState.children.filter(c => c.sexe === 'Masculin')
-  const totalGirl = childrenState.children.filter(c => c.sexe === 'Feminin')
+    // Récupération des classes depuis Supabase (ou liste fixe si gérée en dur)
+    const { data: classes, error: classesError } = await client
+      .from('classes')
+      .select('*')
 
-  // On renvoie la liste brute ainsi que toutes les agrégations prêtes
-  return {
-    listChildren: childrenState.children,
-    totalLengthChildren: childrenState.children.length,
-    childrenPerClass,
-    childrenExamClass,
-    totalBoy,
-    totalGirl
+    // Si la table classes n'existe pas encore, on peut basculer sur un tableau vide ou une liste de secours
+    const classList = classes || []
+    const allChildren = (children || []) as Child[]
+
+    const examClasses = ['CM2', '3e', 'Tle']
+    
+    const childrenPerClass = classList.reduce((acc: Record<string, Child[]>, classe: any) => {
+      acc[classe.classe] = allChildren.filter(c => c.classe === classe.classe)
+      return acc
+    }, {})
+
+    const childrenExamClass = examClasses.reduce((acc: Record<string, Child[]>, classe) => {
+      acc[classe] = allChildren.filter(c => c.nivScolaire == classe)
+      return acc
+    }, {})
+
+    const totalBoy = allChildren.filter(c => c.sexe === 'Masculin')
+    const totalGirl = allChildren.filter(c => c.sexe === 'Feminin')
+
+    return {
+      listChildren: allChildren,
+      totalLengthChildren: allChildren.length,
+      childrenPerClass,
+      childrenExamClass,
+      totalBoy,
+      totalGirl
+    }
+
+  } catch (error: any) {
+    throw createError({
+      statusCode: error.statusCode || 500,
+      statusMessage: error.statusMessage || error.message || "Erreur lors de la récupération des enfants.",
+    })
   }
 })

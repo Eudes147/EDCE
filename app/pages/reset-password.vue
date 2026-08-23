@@ -9,16 +9,13 @@
           </p>
         </header>
 
-        <div 
-          v-if="!token" 
-          class="p-4 bg-error/10 border border-error/20 text-error rounded-lg text-xs sm:text-sm flex flex-col gap-3 animate-fade-in"
-        >
+        <div v-if="!hasCode" class="p-4 bg-error/10 border border-error/20 text-error rounded-lg text-xs sm:text-sm flex flex-col gap-3 animate-fade-in">
           <div class="flex items-center gap-2">
             <Icon name="block" class="shrink-0" size="1.15rem" />
-            <span class="font-bold">Lien non valide</span>
+            <span class="font-bold">Lien non valide ou en cours de chargement</span>
           </div>
           <p class="text-xs">Le jeton d'authentification est absent ou a expiré. Veuillez refaire une demande.</p>
-          <NuxtLink to="/auth/forgot-password" class="text-center bg-error text-white font-bold py-2 rounded-lg text-xs mt-1">
+          <NuxtLink to="/forgot-password" class="text-center bg-error text-white font-bold py-2 rounded-lg text-xs mt-1">
             Demander un nouveau lien
           </NuxtLink>
         </div>
@@ -98,16 +95,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from '#app'
 import { useToast } from '~/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const client = useSupabaseClient()
 
-// Extraction sécurisée du token d'URL
-const token = computed<string>(() => String(route.query.token || ''))
+// Supabase v2 envoie un "code" dans l'URL (ou parfois gère la session automatiquement)
+const hasCode = ref<boolean>(false)
+
+onMounted(async () => {
+  const code = route.query.code as string
+  if (code) {
+    // Échange le code contre une session valide
+    const { error } = await client.auth.exchangeCodeForSession(code)
+    if (!error) {
+      hasCode.value = true
+    }
+  } else if (route.hash && route.hash.includes('access_token')) {
+    hasCode.value = true
+  }
+})
 
 // États réactifs du formulaire
 const passwordInput = ref<string>('')
@@ -118,7 +129,6 @@ const showPassword = ref<boolean>(false)
 const isLoading = ref<boolean>(false)
 const apiErrorMessage = ref<string>('')
 
-// Observateurs de validation de force du MDP
 watch(passwordInput, (val) => {
   passwordError.value = ''
   if (val.length > 0 && val.length < 8) {
@@ -139,24 +149,24 @@ function validateConfirmPassword(): void {
  */
 async function handleResetSubmit(): Promise<void> {
   validateConfirmPassword()
-  if (passwordError.value || confirmError.value || !token.value) return
+  if (passwordError.value || confirmError.value) return
 
   isLoading.value = true
   apiErrorMessage.value = ''
 
   try {
-    await $fetch('/api/auth/reset-password', {
-      method: 'POST',
-      body: { 
-        token: token.value,
-        password: passwordInput.value 
-      }
+    // Puisque la session est maintenant active grâce à l'échange du code, 
+    // on peut utiliser directement le client Supabase côté front ou via l'API.
+    const { error } = await client.auth.updateUser({ 
+      password: passwordInput.value 
     })
+
+    if (error) throw error
 
     toast.success('Mot de passe mis à jour', 'Votre compte a été sécurisé avec succès. Vous pouvez vous connecter.')
     await router.push('/login')
   } catch (error: any) {
-    apiErrorMessage.value = error.data?.statusMessage || 'Une erreur est survenue lors de la réinitialisation.'
+    apiErrorMessage.value = error.message || 'Une erreur est survenue lors de la réinitialisation.'
   } finally {
     isLoading.value = false
   }

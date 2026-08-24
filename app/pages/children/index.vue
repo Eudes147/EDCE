@@ -198,7 +198,7 @@
         </div>
         <div>
           <label class="block font-caption text-[11px] text-outline mb-1">Date Naiss. <span class="text-error">*</span></label>
-          <input v-model="dateSelected" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="date" required />
+          <input v-model="dateSelected" :max="getMaxBirthDate(3)" class="w-full bg-surface-container-low border border-outline-variant/20 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="date" required />
         </div>
       </div>
       
@@ -570,6 +570,10 @@
         <p class="text-xs text-doomu-text-muted">Adresse (Précsion)</p>
         <p class="font-medium text-doomu-text">{{ childSelected.quarter || 'Non défini' }}</p>
       </div>
+      <div>
+        <p class="text-xs text-doomu-text-muted">Age</p>
+        <p class="font-medium text-doomu-text">{{ childSelected.birth_date ? getAgeByBirthDate(new Date(childSelected.birth_date))+' ans': "Aucun"}}</p>
+      </div>
     </div>
   </div>
   <template #footer>
@@ -595,7 +599,7 @@
         </div>
         <div>
           <label class="block font-caption text-xs text-outline mb-1.5">Date Naissance</label>
-          <input v-model="editDateSelected" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="date" required />
+          <input v-model="editDateSelected" :max="getMaxBirthDate(3)" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="date" required />
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -698,6 +702,8 @@ import type { Child, childSubmit } from '~/types/child'
 import type { ClasseType } from '~/types/classe'
 import type { Note } from '~/types/test'
 import { validateFormTel } from '~/utils/validateFormatTel'
+import { getMaxBirthDate } from '~/utils/dateHelpers'
+import { getAgeByBirthDate } from '~/utils/getAgebyBirthDate'
 
 definePageMeta({
   layout: 'dashboard',
@@ -975,9 +981,9 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   if (!childSelected.value) return
-
-  if (childSelected.value.tel && !validateFormTel(childSelected.value.tel)) {
-    toast.warning(`Le numéro de téléphone de ${formChild.value.name} ou du parent ne respecte pas les normes.`)
+  console.log(childSelected.value)
+  if ((childSelected.value.tel != "Aucun" && !validateFormTel(childSelected.value.tel)) || !validateFormTel(childSelected.value.telParent)) {
+    toast.warning(`Le numéro de téléphone de ${childSelected.value.name} ou du parent ne respecte pas les normes.`)
     return
   }
   try {
@@ -1073,10 +1079,11 @@ const submitAssociation = async () => {
   if (!selectedChildId.value) return
 
   const associatedActivity = listActivities.value.find((a: any) => a.title === selectedActivityTitle.value)
+  console.log(associatedActivity, listEventActivity, actualYear.value)
   const associatedEvent = listEventActivity.value.find(
-    (e: any) => e.activityId === associatedActivity?.id && e.year === actualYear.value
+    (e: any) => e.activityId == associatedActivity?.id && e.year == actualYear.value
   )
-
+  console.log(associatedEvent)
   if (!associatedEvent || !associatedEvent.id) {
     toast.error("Erreur", `Aucun événement annuel initialisé pour l'activité : ${selectedActivityTitle.value}`)
     return

@@ -22,18 +22,47 @@ export default defineEventHandler(async (event) => {
     if (eventActivitiesRes.error) throw createError({ statusCode: 400, statusMessage: eventActivitiesRes.error.message })
     if (childrenRes.error) throw createError({ statusCode: 400, statusMessage: childrenRes.error.message })
 
-    // Normalisation des champs snake_case vers camelCase
+    // 1. Mappage complet des activités
+    const listActivities: Activity[] = (activitiesRes.data || []).map((a: any) => ({
+      id: a.id,
+      title: a.title,
+    }))
+
+    // 2. Mappage complet des relations de participation
     const listParticipantEventActivity: ParticipantEventActivity[] = (participantEventsRes.data || []).map((p: any) => ({
       id: p.id,
       childId: p.child_id,
-      eventActivityId: p.event_activity_id
+      eventActivityId: p.event_activity_id,
+    }))
+
+    // 3. Mappage complet des événements d'activités
+    const listEventActivity: EventActivity[] = (eventActivitiesRes.data || []).map((e: any) => ({
+      id: e.id,
+      activityId: e.activity_id,
+      eventType: e.event_type,
+      year: e.year,
+    }))
+
+    // 4. Mappage complet des enfants (tous les champs de la table children)
+    const listChildren: Child[] = (childrenRes.data || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      classe: c.classe,
+      birth_date: c.birth_date,
+      tel: c.tel,
+      telParent: c.tel_parent,
+      sexe: c.sexe,
+      nivScolaire: c.niv_scolaire,
+      sexeParent: c.sexe_parent,
+      adresse: c.adresse,
     }))
 
     return {
-      listActivities: (activitiesRes.data || []) as Activity[],
+      success: true,
+      listActivities,
       listParticipantEventActivity,
-      listEventActivity: (eventActivitiesRes.data || []) as EventActivity[],
-      listChildren: (childrenRes.data || []) as Child[]
+      listEventActivity,
+      listChildren
     }
 
   } catch (error: any) {

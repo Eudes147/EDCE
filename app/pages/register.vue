@@ -81,6 +81,7 @@
                   v-model="signupForm.birthDate"
                   class="w-full px-md py-sm rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                   type="date"
+                  :max="getMaxBirthDate(10)"
                   :disabled="isLoading"
                 />
               </div>
@@ -231,6 +232,7 @@ import type { Sexe } from '~/types/index'
 import { useToast } from '~/composables/useToast'
 //Utils
 import {validateFormTel} from '~/utils/validateFormatTel'
+import { getMaxBirthDate } from '~/utils/dateHelpers'
 
 const toast = useToast()
 const authStore = useAuthStore()

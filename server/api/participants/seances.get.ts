@@ -22,17 +22,56 @@ export default defineEventHandler(async (event) => {
     if (childrenRes.error) throw createError({ statusCode: 400, statusMessage: childrenRes.error.message })
     if (teachersRes.error) throw createError({ statusCode: 400, statusMessage: teachersRes.error.message })
 
+    // 1. Mappage complet des séances
+    const listSeances: Seance[] = (seancesRes.data || []).map((s: any) => ({
+      id: s.id,
+      title: s.title,
+      classe: s.classe,
+      type: s.type,
+      authorId: s.author_id,
+      supervisorId: s.supervisor_id,
+      created_at: s.created_at,
+    }))
+
+    // 2. Mappage complet des participants aux séances
     const listParticipantSeance: ParticipantSeance[] = (participantsRes.data || []).map((p: any) => ({
       id: p.id,
       childId: p.child_id,
-      seanceId: p.seance_id
+      seanceId: p.seance_id,
+    }))
+
+    // 3. Mappage complet des enfants
+    const listChildren: Child[] = (childrenRes.data || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      classe: c.classe,
+      birth_date: c.birth_date,
+      tel: c.tel,
+      telParent: c.tel_parent,
+      sexe: c.sexe,
+      nivScolaire: c.niv_scolaire,
+      sexeParent: c.sexe_parent,
+      adresse: c.adresse,
+      created_at: c.created_at
+    }))
+
+    // 4. Mappage complet des enseignants (teachers)
+    const listTeachers: Teacher[] = (teachersRes.data || []).map((t: any) => ({
+      id: t.id,
+      first_name: t.first_name,
+      last_name: t.last_name,
+      sexe: t.sexe,
+      tel: t.tel,
+      quarter: t.quarter,
+      isAvailable: t.is_available
     }))
 
     return {
-      listSeances: (seancesRes.data || []) as Seance[],
+      success: true,
+      listSeances,
       listParticipantSeance,
-      listChildren: (childrenRes.data || []) as Child[],
-      listTeachers: (teachersRes.data || []) as Teacher[]
+      listChildren,
+      listTeachers
     }
 
   } catch (error: any) {

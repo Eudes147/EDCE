@@ -655,7 +655,7 @@
       </div>
       <div>
         <label class="block font-caption text-xs text-outline mb-1.5">Adresse Précision</label>
-        <input v-model="childSelected.quarter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="tel" />
+        <input v-model="childSelected.quarter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg text-xs px-3 py-2 text-doomu-text focus:outline-none" type="text" />
       </div>
     </form>
   </div>

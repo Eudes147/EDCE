@@ -52,6 +52,7 @@ export default defineEventHandler(async (event) => {
       nivScolaire: c.niv_scolaire,
       sexeParent: c.sexe_parent,
       adresse: c.adresse,
+      quarter: c.quarter,
       created_at: c.created_at
     }))
 

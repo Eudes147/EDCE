@@ -34,6 +34,9 @@ export default defineEventHandler(async (event) => {
     }
     if (body.adresse !== undefined) payload.adresse = body.adresse
 
+    if (body.quarter !== undefined) payload.quarter = body.quarter
+
+
     const { data, error } = await client
       .from('children')
       .update(payload)

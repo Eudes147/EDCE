@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
       niv_scolaire: body.nivScolaire || body.niv_scolaire,
       sexe_parent: body.sexeParent || body.sexe_parent,
       adresse: body.adresse || null,
+      quarter: body.quarter,
       created_at: new Date().toISOString()
     }
 

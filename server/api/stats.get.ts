@@ -37,7 +37,20 @@ export default defineEventHandler(async (event) => {
     if (seancesRes.error) throw createError({ statusCode: 400, statusMessage: seancesRes.error.message })
     if (activitiesRes.error) throw createError({ statusCode: 400, statusMessage: activitiesRes.error.message })
 
-    const listChildren = childrenRes.data || []
+    const listChildren = (childrenRes.data || []).map((c:any)=>({
+      id: c.id,
+      classe: c.classe,
+      name: c.name,
+      birth_date: c.birth_date,
+      tel: c.tel,
+      telParent: c.tel_parent,
+      sexe: c.sexe,
+      sexeParent: c.sexe_parent,
+      nivScolaire: c.niv_scolaire,
+      adresse: c.adresse,
+      quarter: c.quarter,
+      created_at: c.created_at
+    }))
     const listClasses = classesRes.data || []
     const listTeachers = (teachersRes.data || []).map((t: any) => ({
       ...t,

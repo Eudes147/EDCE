@@ -212,7 +212,7 @@
   </Modal>
 
   <!-- BOUTON D'ACTION RAPIDE FLOTTANT -->
-  <div class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40">
+  <div class="fixed bottom-10 right-10 md:bottom-8 md:right-8 z-40">
     <button 
       @click="promptGlobalActivityCreation"
       title="Créer une nouvelle activité dans le catalogue global"

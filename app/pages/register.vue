@@ -66,7 +66,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
               <div class="space-y-xs">
-                <label class="font-label-md text-label-md text-on-surface">Telephone (Optional)</label>
+                <label class="font-label-md text-label-md text-on-surface">Telephone</label>
                 <input
                   v-model="signupForm.tel"
                   class="w-full px-md py-sm rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"

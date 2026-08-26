@@ -56,7 +56,7 @@
       </thead>
       <tbody class="divide-y divide-outline-variant/20">
         <tr 
-          v-for="child in filteredChildren" 
+          v-for="child in paginatedChildren" 
           :key="child.id"
           @click="attribute(child)" 
           class="hover:bg-surface-container-low/60 transition-colors cursor-pointer group"
@@ -87,7 +87,7 @@
   <!-- Vue Cartes (Mobile) -->
   <div class="block md:hidden divide-y divide-outline-variant/20">
     <div 
-      v-for="child in filteredChildren" 
+      v-for="child in paginatedChildren" 
       :key="`mobile-${child.id}`"
       @click="attribute(child)"
       class="p-4 flex flex-col gap-3 transition-colors active:bg-surface-container-low"
@@ -118,6 +118,30 @@
   <div v-if="filteredChildren?.length === 0" class="px-6 py-8 text-center text-doomu-text-muted font-body text-xs md:text-sm italic">
     Aucun enfant trouvé pour cette recherche ou cette classe.
   </div>
+  <div class="px-4 py-3 sm:px-6 border-t border-outline-variant/40 flex justify-between items-center bg-surface-container-low/10">
+        <span class="text-[11px] sm:text-xs text-on-surface-variant font-medium">
+          Affichage {{ filteredChildren.length === 0 ? 0 : startIndex + 1 }}-{{ Math.min(endIndex, filteredChildren.length) }} sur {{ filteredChildren.length }}
+        </span>
+        <div class="flex gap-1">
+          <button 
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Icon name="chevron_left" size="1.1rem" />
+          </button>
+          <button class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-primary text-white font-bold text-xs shadow-sm">
+            {{ currentPage }}
+          </button>
+          <button 
+            @click="nextPage"
+            :disabled="currentPage >= totalPages"
+            class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Icon name="chevron_right" size="1.1rem" />
+          </button>
+        </div>
+      </div>
 </section>
 
 <!-- Zone Grille Basse : Attribution & Inscription -->
@@ -737,7 +761,6 @@ const isCreateLoading = ref(false)
 
 // --- ETATS DE NAVIGATION / SELECTION ---
 const activeParentModal = ref(false)
-const searchChildQuery = ref('')
 const child_classes = ref(classes)
 const classeSelected = ref<ClasseType>('Petit')
 const attributeChild = ref<Child | null>(null)
@@ -805,7 +828,10 @@ const forcedVisualActivities = ref<Record<EventType, string[]>>({
   'Arbre de noël': [],
   'Soirée récréative des enfants': []
 })
-
+// États filtrage & pagination
+const searchChildQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 3
 // --- CHARGEMENT INITIAL GLOBAL ---
 onMounted(async () => {
   await fetchs.fetchDepartements()
@@ -919,8 +945,8 @@ const validateParent = () => {
 }
 
 const handleSubmit = async () => {
-  if (!formChild.value.name.trim()) {
-    toast.warning("Champs requis", "Le nom complet de l'enfant est obligatoire.")
+  if (!formChild.value.name.trim() || formChild.value.name.trim().length > 35 || formChild.value.name.trim().length < 10) {
+    toast.warning("Champs requis", "Le nom complet de l'enfant est obligatoire, est trop long, trop court ou est invalide.")
     return
   }
   if (!dateSelected.value) {
@@ -938,10 +964,6 @@ const handleSubmit = async () => {
 
   try {
     isCreateLoading.value = true
-    deptSelected.value = ({code: 'BEN-DEP-08', nom: 'LITTORAL'})
-      communeSelected.value = ({code: 'BEN-COM-048', nom: 'COTONOU'})
-      arrondSelected.value=({code: 'BEN-ARR-0343', nom: '2EME ARRONDISSEMENT'})
-      quarterSelected.value=({code: 'BEN-QRT-03388', nom: 'YENAWA'})
 
     await createChild({
       name: formChild.value.name,
@@ -981,11 +1003,28 @@ const handleSubmit = async () => {
 
 const handleUpdate = async () => {
   if (!childSelected.value) return
-  console.log(childSelected.value)
   if ((childSelected.value.tel != "Aucun" && !validateFormTel(childSelected.value.tel)) || !validateFormTel(childSelected.value.telParent)) {
     toast.warning(`Le numéro de téléphone de ${childSelected.value.name} ou du parent ne respecte pas les normes.`)
     return
   }
+
+  if (!childSelected.value.name.trim() || childSelected.value.name.trim().length > 35 || childSelected.value.name.trim().length < 10) {
+    toast.warning("Champs requis", "Le nom complet de l'enfant est obligatoire, est trop long, trop court ou est invalide.")
+    return
+  }
+  if (!childSelected.value.birth_date) {
+    toast.warning("Champs requis", "La date de naissance est obligatoire.")
+    return
+  }
+  if (!childSelected.value.telParent || childSelected.value.telParent === '01xxxxxxxx') {
+    toast.warning("Parent manquant", "Veuillez associer un numéro de parent avant de valider.")
+    return
+  }
+  if (childSelected.value.tel != "Aucun" && !validateFormTel(childSelected.value.tel)) {
+    toast.warning(`Le numéro de téléphone de ${childSelected.value.name} ne respecte pas les normes.`)
+    return
+  }
+
   try {
     const payload: Partial<Child> = {
       name: childSelected.value.name,
@@ -1200,4 +1239,13 @@ const filteredChildren = computed(() => {
     child.name.toLowerCase().includes(query)
   );
 });
+const totalPages=computed(()=>Math.ceil(filteredChildren.value.length / itemsPerPage) || 1)
+const startIndex=computed(()=> (currentPage.value - 1) * itemsPerPage)
+const endIndex=computed(()=> startIndex.value + itemsPerPage)
+const paginatedChildren= computed(()=>filteredChildren.value.slice(startIndex.value, endIndex.value))
+
+
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+
 </script>

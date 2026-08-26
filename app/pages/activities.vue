@@ -13,14 +13,14 @@
     <div class="flex gap-4">
       <button v-if="authStore.isAdmin || permissionsLocal.canEditChild"
         @click="openCreateModal" 
-        class="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95"
+        class="px-5 py-2.5 bg-primary text-white rounded-md md:rounded-lg font-semibold hover:opacity-90 transition-all flex items-center gap-2 text-sm shadow-sm active:scale-95"
       >
         <Icon name="add" color="text-white" />
         Ajouter une activité
       </button>
     </div>
 
-    <div class="overflow-x-auto bg-white rounded-xl border border-outline-variant shadow-sm">
+    <div class="overflow-x-auto bg-white rounded-md md:rounded-xl border border-outline-variant shadow-sm">
       <table class="w-full text-left border-collapse">
         <thead class="bg-surface-container-low/50 border-b border-outline-variant/40">
           <tr>
@@ -317,14 +317,20 @@ const submitForm = async () => {
     toast.warning('Champs requis', "Veuillez renseigner le titre de l'activité.")
     return
   }
+  if (form.title.trim().length <2 || form.title.length >20){
+    toast.warning('Nom trop long ou trop court', "Veuillez renseigner un titre de taille normale.")
+    return
+  }
 
   try {
     if (isEditMode.value) {
       await updateActivity(form.id, form.title)
     } else {
       await createActivity(form.title)
+      form.title=""
       currentPage.value = totalPages.value // Se déplacer automatiquement sur la dernière page pour voir le nouvel élément
     }
+    form.title=""
     showFormModal.value = false
   } catch (err) {
     toast.error('Erreur opération', "Impossible d'enregistrer l'activité. Veuillez réessayer.")

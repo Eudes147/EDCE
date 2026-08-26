@@ -22,12 +22,10 @@
         La plateforme tout-en-un pour organiser les enseignements, suivre le parcours spirituel des enfants et simplifier la gestion quotidienne pour vos moniteurs.
       </p>
       <div class="flex flex-col sm:flex-row justify-center gap-4">
-        <button class="bg-primary text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+        <button @click="navigateTo('/login')" class="bg-primary text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
           Commencer maintenant
         </button>
-        <button class="bg-surface-container text-on-surface px-8 py-4 rounded-xl font-bold hover:bg-surface-container-high transition-colors">
-          Voir les fonctionnalités
-        </button>
+        
       </div>
     </header>
 
@@ -54,7 +52,7 @@
       </div>
     </section>
 
-    <section class="px-6 py-20 max-w-7xl mx-auto">
+    <section id="fonctionnality" class="px-6 py-20 max-w-7xl mx-auto">
       <h3 class="text-3xl md:text-4xl font-bold text-center mb-16">Comment ça fonctionne ?</h3>
       <div class="space-y-6 max-w-4xl mx-auto">
         <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 glass-card p-6 bg-white rounded-2xl border border-outline-variant/30 hover:border-primary/30 transition-colors">

@@ -898,12 +898,10 @@ const attribute = (child: Child) => {
       updatePrivilege.value = !(authStore.userStatus == 'teacher')
       noteFound.value = getNote(testSelectedId.value, attributeChild.value.id)
       note.value = Number(noteFound.value?.note || 0)
-      console.log("EXISTE")
     } 
     else {
       updatePrivilege.value = true
       note.value = Number(0)
-      console.log("N'EXISTE PAS")
     }
     //NivScolaire
     if(attributeChild.value.nivScolaire) childSelected.value.nivScolaire=attributeChild.value.nivScolaire
@@ -1118,11 +1116,9 @@ const submitAssociation = async () => {
   if (!selectedChildId.value) return
 
   const associatedActivity = listActivities.value.find((a: any) => a.title === selectedActivityTitle.value)
-  console.log(associatedActivity, listEventActivity, actualYear.value)
   const associatedEvent = listEventActivity.value.find(
     (e: any) => e.activityId == associatedActivity?.id && e.year == actualYear.value
   )
-  console.log(associatedEvent)
   if (!associatedEvent || !associatedEvent.id) {
     toast.error("Erreur", `Aucun événement annuel initialisé pour l'activité : ${selectedActivityTitle.value}`)
     return

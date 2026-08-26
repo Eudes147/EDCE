@@ -17,7 +17,6 @@ export const useSchedule = () => {
         query: { classe }
       })
       currentSchedule.value = data
-      console.log("DATA",data)
       toast.success(`[Composable] Planning de ${monthKey} récupéré pour la classe ${classe}.`)
       return data
     } catch (error: any) {

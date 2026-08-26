@@ -180,11 +180,9 @@ const crossReferencePlanningAndAttendance = async () => {
   currentContextTeachers.value = []
   if (!selectedSunday.value) return
   await getScheduleByMonthAndClass(currentMonthKey.value, selectedClass.value) as any
-  console.log("CURRENT",currentSchedule.value)
   if (!currentSchedule.value) return
 
   // Recherche stricte sur la ligne de planning correspondant au dimanche sélectionné
-  console.log(selectedSunday.value)
   const targetRow = currentSchedule.value.rows.find((r: any) => 
     String(r.dateLabel).toLowerCase().trim() === String(selectedSunday.value).toLowerCase().trim()
   )

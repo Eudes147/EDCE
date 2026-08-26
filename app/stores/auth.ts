@@ -244,7 +244,7 @@ export const useAuthStore = defineStore('auth', {
         })
         toast.success('Déconnexion réussie.')
       } catch (error) {
-        toast.error("Erreur lors de la déconnexion serveur")
+        toast.info("Déconnexion fait avec succès.. \n Merci pour la confiance.")
       } finally {
         // 3. Quoiqu'il arrive, on nettoie les cookies/states locaux et on redirige
         this.clearAuthData()
